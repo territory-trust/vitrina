@@ -3,66 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout: Category Mode</title>
+    <title>Scout: Money Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d1117; --accent: #58a6ff; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
-        .panel { background: #161b22; padding: 30px; border-radius: 15px; border: 2px solid #30363d; width: 100%; max-width: 500px; }
-        input, select { width: 100%; padding: 20px; background: #000; border: 2px solid #444; color: #fff; border-radius: 10px; margin-bottom: 20px; font-size: 20px; }
+        .panel { background: #161b22; padding: 30px; border-radius: 15px; border: 3px solid var(--accent); width: 100%; max-width: 500px; }
         
-        .label { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: block; color: var(--accent); }
-        .btn { background: #238636; color: #fff; padding: 25px; border-radius: 12px; border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 24px; }
+        label { font-size: 22px; font-weight: bold; margin-bottom: 10px; display: block; color: var(--accent); }
+        input, select { 
+            width: 100%; padding: 20px; background: #000; border: 2px solid #444; 
+            color: #fff; border-radius: 12px; margin-bottom: 25px; font-size: 22px; 
+            box-sizing: border-box;
+        }
+
+        .btn { 
+            background: #238636; color: #fff; padding: 25px; border-radius: 15px; 
+            border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 26px;
+        }
         
-        #log { margin-top: 25px; width: 100%; max-width: 500px; color: #00ff41; font-family: monospace; font-size: 18px; }
+        #log { margin-top: 30px; width: 100%; max-width: 500px; color: #00ff41; font-family: monospace; font-size: 20px; }
     </style>
 </head>
 <body>
-    <h1>ДОБАВИТЬ ТОВАР</h1>
+    <h1 style="font-size: 32px; text-align: center;">ДОБАВИТЬ ВИТРИНУ</h1>
     
     <div class="panel">
-        <span class="label">ТЕМА ПОИСКА:</span>
-        <input type="text" id="q" placeholder="Напр: iPhone 15">
+        <label>НАЗВАНИЕ ТОВАРА:</label>
+        <input type="text" id="q" placeholder="Напр: Смарт-часы">
         
-        <span class="label">КАТЕГОРИЯ:</span>
+        <label>КАТЕГОРИЯ:</label>
         <select id="cat">
-            <option value="Смартфоны">СМАРТФОНЫ</option>
-            <option value="Гаджеты">ГАДЖЕТЫ</option>
-            <option value="Бытовая техника">ТЕХНИКА</option>
-            <option value="Разное">РАЗНОЕ</option>
+            <option value="Смартфоны">📱 СМАРТФОНЫ</option>
+            <option value="Гаджеты">⌚ ГАДЖЕТЫ</option>
+            <option value="Бытовая техника">🏠 ТЕХНИКА</option>
+            <option value="Разное">📦 РАЗНОЕ</option>
         </select>
 
-        <button class="btn" onclick="hunt()">НАЙТИ И СОХРАНИТЬ</button>
+        <label>ЦЕНА (ГРН):</label>
+        <input type="number" id="price" placeholder="4999">
+
+        <label>ССЫЛКА НА ТОВАР (ОРИГИНАЛ):</label>
+        <input type="text" id="target_url" placeholder="https://rozetka...">
+
+        <button class="btn" onclick="saveWithMoney()">СОХРАНИТЬ ДЛЯ ПРИБЫЛИ</button>
     </div>
 
-    <div id="log">> Жду команду...</div>
+    <div id="log">> Жду ввода...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-        async function hunt() {
-            const q = document.getElementById('q').value;
+        async function saveWithMoney() {
+            const title = document.getElementById('q').value;
             const cat = document.getElementById('cat').value;
+            const price = document.getElementById('price').value;
+            const targetUrl = document.getElementById('target_url').value;
             const log = document.getElementById('log');
-            if(!q) return;
 
-            log.innerHTML += `<br>> Охота на [${q}] в категорию [${cat}]...`;
-            
-            // Имитируем находку
-            const item = { t: q + " Pro Max", p: 42000, img: "https://loremflickr.com/400/400/tech", url: "https://shop.com" };
+            if(!title || !price || !targetUrl) return alert("Заполните все поля!");
 
+            log.innerHTML += `<br>> Формирую партнерскую ссылку...`;
+
+            // ЛОГИКА ГЕНЕРАЦИИ ДЕНЕЖНОЙ ССЫЛКИ
+            let moneyUrl = "";
+            if(CONFIG.NETWORK === 'SalesDoubler') {
+                // Формат SalesDoubler DeepLink
+                moneyUrl = `https://rdr.salesdoubler.com.ua/rel/t/direct/link/${CONFIG.AFFILIATE_ID}?url=${encodeURIComponent(targetUrl)}`;
+            } else {
+                moneyUrl = targetUrl;
+            }
+
+            log.innerHTML += `<br>> Сохраняю в базу...`;
+
+            const img = `https://loremflickr.com/400/400/tech?v=${Math.random()}`;
             const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
-            
+
             const { error } = await supabaseClient.from('products').insert({
-                title: item.t, price: item.p, image_url: item.img, 
-                product_url: item.url, shop_id: shops[0].id, 
-                is_processed_ai: false,
-                category: cat // СОХРАНЯЕМ КАТЕГОРИЮ
+                title: title,
+                price: parseInt(price),
+                image_url: img,
+                product_url: moneyUrl, // СОХРАНЯЕМ ДЕНЕЖНУЮ ССЫЛКУ
+                category: cat,
+                shop_id: shops[0].id,
+                is_processed_ai: false
             });
 
-            if(!error) log.innerHTML += `<br><span style="color:cyan">> УСПЕШНО ДОБАВЛЕНО!</span>`;
+            if(!error) {
+                log.innerHTML += `<br><span style="color:cyan">> ТОВАР ГОТОВ К ПРОДАЖЕ!</span>`;
+                document.getElementById('q').value = "";
+                document.getElementById('price').value = "";
+                document.getElementById('target_url').value = "";
+            }
         }
     </script>
 </body>
