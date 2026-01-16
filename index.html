@@ -3,147 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина: Четкие Границы</title>
+    <title>Витрина</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root { 
-            --bg: #0d1117; 
-            --card-bg: #161b22; 
-            --card-border: #444c56; /* ТЕПЕРЬ РАМКА СВЕТЛАЯ И ВИДИМАЯ */
-            --accent: #58a6ff;     
-            --text-main: #ffffff; 
-        }
-
-        body { 
-            background-color: var(--bg); 
-            color: var(--text-main); 
-            font-family: sans-serif; 
-            padding: 20px; 
-        }
-
-        /* КРУПНЫЕ КНОПКИ КАТЕГОРИЙ */
-        .category-bar { 
-            display: flex; gap: 15px; overflow-x: auto; padding: 20px 0; 
-            position: sticky; top: 0; background: var(--bg); z-index: 10;
-        }
-        .cat-btn { 
-            background: #21262d; color: #fff; padding: 20px 30px; 
-            border-radius: 12px; border: 2px solid var(--accent); 
-            font-size: 22px; font-weight: bold; cursor: pointer; white-space: nowrap;
-        }
-        .cat-btn.active { background: var(--accent); color: #000; }
-
-        .products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 30px; 
-            max-width: 1200px; 
-            margin: 20px auto; 
-        }
-
-        /* КАРТОЧКА С ТОЛСТОЙ ВИДИМОЙ РАМКОЙ */
-        .product-card { 
-            background: var(--card-bg); 
-            border-radius: 15px; 
-            padding: 25px; 
-            border: 2px solid var(--card-border); /* ТОЛЩИНА 2px ДЛЯ ВИДИМОСТИ */
-            display: flex; 
-            flex-direction: column; 
-            height: 100%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .img-box { 
-            height: 220px; 
-            background: #fff; 
-            border-radius: 10px; 
-            margin-bottom: 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border: 1px solid var(--card-border);
-        }
+        body { background: #0d1117; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: #161b22; border: 2px solid #444c56; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
+        .img-box { height: 180px; background: #fff; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .img-box img { width: 90%; height: 90%; object-fit: contain; }
-
-        h3 { font-size: 22px; margin-bottom: 15px; font-weight: bold; }
-
-        .ai-desc { 
-            font-size: 18px; 
-            color: #d1d5db; 
-            margin-bottom: 20px; 
-            padding-left: 15px;
-            border-left: 4px solid var(--accent);
-            flex-grow: 1;
-        }
-
-        .price { 
-            font-size: 32px; 
-            font-weight: 800; 
-            color: var(--accent); 
-            margin-bottom: 20px; 
-        }
-
-        .buy-btn { 
-            background: #238636; 
-            color: #ffffff; 
-            text-align: center; 
-            padding: 20px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            text-decoration: none; 
-            font-size: 20px;
-        }
+        h3 { font-size: 18px; margin: 5px 0; color: #58a6ff; }
+        .cat-tag { font-size: 12px; color: #8b949e; text-transform: uppercase; margin-bottom: 5px; }
+        .desc { font-size: 14px; color: #d1d5db; line-height: 1.4; margin-bottom: 15px; border-left: 3px solid #58a6ff; padding-left: 10px; flex-grow: 1; }
+        .price { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #58a6ff; }
+        .btn { background: #238636; color: #fff; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="category-bar" id="cats">
-        <button class="cat-btn active" onclick="filterCat('Все')">ВСЕ</button>
-        <button class="cat-btn" onclick="filterCat('Смартфоны')">СМАРТФОНЫ</button>
-        <button class="cat-btn" onclick="filterCat('Гаджеты')">ГАДЖЕТЫ</button>
-        <button class="cat-btn" onclick="filterCat('Бытовая техника')">ТЕХНИКА</button>
-    </div>
-
-    <div id="list" class="products-grid">Загрузка товаров...</div>
+    <div id="list" class="grid">Загрузка товаров...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let allProducts = [];
 
         async function load() {
-            try {
-                const { data } = await supabaseClient
-                    .from('products')
-                    .select('*, ai_content(fancy_description)')
-                    .order('created_at', { ascending: false });
-                allProducts = data;
-                render(allProducts);
-            } catch (e) { console.error(e); }
-        }
+            const { data, error } = await supabaseClient
+                .from('products')
+                .select('*, ai_content(fancy_description)')
+                .order('created_at', { ascending: false });
 
-        function render(items) {
-            document.getElementById('list').innerHTML = items.map(p => `
-                <div class="product-card">
-                    <div class="img-box"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300x200?text=Нет+фото'"></div>
-                    <div style="font-size:16px; color:var(--accent); margin-bottom:10px; font-weight:bold;">${p.category || 'Разное'}</div>
+            if (error) return console.log(error);
+
+            document.getElementById('list').innerHTML = data.map(p => {
+                const description = (p.ai_content && p.ai_content.length > 0) 
+                    ? p.ai_content[0].fancy_description 
+                    : "Описание готовится ИИ...";
+
+                return `
+                <div class="card">
+                    <div class="img-box"><img src="${p.image_url}"></div>
+                    <div class="cat-tag">${p.category || 'Разное'}</div>
                     <h3>${p.title}</h3>
-                    <div class="ai-desc">${(p.ai_content && p.ai_content[0]) ? p.ai_content[0].fancy_description : 'Описание готовится...'}</div>
+                    <div class="desc">${description}</div>
                     <div class="price">${p.price.toLocaleString()} ₴</div>
-                    <a href="${p.product_url}" target="_blank" class="buy-btn">КУПИТЬ ТОВАР</a>
-                </div>`).join('');
+                    <a href="${p.product_url}" target="_blank" class="btn">КУПИТЬ ТОВАР</a>
+                </div>`;
+            }).join('');
         }
-
-        function filterCat(cat) {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            if(event) event.target.classList.add('active');
-
-            if(cat === 'Все') return render(allProducts);
-            const filtered = allProducts.filter(p => p.category === cat);
-            render(filtered);
-        }
-
         load();
     </script>
 </body>
