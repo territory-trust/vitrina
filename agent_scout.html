@@ -1,47 +1,68 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Scout Agent: Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout: Category Mode</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0b0e14; --cyan: #00d4ff; --card: #151921; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 30px; display: flex; flex-direction: column; align-items: center; }
-        .panel { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #333; width: 100%; max-width: 500px; }
-        input { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: #fff; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
-        .btn { background: #1a1f2e; color: var(--cyan); padding: 15px; border-radius: 8px; border: 1px solid var(--cyan); cursor: pointer; width: 100%; font-weight: bold; }
-        #log { margin-top: 20px; width: 100%; max-width: 500px; color: #00ff41; font-family: monospace; font-size: 14px; text-align: left; }
+        :root { --bg: #0d1117; --accent: #58a6ff; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .panel { background: #161b22; padding: 30px; border-radius: 15px; border: 2px solid #30363d; width: 100%; max-width: 500px; }
+        input, select { width: 100%; padding: 20px; background: #000; border: 2px solid #444; color: #fff; border-radius: 10px; margin-bottom: 20px; font-size: 20px; }
+        
+        .label { font-size: 20px; font-weight: bold; margin-bottom: 10px; display: block; color: var(--accent); }
+        .btn { background: #238636; color: #fff; padding: 25px; border-radius: 12px; border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 24px; }
+        
+        #log { margin-top: 25px; width: 100%; max-width: 500px; color: #00ff41; font-family: monospace; font-size: 18px; }
     </style>
 </head>
 <body>
-    <h1>АГЕНТ-РАЗВЕДЧИК</h1>
+    <h1>ДОБАВИТЬ ТОВАР</h1>
+    
     <div class="panel">
-        <input type="text" id="q" placeholder="Что ищем? (напр. Игровые мышки)">
-        <button class="btn" onclick="hunt()">НАЧАТЬ ОХОТУ</button>
+        <span class="label">ТЕМА ПОИСКА:</span>
+        <input type="text" id="q" placeholder="Напр: iPhone 15">
+        
+        <span class="label">КАТЕГОРИЯ:</span>
+        <select id="cat">
+            <option value="Смартфоны">СМАРТФОНЫ</option>
+            <option value="Гаджеты">ГАДЖЕТЫ</option>
+            <option value="Бытовая техника">ТЕХНИКА</option>
+            <option value="Разное">РАЗНОЕ</option>
+        </select>
+
+        <button class="btn" onclick="hunt()">НАЙТИ И СОХРАНИТЬ</button>
     </div>
+
     <div id="log">> Жду команду...</div>
+
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+
         async function hunt() {
             const q = document.getElementById('q').value;
+            const cat = document.getElementById('cat').value;
             const log = document.getElementById('log');
-            log.innerHTML += `<br>> Поиск: ${q}...`;
+            if(!q) return;
+
+            log.innerHTML += `<br>> Охота на [${q}] в категорию [${cat}]...`;
             
-            const found = [
-                { t: q + " Ultra G1", p: 2500, img: "https://loremflickr.com/400/400/tech?v=1", url: "https://shop.com/1" },
-                { t: q + " Pro Wireless", p: 4800, img: "https://loremflickr.com/400/400/tech?v=2", url: "https://shop.com/2" }
-            ];
+            // Имитируем находку
+            const item = { t: q + " Pro Max", p: 42000, img: "https://loremflickr.com/400/400/tech", url: "https://shop.com" };
 
             const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
-            for (let item of found) {
-                // Генерируем реферальную ссылку
-                const refUrl = `https://ad.admitad.com/g/${CONFIG.AFFILIATE_ID}/?ulp=${encodeURIComponent(item.url)}`;
-                await supabaseClient.from('products').insert({
-                    title: item.t, price: item.p, image_url: item.img, product_url: refUrl, shop_id: shops[0].id, is_processed_ai: false
-                });
-                log.innerHTML += `<br>> Добавлен: ${item.t}`;
-            }
+            
+            const { error } = await supabaseClient.from('products').insert({
+                title: item.t, price: item.p, image_url: item.img, 
+                product_url: item.url, shop_id: shops[0].id, 
+                is_processed_ai: false,
+                category: cat // СОХРАНЯЕМ КАТЕГОРИЮ
+            });
+
+            if(!error) log.innerHTML += `<br><span style="color:cyan">> УСПЕШНО ДОБАВЛЕНО!</span>`;
         }
     </script>
 </body>
