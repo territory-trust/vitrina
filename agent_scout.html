@@ -10,23 +10,23 @@
         :root { --bg: #0d1117; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
-        /* УМЕНЬШЕННЫЙ КОНТЕЙНЕР */
-        .container { background: #161b22; padding: 20px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 400px; }
+        /* УМЕНЬШЕННЫЙ КОНТЕЙНЕР ДЛЯ КОМФОРТА */
+        .container { background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 420px; }
         
-        h1 { font-size: 20px; color: var(--accent); margin-bottom: 15px; text-align: center; }
+        h1 { font-size: 20px; color: var(--accent); margin-bottom: 20px; text-align: center; }
 
         .btn-main { 
-            background: var(--success); color: #fff; padding: 15px; border-radius: 8px; 
+            background: var(--success); color: #fff; padding: 18px; border-radius: 10px; 
             border: none; cursor: pointer; width: 100%; font-weight: bold; 
-            font-size: 16px; text-transform: uppercase;
+            font-size: 18px; text-transform: uppercase;
         }
 
         #log { 
-            margin-top: 15px; background: #010409; padding: 12px; border-radius: 8px;
-            font-family: monospace; font-size: 14px; line-height: 1.4; color: #7ee787;
-            border: 1px solid #30363d; min-height: 120px; word-wrap: break-word;
+            margin-top: 20px; background: #010409; padding: 15px; border-radius: 8px;
+            font-family: monospace; font-size: 15px; line-height: 1.4; color: #7ee787;
+            border: 1px solid #30363d; min-height: 150px; word-wrap: break-word;
         }
-        .step { color: var(--accent); display: block; margin-top: 5px; }
+        .step { color: var(--accent); display: block; margin-top: 8px; }
         .err { color: #f85149; }
     </style>
 </head>
@@ -63,25 +63,30 @@
                             model: CONFIG.AI_MODEL,
                             messages: [{ 
                                 role: "user", 
-                                content: `Товар: "${name}". Выбери категорию из [Смартфоны, Гаджеты, Бытовая техника, Разное] и напиши 1 рекламное предложение. Ответ дай ТОЛЬКО как JSON: {"cat": "категория", "desc": "текст"}` 
+                                content: `Товар: "${name}". Выбери категорию из [Смартфоны, Гаджеты, Бытовая техника, Разное] и напиши 1 рекламное предложение. Ответ дай ТОЛЬКО в формате JSON: {"cat": "категория", "desc": "текст"}` 
                             }]
                         })
                     });
                     
                     const aiData = await aiRes.json();
-                    if (!aiData.choices) throw new Error("ИИ не ответил");
                     
-                    // Очистка ответа от возможных лишних знаков
-                    let cleanContent = aiData.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
+                    if (!aiData.choices || aiData.choices.length === 0) {
+                        throw new Error("ИИ не ответил вовремя");
+                    }
+                    
+                    // Очистка ответа от лишних знаков разметки
+                    let rawText = aiData.choices[0].message.content;
+                    let cleanContent = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                     const aiResult = JSON.parse(cleanContent);
 
                     log.innerHTML += `<br> [ИИ] Категория: ${aiResult.cat}`;
 
-                    const img = `https://loremflickr.com/400/400/tech?lock=${Math.floor(Math.random()*999)}`;
+                    // Пытаемся взять более точную картинку
+                    const img = `https://loremflickr.com/400/400/tech,gadget?lock=${Math.floor(Math.random()*999)}`;
                     const searchUrl = "https://rozetka.com.ua/search/?text=" + encodeURIComponent(name);
                     const moneyUrl = `https://rdr.salesdoubler.com.ua/rel/t/direct/link/${CONFIG.AFFILIATE_ID}?url=${encodeURIComponent(searchUrl)}`;
 
-                    // Сохраняем товар
+                    // Сохраняем товар с ID: 111958
                     const { data: p, error: pErr } = await supabaseClient.from('products').insert({
                         title: name, price: 15000, image_url: img,
                         product_url: moneyUrl, category: aiResult.cat,
@@ -90,19 +95,19 @@
 
                     if(pErr) throw pErr;
 
-                    // Сохраняем описание
+                    // Сохраняем описание в таблицу ai_content
                     await supabaseClient.from('ai_content').insert({ 
                         product_id: p[0].id, 
                         fancy_description: aiResult.desc 
                     });
 
-                    log.innerHTML += `<br> <span style="color:cyan"> [ОК] Готово.</span>`;
+                    log.innerHTML += `<br> <span style="color:cyan"> [ОК] Готово!</span>`;
 
                 } catch (e) {
                     log.innerHTML += `<br> <span class="err"> [!] Ошибка: ${e.message}</span>`;
                 }
             }
-            log.innerHTML += `<br><br><b>ГОТОВО!</b>`;
+            log.innerHTML += `<br><br><b>ГОТОВО! Проверьте Витрину.</b>`;
         }
     </script>
 </body>
