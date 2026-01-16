@@ -3,96 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина: Неоновый Бархат</title>
+    <title>Витрина: Премиум</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #05070a; --card: #0f1419; --accent: #58a6ff; --neon: #00d2ff; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 10px; }
+        :root { --bg: #05070a; --card: #111418; --accent: #58a6ff; --text: #e1e4e8; --muted: #8b949e; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
         
-        .category-bar { display: flex; gap: 10px; overflow-x: auto; padding: 15px 0; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .cat-btn { background: #1c2128; color: #fff; padding: 12px 20px; border-radius: 12px; border: 2px solid var(--accent); font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .cat-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
         
-        /* КАРТОЧКА С НЕОНОВОЙ РАМКОЙ */
+        /* Дорогой, спокойный дизайн карточки */
         .card { 
             background: var(--card); 
-            border: 2px solid var(--accent); 
-            border-radius: 20px; padding: 20px; 
+            border: 1px solid #30363d; 
+            border-radius: 16px; padding: 20px; 
             display: flex; flex-direction: column;
-            box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
-            transition: 0.3s;
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
-        .card:hover { border-color: var(--neon); box-shadow: 0 0 25px rgba(0, 210, 255, 0.4); }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-        .img-box { height: 180px; background: #fff; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .img-box img { width: 85%; height: 85%; object-fit: contain; }
+        .img-box { height: 200px; background: #fff; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .img-box img { width: 80%; height: 80%; object-fit: contain; }
         
-        h3 { font-size: 19px; margin: 5px 0; color: var(--accent); font-weight: 800; }
-        
-        /* УВЕЛИЧЕННЫЙ ШРИФТ ОПИСАНИЯ */
-        .desc { font-size: 18px; color: #e1e4e8; line-height: 1.5; margin-bottom: 20px; border-left: 4px solid var(--neon); padding-left: 12px; flex-grow: 1; font-style: italic; }
-        
-        .price { font-size: 28px; font-weight: 900; margin-bottom: 20px; color: var(--neon); }
+        h3 { font-size: 18px; margin: 0 0 10px 0; color: #fff; font-weight: 600; }
+        .desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; flex-grow: 1; font-style: italic; }
+        .price { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--accent); }
 
-        /* БАРХАТНАЯ КНОПКА */
+        /* Бархатная кнопка */
         .btn { 
-            background: linear-gradient(145deg, #238636, #1d6e2d); 
-            color: #fff; text-decoration: none; padding: 18px; text-align: center; 
-            border-radius: 14px; font-weight: 900; font-size: 20px;
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.5), inset 2px 2px 5px rgba(255,255,255,0.1);
-            border: 1px solid #2ea043;
-            text-transform: uppercase;
+            background: linear-gradient(180deg, #2ea043 0%, #238636 100%); 
+            color: #fff; text-decoration: none; padding: 14px; text-align: center; 
+            border-radius: 8px; font-weight: 600; font-size: 16px;
+            box-shadow: 0 4px 14px 0 rgba(35, 134, 54, 0.39);
+            transition: 0.2s;
         }
+        .btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
-    <div class="category-bar">
-        <button class="cat-btn active" onclick="filterCat('Все')">ВСЕ</button>
-        <button class="cat-btn" onclick="filterCat('Смартфоны')">СМАРТФОНЫ</button>
-        <button class="cat-btn" onclick="filterCat('Гаджеты')">ГАДЖЕТЫ</button>
-        <button class="cat-btn" onclick="filterCat('Бытовая техника')">ТЕХНИКА</button>
-    </div>
     <div id="list" class="grid">Загрузка...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let allProducts = [];
 
         async function load() {
             const { data, error } = await supabaseClient
                 .from('products')
                 .select('*, ai_content(fancy_description)')
                 .order('created_at', { ascending: false });
-            if (error) return;
-            allProducts = data;
-            render(allProducts);
-        }
 
-        function render(items) {
-            document.getElementById('list').innerHTML = items.map(p => {
+            if (error) return;
+
+            document.getElementById('list').innerHTML = data.map(p => {
                 const description = (p.ai_content && p.ai_content.length > 0) 
                     ? p.ai_content[0].fancy_description 
-                    : "Нейросеть готовит описание...";
+                    : "Эксклюзивное предложение готовится...";
+
                 return `
                 <div class="card">
                     <div class="img-box"><img src="${p.image_url}"></div>
-                    <div style="font-size:13px; color:#8b949e; text-transform:uppercase; margin-bottom:5px;">${p.category || 'ТОВАР'}</div>
+                    <div style="font-size:12px; color:var(--muted); text-transform:uppercase; margin-bottom:5px;">${p.category || 'Premium'}</div>
                     <h3>${p.title}</h3>
                     <div class="desc">${description}</div>
                     <div class="price">${p.price.toLocaleString()} ₴</div>
-                    <a href="${p.product_url}" target="_blank" class="btn">КУПИТЬ</a>
+                    <a href="${p.product_url}" target="_blank" class="btn">ПОСМОТРЕТЬ</a>
                 </div>`;
             }).join('');
-        }
-
-        function filterCat(cat) {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            if(cat === 'Все') return render(allProducts);
-            render(allProducts.filter(p => p.category === cat));
         }
         load();
     </script>
