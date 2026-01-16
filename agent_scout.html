@@ -3,36 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: Smart Agent Fix</title>
+    <title>Vitrina: Smart Agent Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d1117; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
-        /* УМЕНЬШЕННЫЙ КОНТЕЙНЕР ДЛЯ КОМФОРТА */
-        .container { background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 420px; }
+        /* УМЕНЬШЕННЫЙ РАЗМЕР ДЛЯ ВАШЕГО УДОБСТВА */
+        .container { background: #161b22; padding: 20px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 400px; }
         
-        h1 { font-size: 20px; color: var(--accent); margin-bottom: 20px; text-align: center; }
+        h1 { font-size: 18px; color: var(--accent); margin-bottom: 15px; text-align: center; }
 
         .btn-main { 
-            background: var(--success); color: #fff; padding: 18px; border-radius: 10px; 
+            background: var(--success); color: #fff; padding: 15px; border-radius: 8px; 
             border: none; cursor: pointer; width: 100%; font-weight: bold; 
-            font-size: 18px; text-transform: uppercase;
+            font-size: 16px; text-transform: uppercase;
         }
 
         #log { 
-            margin-top: 20px; background: #010409; padding: 15px; border-radius: 8px;
-            font-family: monospace; font-size: 15px; line-height: 1.4; color: #7ee787;
-            border: 1px solid #30363d; min-height: 150px; word-wrap: break-word;
+            margin-top: 15px; background: #010409; padding: 12px; border-radius: 8px;
+            font-family: monospace; font-size: 14px; line-height: 1.4; color: #7ee787;
+            border: 1px solid #30363d; min-height: 120px; overflow-y: auto;
         }
-        .step { color: var(--accent); display: block; margin-top: 8px; }
         .err { color: #f85149; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>АВТО-РАСПРЕДЕЛЕНИЕ</h1>
+        <h1>АВТО-РАСПРЕДЕЛЕНИЕ (V3)</h1>
         <button class="btn-main" onclick="runSmartCycle()">ЗАПУСТИТЬ ЦИКЛ</button>
         <div id="log">> Система готова...</div>
     </div>
@@ -42,7 +41,7 @@
 
         async function runSmartCycle() {
             const log = document.getElementById('log');
-            log.innerHTML = `<span class="step">> Начинаю умный поиск...</span>`;
+            log.innerHTML = `<span style="color:#58a6ff">> Начинаю цикл...</span>`;
 
             const productNames = [
                 "Фен Dyson Supersonic",
@@ -53,7 +52,7 @@
             const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
 
             for (let name of productNames) {
-                log.innerHTML += `<br><span class="step">> Анализирую: ${name}...</span>`;
+                log.innerHTML += `<br>> Анализ: ${name}`;
                 
                 try {
                     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -63,30 +62,23 @@
                             model: CONFIG.AI_MODEL,
                             messages: [{ 
                                 role: "user", 
-                                content: `Товар: "${name}". Выбери категорию из [Смартфоны, Гаджеты, Бытовая техника, Разное] и напиши 1 рекламное предложение. Ответ дай ТОЛЬКО в формате JSON: {"cat": "категория", "desc": "текст"}` 
+                                content: `Товар: "${name}". Выбери категорию из [Смартфоны, Гаджеты, Бытовая техника, Разное] и напиши 1 короткое рекламное предложение. Ответ дай ТОЛЬКО в формате JSON: {"cat": "категория", "desc": "текст"}` 
                             }]
                         })
                     });
                     
                     const aiData = await aiRes.json();
                     
-                    if (!aiData.choices || aiData.choices.length === 0) {
-                        throw new Error("ИИ не ответил вовремя");
-                    }
-                    
-                    // Очистка ответа от лишних знаков разметки
-                    let rawText = aiData.choices[0].message.content;
-                    let cleanContent = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    if (!aiData || !aiData.choices) throw new Error("ИИ не ответил");
+
+                    let cleanContent = aiData.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
                     const aiResult = JSON.parse(cleanContent);
 
-                    log.innerHTML += `<br> [ИИ] Категория: ${aiResult.cat}`;
-
-                    // Пытаемся взять более точную картинку
-                    const img = `https://loremflickr.com/400/400/tech,gadget?lock=${Math.floor(Math.random()*999)}`;
+                    // Фото теперь запрашиваем более точно
+                    const img = `https://loremflickr.com/400/400/product,tech,gadget?lock=${Math.floor(Math.random()*999)}`;
                     const searchUrl = "https://rozetka.com.ua/search/?text=" + encodeURIComponent(name);
                     const moneyUrl = `https://rdr.salesdoubler.com.ua/rel/t/direct/link/${CONFIG.AFFILIATE_ID}?url=${encodeURIComponent(searchUrl)}`;
 
-                    // Сохраняем товар с ID: 111958
                     const { data: p, error: pErr } = await supabaseClient.from('products').insert({
                         title: name, price: 15000, image_url: img,
                         product_url: moneyUrl, category: aiResult.cat,
@@ -95,13 +87,12 @@
 
                     if(pErr) throw pErr;
 
-                    // Сохраняем описание в таблицу ai_content
                     await supabaseClient.from('ai_content').insert({ 
                         product_id: p[0].id, 
                         fancy_description: aiResult.desc 
                     });
 
-                    log.innerHTML += `<br> <span style="color:cyan"> [ОК] Готово!</span>`;
+                    log.innerHTML += `<br> <span style="color:cyan"> [ОК] Сохранено.</span>`;
 
                 } catch (e) {
                     log.innerHTML += `<br> <span class="err"> [!] Ошибка: ${e.message}</span>`;
