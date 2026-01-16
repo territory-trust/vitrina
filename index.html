@@ -3,129 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина: High Contrast</title>
+    <title>Витрина: Premium Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        /* Глобальные настройки для предотвращения наложений */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root { 
-            --bg: #05070a; 
-            --neon: #bd00ff; 
-            --cyan: #00d4ff; 
-            --card: #11141b; 
-            --text-main: #ffffff; 
-            --text-secondary: #f0f0f0; /* Очень светлый для описания */
+            --bg: #0d1117; 
+            --card-bg: #161b22; 
+            --card-border: #30363d; /* Спокойный стальной цвет */
+            --accent: #58a6ff;     /* Информационный синий вместо неона */
+            --text-main: #f0f6fc; 
+            --text-muted: #8b949e; 
         }
 
         body { 
             background-color: var(--bg); 
             color: var(--text-main); 
-            font-family: -apple-system, system-ui, sans-serif; 
-            padding: 30px 15px; 
-            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            padding: 40px 20px; 
+            line-height: 1.6;
         }
 
-        .header { text-align: center; margin-bottom: 40px; }
+        .header { text-align: center; margin-bottom: 50px; }
         .header h1 { 
-            font-size: 26px; 
-            color: var(--cyan); 
-            text-transform: uppercase; 
-            letter-spacing: 3px;
+            font-size: 24px; 
+            font-weight: 600; 
+            color: var(--text-main); 
+            letter-spacing: 1px;
         }
 
-        /* Сетка с увеличенными отступами */
+        /* Сетка без наложений */
         .products-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 30px; /* Большой зазор между карточками */
-            max-width: 1300px; 
+            gap: 25px; 
+            max-width: 1200px; 
             margin: 0 auto; 
         }
 
+        /* Спокойная карточка */
         .product-card { 
-            background: var(--card); 
-            border-radius: 16px; 
-            padding: 20px; 
-            border: 2px solid rgba(255,255,255,0.1); /* Четкая рамка */
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 24px; 
+            border: 1px solid var(--card-border); 
             display: flex; 
             flex-direction: column; 
-            transition: transform 0.2s, border-color 0.2s;
+            transition: background-color 0.2s, border-color 0.2s;
             height: 100%;
         }
 
+        /* Деликатный эффект при наведении */
         .product-card:hover { 
-            transform: translateY(-8px); 
-            border-color: var(--neon); 
-            box-shadow: 0 15px 35px rgba(189, 0, 255, 0.2); 
+            border-color: var(--accent); 
+            background-color: #1c2128;
         }
 
         .img-box { 
-            height: 220px; 
-            background: #000; 
-            border-radius: 10px; 
+            height: 200px; 
+            background: #fff; /* Белый фон для фото товара часто лучше */
+            border-radius: 8px; 
             overflow: hidden; 
             margin-bottom: 20px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
+            border: 1px solid var(--card-border);
         }
-        .img-box img { width: 100%; height: 100%; object-fit: contain; }
+        .img-box img { width: 90%; height: 90%; object-fit: contain; }
 
         h3 { 
-            font-size: 20px; 
-            margin-bottom: 15px; 
-            color: #fff; 
-            font-weight: 700;
+            font-size: 19px; 
+            font-weight: 600;
+            margin-bottom: 12px; 
+            color: var(--text-main); 
         }
 
-        /* ЯРКОЕ И ЧЕТКОЕ ОПИСАНИЕ */
+        /* Контрастное, но не "кричащее" описание */
         .ai-desc { 
-            font-size: 16px; 
-            color: var(--text-secondary); 
-            margin-bottom: 25px; 
-            border-left: 4px solid var(--neon); 
-            padding-left: 15px; 
+            font-size: 15px; 
+            color: #d1d5db; 
+            margin-bottom: 20px; 
+            padding-left: 12px;
+            border-left: 2px solid var(--accent);
             flex-grow: 1;
         }
 
         .price { 
-            font-size: 26px; 
-            font-weight: 900; 
-            color: var(--cyan); 
+            font-size: 24px; 
+            font-weight: 700; 
+            color: var(--text-main); 
             margin-bottom: 20px; 
         }
 
+        /* Фирменная кнопка в стиле "бархат" */
         .buy-btn { 
-            background: #1a1f2e; 
-            color: var(--cyan); 
+            background: #238636; /* Спокойный зеленый - цвет покупки */
+            color: #ffffff; 
             text-align: center; 
-            padding: 16px; 
-            border-radius: 10px; 
-            border: 2px solid var(--cyan); 
-            font-weight: bold; 
+            padding: 14px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 600; 
             text-decoration: none; 
-            font-size: 16px;
-            text-transform: uppercase;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: filter 0.2s;
         }
         
-        .buy-btn:hover { background: var(--cyan); color: #000; }
+        .buy-btn:hover { filter: brightness(1.1); }
+        .buy-btn:active { transform: scale(0.98); }
 
-        /* Фикс для мобильных */
         @media (max-width: 480px) {
-            .products-grid { gap: 25px; }
-            body { padding: 20px 10px; }
+            .products-grid { gap: 20px; }
+            body { padding: 20px 15px; }
+            .header h1 { font-size: 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="header"><h1>MARKETPLACE AI</h1></div>
-    <div id="list" class="products-grid">Загрузка товаров...</div>
+    <div class="header"><h1>КАТАЛОГ ТОВАРОВ</h1></div>
+    <div id="list" class="products-grid">Загрузка витрины...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
@@ -141,19 +141,19 @@
                 document.getElementById('list').innerHTML = products.map(p => {
                     const description = (p.ai_content && p.ai_content[0]) 
                         ? p.ai_content[0].fancy_description 
-                        : "Описание подготавливается нейросетью...";
+                        : "Интеллектуальный обзор готовится...";
                     
                     return `
                     <div class="product-card">
-                        <div class="img-box"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300x200?text=Нет+фото'"></div>
+                        <div class="img-box"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300x200?text=Загрузка+фото...'"></div>
                         <h3>${p.title}</h3>
                         <div class="ai-desc">${description}</div>
                         <div class="price">${p.price.toLocaleString()} ₴</div>
-                        <a href="${p.product_url}" target="_blank" class="buy-btn">КУПИТЬ ТОВАР</a>
+                        <a href="${p.product_url}" target="_blank" class="buy-btn">СМОТРЕТЬ НА САЙТЕ</a>
                     </div>`;
                 }).join('');
             } catch (err) {
-                document.getElementById('list').innerHTML = "Ошибка связи с базой данных.";
+                document.getElementById('list').innerHTML = "Технический перерыв. Попробуйте позже.";
             }
         }
         render();
