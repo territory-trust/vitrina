@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина</title>
+    <title>Витрина: Исправленная</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         body { background: #0d1117; color: #fff; font-family: sans-serif; padding: 15px; margin: 0; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .card { background: #161b22; border: 2px solid #444c56; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
-        .img-box { height: 180px; background: #fff; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .img-box { height: 180px; background: #fff; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #30363d; }
         .img-box img { width: 90%; height: 90%; object-fit: contain; }
         h3 { font-size: 18px; margin: 5px 0; color: #58a6ff; font-weight: bold; }
-        .cat-tag { font-size: 12px; color: #8b949e; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        .desc { font-size: 14px; color: #d1d5db; line-height: 1.4; margin-bottom: 15px; border-left: 3px solid #58a6ff; padding-left: 10px; flex-grow: 1; }
-        .price { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #58a6ff; }
-        .btn { background: #238636; color: #fff; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; }
+        .desc { font-size: 14px; color: #d1d5db; line-height: 1.5; margin-bottom: 15px; border-left: 3px solid #58a6ff; padding-left: 10px; flex-grow: 1; font-style: italic; }
+        .price { font-size: 26px; font-weight: bold; margin-bottom: 15px; color: #58a6ff; }
+        .btn { background: #238636; color: #fff; text-decoration: none; padding: 15px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -36,12 +35,12 @@
             document.getElementById('list').innerHTML = data.map(p => {
                 const description = (p.ai_content && p.ai_content.length > 0) 
                     ? p.ai_content[0].fancy_description 
-                    : "Описание готовится...";
+                    : "Описание создается нейросетью...";
 
                 return `
                 <div class="card">
                     <div class="img-box"><img src="${p.image_url}"></div>
-                    <div class="cat-tag">${p.category || 'Общее'}</div>
+                    <div style="font-size:12px; color:#8b949e; margin-bottom:5px; font-weight:bold;">${p.category || 'ТОВАР'}</div>
                     <h3>${p.title}</h3>
                     <div class="desc">${description}</div>
                     <div class="price">${p.price.toLocaleString()} ₴</div>
