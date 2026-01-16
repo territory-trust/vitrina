@@ -5,70 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Витрина: Премиум</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
+    <script src="config.js?v=1.1"></script>
     <style>
         :root { --bg: #05070a; --card: #111418; --accent: #58a6ff; --text: #e1e4e8; --muted: #8b949e; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         
-        /* Дорогой, спокойный дизайн карточки */
+        /* Спокойный дорогой стиль */
         .card { 
-            background: var(--card); 
-            border: 1px solid #30363d; 
-            border-radius: 16px; padding: 20px; 
-            display: flex; flex-direction: column;
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            background: var(--card); border: 1px solid #30363d; border-radius: 12px; 
+            padding: 20px; display: flex; flex-direction: column; transition: 0.3s;
         }
-        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .card:hover { border-color: var(--accent); transform: translateY(-3px); }
 
-        .img-box { height: 200px; background: #fff; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .img-box img { width: 80%; height: 80%; object-fit: contain; }
+        .img-box { height: 180px; background: #fff; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .img-box img { width: 85%; height: 85%; object-fit: contain; }
         
-        h3 { font-size: 18px; margin: 0 0 10px 0; color: #fff; font-weight: 600; }
-        .desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; flex-grow: 1; font-style: italic; }
-        .price { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--accent); }
+        h3 { font-size: 18px; margin: 0 0 10px 0; color: #fff; }
+        .desc { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 15px; flex-grow: 1; }
+        .price { font-size: 22px; font-weight: bold; margin-bottom: 15px; color: var(--accent); }
 
-        /* Бархатная кнопка */
         .btn { 
             background: linear-gradient(180deg, #2ea043 0%, #238636 100%); 
-            color: #fff; text-decoration: none; padding: 14px; text-align: center; 
-            border-radius: 8px; font-weight: 600; font-size: 16px;
-            box-shadow: 0 4px 14px 0 rgba(35, 134, 54, 0.39);
-            transition: 0.2s;
+            color: #fff; text-decoration: none; padding: 12px; text-align: center; 
+            border-radius: 6px; font-weight: 600; font-size: 16px; border: 1px solid #3fb950;
         }
-        .btn:active { transform: scale(0.97); }
+        #status-msg { text-align: center; padding: 50px; font-size: 18px; color: var(--muted); }
     </style>
 </head>
 <body>
-    <div id="list" class="grid">Загрузка...</div>
+    <div class="container">
+        <div id="status-msg">Инициализация витрины...</div>
+        <div id="list" class="grid"></div>
+    </div>
 
     <script>
-        const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-
         async function load() {
-            const { data, error } = await supabaseClient
-                .from('products')
-                .select('*, ai_content(fancy_description)')
-                .order('created_at', { ascending: false });
+            const status = document.getElementById('status-msg');
+            try {
+                if (typeof CONFIG === 'undefined') throw new Error("Файл config.js не найден или пуст");
+                
+                const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+                const { data, error } = await supabaseClient
+                    .from('products')
+                    .select('*, ai_content(fancy_description)')
+                    .order('created_at', { ascending: false });
 
-            if (error) return;
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    status.innerHTML = "Витрина пуста. Запустите Агента для поиска товаров.";
+                    return;
+                }
 
-            document.getElementById('list').innerHTML = data.map(p => {
-                const description = (p.ai_content && p.ai_content.length > 0) 
-                    ? p.ai_content[0].fancy_description 
-                    : "Эксклюзивное предложение готовится...";
-
-                return `
-                <div class="card">
-                    <div class="img-box"><img src="${p.image_url}"></div>
-                    <div style="font-size:12px; color:var(--muted); text-transform:uppercase; margin-bottom:5px;">${p.category || 'Premium'}</div>
-                    <h3>${p.title}</h3>
-                    <div class="desc">${description}</div>
-                    <div class="price">${p.price.toLocaleString()} ₴</div>
-                    <a href="${p.product_url}" target="_blank" class="btn">ПОСМОТРЕТЬ</a>
-                </div>`;
-            }).join('');
+                status.style.display = 'none';
+                document.getElementById('list').innerHTML = data.map(p => {
+                    const d = (p.ai_content && p.ai_content.length > 0) ? p.ai_content[0].fancy_description : "Описание готовится ИИ...";
+                    return `
+                    <div class="card">
+                        <div class="img-box"><img src="${p.image_url}"></div>
+                        <div style="font-size:11px; color:var(--muted); text-transform:uppercase; margin-bottom:5px;">${p.category || 'Premium'}</div>
+                        <h3>${p.title}</h3>
+                        <div class="desc">${d}</div>
+                        <div class="price">${p.price.toLocaleString()} ₴</div>
+                        <a href="${p.product_url}" target="_blank" class="btn">ПОДРОБНЕЕ</a>
+                    </div>`;
+                }).join('');
+            } catch (err) {
+                status.innerHTML = `<span style="color:#f85149">Ошибка загрузки: ${err.message}</span>`;
+            }
         }
         load();
     </script>
