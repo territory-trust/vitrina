@@ -3,90 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: Agent Scout</title>
+    <title>Scout Agent: Control Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=2"></script>
+    <script src="config.js?v=3"></script>
     <style>
         :root { --bg: #0d1117; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
-        /* Средний шрифт для вашего удобства */
-        .panel { background: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 500px; }
+        /* Средний шрифт для комфортного чтения */
+        .container { background: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 480px; font-size: 19px; }
         
-        h1 { font-size: 22px; color: var(--accent); text-align: center; margin-bottom: 20px; }
+        h1 { font-size: 24px; color: var(--accent); text-align: center; margin-bottom: 25px; }
         .btn-run { 
-            background: var(--success); color: #fff; padding: 18px; border-radius: 8px; 
-            border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 18px;
+            background: var(--success); color: #fff; padding: 22px; border-radius: 10px; 
+            border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 22px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
+        
         #log { 
-            margin-top: 20px; background: #010409; padding: 15px; border-radius: 8px;
-            font-family: 'Courier New', monospace; font-size: 16px; line-height: 1.5; 
-            color: #7ee787; border: 1px solid #30363d; min-height: 150px;
+            margin-top: 25px; background: #010409; padding: 15px; border-radius: 8px;
+            font-family: 'Courier New', monospace; font-size: 17px; line-height: 1.5; 
+            color: #7ee787; border: 1px solid #30363d; min-height: 200px;
         }
-        .status-ok { color: #58a6ff; }
-        .status-err { color: #f85149; }
+        .err { color: #f85149; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <h1>АГЕНТ: ОБРАБОТКА ТОВАРОВ</h1>
-        <button class="btn-run" onclick="startProcess()">ЗАПУСТИТЬ С НОВЫМ КЛЮЧОМ</button>
-        <div id="log">> Ожидание...</div>
+    <div class="container">
+        <h1>АГЕНТ: КОНТРОЛЬ ПОИСКА</h1>
+        <button class="btn-run" onclick="start()">ЗАПУСТИТЬ ПРОЦЕСС</button>
+        <div id="log">> Ожидание команды...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-
-        async function startProcess() {
+        async function start() {
             const log = document.getElementById('log');
-            log.innerHTML = `> Авторизация в OpenRouter...`;
+            log.innerHTML = `> Связь с базой...`;
 
-            const testItems = [
-                { name: "Ноутбук Apple MacBook Air M3", cat: "Гаджеты", price: 54000 },
-                { name: "Смартфон Samsung Galaxy S24 Ultra", cat: "Смартфоны", price: 48000 }
-            ];
+            try {
+                const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
+                const products = [
+                    {n: "Смартфон Apple iPhone 15 Pro", p: 48000, c: "Смартфоны"},
+                    {n: "Наушники Sony WH-1000XM5", p: 14000, c: "Гаджеты"}
+                ];
 
-            const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
-
-            for (let item of testItems) {
-                log.innerHTML += `<br>> Анализ: ${item.name}`;
-                
-                try {
+                for (let item of products) {
+                    log.innerHTML += `<br>> Анализ: ${item.n}`;
+                    
+                    // Запрос к ИИ
                     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                         method: "POST",
                         headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
                         body: JSON.stringify({
                             model: CONFIG.AI_MODEL,
-                            messages: [{ role: "user", content: `Напиши одно короткое премиальное предложение для ${item.name}` }]
+                            messages: [{ role: "user", content: `Напиши 1 дорогое рекламное предложение для: ${item.n}` }]
                         })
                     });
-                    
-                    const data = await res.json();
-                    if (data.error) throw new Error(data.error.message);
-                    
-                    const aiDescription = data.choices[0].message.content;
+                    const aiData = await res.json();
+                    if(aiData.error) throw new Error("ИИ: " + aiData.error.message);
 
-                    // Сохраняем товар
+                    // Сохранение
                     const { data: p, error: pErr } = await supabaseClient.from('products').insert({
-                        title: item.name, price: item.price, 
+                        title: item.n, price: item.p, category: item.c, shop_id: shops[0].id,
                         image_url: `https://loremflickr.com/400/400/tech?lock=${Math.random()}`,
-                        product_url: `https://rozetka.com.ua/search/?text=${encodeURIComponent(item.name)}`,
-                        category: item.cat, shop_id: shops[0].id, is_processed_ai: true
+                        product_url: `https://rozetka.com.ua/search/?text=${encodeURIComponent(item.n)}`,
+                        is_processed_ai: true
                     }).select();
+                    if(pErr) throw pErr;
 
-                    if (pErr) throw pErr;
-
-                    // Сохраняем ИИ-описание
-                    await supabaseClient.from('ai_content').insert({ 
-                        product_id: p[0].id, fancy_description: aiDescription 
-                    });
-
-                    log.innerHTML += `<br><span class="status-ok"> [УСПЕХ] Товар добавлен в базу.</span>`;
-                } catch (e) {
-                    log.innerHTML += `<br><span class="status-err"> [СБОЙ] ${e.message}</span>`;
+                    await supabaseClient.from('ai_content').insert({ product_id: p[0].id, fancy_description: aiData.choices[0].message.content });
+                    log.innerHTML += `<br><span style="color:cyan"> [ОК] Товар добавлен успешно.</span>`;
                 }
+                log.innerHTML += `<br><br><b>ВСЁ ГОТОВО. Проверьте Витрину.</b>`;
+            } catch (err) {
+                log.innerHTML += `<br><br><span class="err">[ОШИБКА] ${err.message}</span>`;
             }
-            log.innerHTML += `<br><br><b>ВСЕ ОПЕРАЦИИ ЗАВЕРШЕНЫ.</b>`;
         }
     </script>
 </body>
