@@ -3,160 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина: Premium Edition</title>
+    <title>Витрина: Категории</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root { 
-            --bg: #0d1117; 
-            --card-bg: #161b22; 
-            --card-border: #30363d; /* Спокойный стальной цвет */
-            --accent: #58a6ff;     /* Информационный синий вместо неона */
-            --text-main: #f0f6fc; 
-            --text-muted: #8b949e; 
-        }
-
-        body { 
-            background-color: var(--bg); 
-            color: var(--text-main); 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
-            padding: 40px 20px; 
-            line-height: 1.6;
-        }
-
-        .header { text-align: center; margin-bottom: 50px; }
-        .header h1 { 
-            font-size: 24px; 
-            font-weight: 600; 
-            color: var(--text-main); 
-            letter-spacing: 1px;
-        }
-
-        /* Сетка без наложений */
-        .products-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 25px; 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
-
-        /* Спокойная карточка */
-        .product-card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            padding: 24px; 
-            border: 1px solid var(--card-border); 
-            display: flex; 
-            flex-direction: column; 
-            transition: background-color 0.2s, border-color 0.2s;
-            height: 100%;
-        }
-
-        /* Деликатный эффект при наведении */
-        .product-card:hover { 
-            border-color: var(--accent); 
-            background-color: #1c2128;
-        }
-
-        .img-box { 
-            height: 200px; 
-            background: #fff; /* Белый фон для фото товара часто лучше */
-            border-radius: 8px; 
-            overflow: hidden; 
-            margin-bottom: 20px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border: 1px solid var(--card-border);
-        }
-        .img-box img { width: 90%; height: 90%; object-fit: contain; }
-
-        h3 { 
-            font-size: 19px; 
-            font-weight: 600;
-            margin-bottom: 12px; 
-            color: var(--text-main); 
-        }
-
-        /* Контрастное, но не "кричащее" описание */
-        .ai-desc { 
-            font-size: 15px; 
-            color: #d1d5db; 
-            margin-bottom: 20px; 
-            padding-left: 12px;
-            border-left: 2px solid var(--accent);
-            flex-grow: 1;
-        }
-
-        .price { 
-            font-size: 24px; 
-            font-weight: 700; 
-            color: var(--text-main); 
-            margin-bottom: 20px; 
-        }
-
-        /* Фирменная кнопка в стиле "бархат" */
-        .buy-btn { 
-            background: #238636; /* Спокойный зеленый - цвет покупки */
-            color: #ffffff; 
-            text-align: center; 
-            padding: 14px; 
-            border-radius: 8px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            font-weight: 600; 
-            text-decoration: none; 
-            font-size: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: filter 0.2s;
-        }
+        :root { --bg: #0d1117; --card: #161b22; --accent: #58a6ff; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 15px; }
         
-        .buy-btn:hover { filter: brightness(1.1); }
-        .buy-btn:active { transform: scale(0.98); }
-
-        @media (max-width: 480px) {
-            .products-grid { gap: 20px; }
-            body { padding: 20px 15px; }
-            .header h1 { font-size: 20px; }
+        /* КРУПНЫЕ КНОПКИ КАТЕГОРИЙ */
+        .category-bar { 
+            display: flex; gap: 15px; overflow-x: auto; padding: 20px 0; 
+            position: sticky; top: 0; background: var(--bg); z-index: 10;
         }
+        .cat-btn { 
+            background: #21262d; color: #fff; padding: 20px 35px; 
+            border-radius: 12px; border: 2px solid var(--accent); 
+            font-size: 22px; font-weight: bold; cursor: pointer; white-space: nowrap;
+        }
+        .cat-btn.active { background: var(--accent); color: #000; }
+
+        .products-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 25px; margin-top: 20px; 
+        }
+        .product-card { 
+            background: var(--card); border-radius: 15px; padding: 25px; 
+            border: 1px solid #30363d; display: flex; flex-direction: column; 
+        }
+        .img-box { height: 220px; background: #fff; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+        .img-box img { width: 90%; height: 90%; object-fit: contain; }
+        
+        h3 { font-size: 22px; margin-bottom: 15px; }
+        .ai-desc { font-size: 18px; color: #d1d5db; margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 15px; }
+        .price { font-size: 30px; font-weight: 800; color: var(--accent); margin-bottom: 20px; }
+        .buy-btn { background: #238636; color: #fff; text-align: center; padding: 20px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 20px; }
     </style>
 </head>
 <body>
-    <div class="header"><h1>КАТАЛОГ ТОВАРОВ</h1></div>
-    <div id="list" class="products-grid">Загрузка витрины...</div>
+    <div class="category-bar" id="cats">
+        <button class="cat-btn active" onclick="filterCat('Все')">ВСЕ</button>
+        <button class="cat-btn" onclick="filterCat('Смартфоны')">СМАРТФОНЫ</button>
+        <button class="cat-btn" onclick="filterCat('Гаджеты')">ГАДЖЕТЫ</button>
+        <button class="cat-btn" onclick="filterCat('Бытовая техника')">ТЕХНИКА</button>
+    </div>
+
+    <div id="list" class="products-grid">Загрузка...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function render() {
-            try {
-                const { data: products, error } = await supabaseClient
-                    .from('products')
-                    .select('*, ai_content(fancy_description)')
-                    .order('created_at', { ascending: false });
+        let allProducts = [];
 
-                if (error) throw error;
-
-                document.getElementById('list').innerHTML = products.map(p => {
-                    const description = (p.ai_content && p.ai_content[0]) 
-                        ? p.ai_content[0].fancy_description 
-                        : "Интеллектуальный обзор готовится...";
-                    
-                    return `
-                    <div class="product-card">
-                        <div class="img-box"><img src="${p.image_url}" onerror="this.src='https://via.placeholder.com/300x200?text=Загрузка+фото...'"></div>
-                        <h3>${p.title}</h3>
-                        <div class="ai-desc">${description}</div>
-                        <div class="price">${p.price.toLocaleString()} ₴</div>
-                        <a href="${p.product_url}" target="_blank" class="buy-btn">СМОТРЕТЬ НА САЙТЕ</a>
-                    </div>`;
-                }).join('');
-            } catch (err) {
-                document.getElementById('list').innerHTML = "Технический перерыв. Попробуйте позже.";
-            }
+        async function load() {
+            const { data } = await supabaseClient.from('products').select('*, ai_content(fancy_description)').order('created_at', { ascending: false });
+            allProducts = data;
+            render(allProducts);
         }
-        render();
+
+        function render(items) {
+            document.getElementById('list').innerHTML = items.map(p => `
+                <div class="product-card">
+                    <div class="img-box"><img src="${p.image_url}"></div>
+                    <div style="font-size:14px; color:gray; margin-bottom:5px;">${p.category || 'Разное'}</div>
+                    <h3>${p.title}</h3>
+                    <div class="ai-desc">${(p.ai_content && p.ai_content[0]) ? p.ai_content[0].fancy_description : 'Описываем...'}</div>
+                    <div class="price">${p.price.toLocaleString()} ₴</div>
+                    <a href="${p.product_url}" target="_blank" class="buy-btn">КУПИТЬ ТОВАР</a>
+                </div>`).join('');
+        }
+
+        function filterCat(cat) {
+            // Визуально меняем активную кнопку
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if(cat === 'Все') return render(allProducts);
+            const filtered = allProducts.filter(p => p.category === cat);
+            render(filtered);
+        }
+
+        load();
     </script>
 </body>
 </html>
