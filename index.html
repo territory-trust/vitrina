@@ -3,46 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина: Обновленный Дизайн</title>
+    <title>Витрина: Неоновый Бархат</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #05070a; --card-bg: #111418; --accent: #58a6ff; --neon: #00f2ff; --text: #ffffff; }
+        :root { --bg: #05070a; --card: #0f1419; --accent: #58a6ff; --neon: #00d2ff; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 10px; }
         
-        /* КНОПКИ КАТЕГОРИЙ */
         .category-bar { display: flex; gap: 10px; overflow-x: auto; padding: 15px 0; position: sticky; top: 0; background: var(--bg); z-index: 100; }
-        .cat-btn { background: #1c2128; color: #fff; padding: 12px 20px; border-radius: 12px; border: 1px solid var(--accent); font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .cat-btn { background: #1c2128; color: #fff; padding: 12px 20px; border-radius: 12px; border: 2px solid var(--accent); font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .cat-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
 
-        /* КАРТОЧКА ТОВАРА */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 10px; }
+        
+        /* КАРТОЧКА С НЕОНОВОЙ РАМКОЙ */
         .card { 
-            background: var(--card-bg); 
-            border: 2px solid #1f242c; /* Базовая рамка */
-            border-radius: 16px; padding: 18px; 
+            background: var(--card); 
+            border: 2px solid var(--accent); 
+            border-radius: 20px; padding: 20px; 
             display: flex; flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(88, 166, 255, 0.1); /* Глубина */
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
             transition: 0.3s;
         }
-        .card:hover { border-color: var(--neon); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .card:hover { border-color: var(--neon); box-shadow: 0 0 25px rgba(0, 210, 255, 0.4); }
 
-        .img-box { height: 180px; background: #fff; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #30363d; }
+        .img-box { height: 180px; background: #fff; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .img-box img { width: 85%; height: 85%; object-fit: contain; }
         
-        h3 { font-size: 18px; margin: 5px 0; color: var(--accent); font-weight: 800; }
+        h3 { font-size: 19px; margin: 5px 0; color: var(--accent); font-weight: 800; }
         
-        /* КРУПНЫЙ ШРИФТ ОПИСАНИЯ */
-        .desc { font-size: 17px; color: #d1d5db; line-height: 1.5; margin-bottom: 20px; border-left: 4px solid var(--neon); padding-left: 12px; flex-grow: 1; font-style: italic; }
+        /* УВЕЛИЧЕННЫЙ ШРИФТ ОПИСАНИЯ */
+        .desc { font-size: 18px; color: #e1e4e8; line-height: 1.5; margin-bottom: 20px; border-left: 4px solid var(--neon); padding-left: 12px; flex-grow: 1; font-style: italic; }
         
-        .price { font-size: 26px; font-weight: 900; margin-bottom: 15px; color: var(--neon); text-shadow: 0 0 5px rgba(0, 242, 255, 0.3); }
+        .price { font-size: 28px; font-weight: 900; margin-bottom: 20px; color: var(--neon); }
 
         /* БАРХАТНАЯ КНОПКА */
         .btn { 
             background: linear-gradient(145deg, #238636, #1d6e2d); 
-            color: #fff; text-decoration: none; padding: 16px; text-align: center; 
-            border-radius: 12px; font-weight: 900; font-size: 18px;
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.4), inset 2px 2px 5px rgba(255,255,255,0.1);
+            color: #fff; text-decoration: none; padding: 18px; text-align: center; 
+            border-radius: 14px; font-weight: 900; font-size: 20px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5), inset 2px 2px 5px rgba(255,255,255,0.1);
             border: 1px solid #2ea043;
             text-transform: uppercase;
         }
@@ -55,7 +55,7 @@
         <button class="cat-btn" onclick="filterCat('Гаджеты')">ГАДЖЕТЫ</button>
         <button class="cat-btn" onclick="filterCat('Бытовая техника')">ТЕХНИКА</button>
     </div>
-    <div id="list" class="grid">Загрузка витрины...</div>
+    <div id="list" class="grid">Загрузка...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
@@ -75,15 +75,15 @@
             document.getElementById('list').innerHTML = items.map(p => {
                 const description = (p.ai_content && p.ai_content.length > 0) 
                     ? p.ai_content[0].fancy_description 
-                    : "Описание готовится нейросетью...";
+                    : "Нейросеть готовит описание...";
                 return `
                 <div class="card">
                     <div class="img-box"><img src="${p.image_url}"></div>
-                    <div style="font-size:12px; color:#8b949e; text-transform:uppercase; margin-bottom:5px; font-weight:bold;">${p.category || 'Общее'}</div>
+                    <div style="font-size:13px; color:#8b949e; text-transform:uppercase; margin-bottom:5px;">${p.category || 'ТОВАР'}</div>
                     <h3>${p.title}</h3>
                     <div class="desc">${description}</div>
                     <div class="price">${p.price.toLocaleString()} ₴</div>
-                    <a href="${p.product_url}" target="_blank" class="btn">КУПИТЬ ТОВАР</a>
+                    <a href="${p.product_url}" target="_blank" class="btn">КУПИТЬ</a>
                 </div>`;
             }).join('');
         }
