@@ -3,99 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent: Scout Mode</title>
+    <title>Vitrina: Agent Scout</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=1.1"></script>
+    <script src="config.js?v=2"></script>
     <style>
         :root { --bg: #0d1117; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         
         /* Средний шрифт для вашего удобства */
-        .panel { background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; width: 100%; max-width: 500px; }
+        .panel { background: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 500px; }
         
-        h1 { font-size: 22px; color: var(--accent); margin-bottom: 20px; text-align: center; }
+        h1 { font-size: 22px; color: var(--accent); text-align: center; margin-bottom: 20px; }
         .btn-run { 
-            background: var(--success); color: #fff; padding: 20px; border-radius: 10px; 
-            border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 20px;
+            background: var(--success); color: #fff; padding: 18px; border-radius: 8px; 
+            border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 18px;
         }
         #log { 
-            margin-top: 25px; background: #010409; padding: 15px; border-radius: 8px;
+            margin-top: 20px; background: #010409; padding: 15px; border-radius: 8px;
             font-family: 'Courier New', monospace; font-size: 16px; line-height: 1.5; 
-            color: #7ee787; border: 1px solid #30363d; min-height: 200px; overflow-y: auto;
+            color: #7ee787; border: 1px solid #30363d; min-height: 150px;
         }
-        .error { color: #f85149; }
+        .status-ok { color: #58a6ff; }
+        .status-err { color: #f85149; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h1>АГЕНТ-РАЗВЕДЧИК</h1>
-        <button class="btn-run" onclick="startWork()">ЗАПУСТИТЬ ПОИСК</button>
-        <div id="log">> Ожидание команды...</div>
+        <h1>АГЕНТ: ОБРАБОТКА ТОВАРОВ</h1>
+        <button class="btn-run" onclick="startProcess()">ЗАПУСТИТЬ С НОВЫМ КЛЮЧОМ</button>
+        <div id="log">> Ожидание...</div>
     </div>
 
     <script>
-        async function startWork() {
+        const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+
+        async function startProcess() {
             const log = document.getElementById('log');
-            log.innerHTML = `> Проверка конфигурации...`;
-            
-            try {
-                if (typeof CONFIG === 'undefined') throw new Error("config.js не загружен");
-                const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-                
-                log.innerHTML += `<br>> Поиск активных предложений Rozetka...`;
-                
-                // Имитация поиска товаров
-                const items = [
-                    { name: "Смартфон Apple iPhone 15", cat: "Смартфоны", price: 38000 },
-                    { name: "Пылесос Dyson V15", cat: "Бытовая техника", price: 29000 }
-                ];
+            log.innerHTML = `> Авторизация в OpenRouter...`;
 
-                const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
+            const testItems = [
+                { name: "Ноутбук Apple MacBook Air M3", cat: "Гаджеты", price: 54000 },
+                { name: "Смартфон Samsung Galaxy S24 Ultra", cat: "Смартфоны", price: 48000 }
+            ];
 
-                for (let item of items) {
-                    log.innerHTML += `<br>> Обработка: <b>${item.name}</b>`;
+            const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
+
+            for (let item of testItems) {
+                log.innerHTML += `<br>> Анализ: ${item.name}`;
+                
+                try {
+                    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            model: CONFIG.AI_MODEL,
+                            messages: [{ role: "user", content: `Напиши одно короткое премиальное предложение для ${item.name}` }]
+                        })
+                    });
                     
-                    // Запрос к ИИ с таймаутом, чтобы не зависало
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 сек на ответ ИИ
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    
+                    const aiDescription = data.choices[0].message.content;
 
-                    try {
-                        const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                            method: "POST",
-                            headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
-                            signal: controller.signal,
-                            body: JSON.stringify({
-                                model: CONFIG.AI_MODEL,
-                                messages: [{ role: "user", content: `Кратко опиши преимущества: ${item.name}` }]
-                            })
-                        });
-                        clearTimeout(timeoutId);
-                        const aiData = await aiRes.json();
-                        const desc = aiData.choices[0].message.content.trim();
+                    // Сохраняем товар
+                    const { data: p, error: pErr } = await supabaseClient.from('products').insert({
+                        title: item.name, price: item.price, 
+                        image_url: `https://loremflickr.com/400/400/tech?lock=${Math.random()}`,
+                        product_url: `https://rozetka.com.ua/search/?text=${encodeURIComponent(item.name)}`,
+                        category: item.cat, shop_id: shops[0].id, is_processed_ai: true
+                    }).select();
 
-                        // Сохранение
-                        const { data: p, error: pErr } = await supabaseClient.from('products').insert({
-                            title: item.name, price: item.price, 
-                            image_url: `https://loremflickr.com/400/400/tech?lock=${Math.random()}`,
-                            product_url: `https://rozetka.com.ua/search/?text=${encodeURIComponent(item.name)}`,
-                            category: item.cat, shop_id: shops[0].id, is_processed_ai: true
-                        }).select();
+                    if (pErr) throw pErr;
 
-                        if (pErr) throw pErr;
+                    // Сохраняем ИИ-описание
+                    await supabaseClient.from('ai_content').insert({ 
+                        product_id: p[0].id, fancy_description: aiDescription 
+                    });
 
-                        await supabaseClient.from('ai_content').insert({ 
-                            product_id: p[0].id, fancy_description: desc 
-                        });
-
-                        log.innerHTML += `<br> <span style="color:cyan">[УСПЕХ] Товар добавлен.</span>`;
-                    } catch (e) {
-                        log.innerHTML += `<br> <span class="error">[ОШИБКА] ИИ не ответил или таймаут.</span>`;
-                    }
+                    log.innerHTML += `<br><span class="status-ok"> [УСПЕХ] Товар добавлен в базу.</span>`;
+                } catch (e) {
+                    log.innerHTML += `<br><span class="status-err"> [СБОЙ] ${e.message}</span>`;
                 }
-                log.innerHTML += `<br><br>>>>> РАБОТА ЗАВЕРШЕНА.`;
-            } catch (err) {
-                log.innerHTML += `<br><br><span class="error">ФАТАЛЬНАЯ ОШИБКА: ${err.message}</span>`;
             }
+            log.innerHTML += `<br><br><b>ВСЕ ОПЕРАЦИИ ЗАВЕРШЕНЫ.</b>`;
         }
     </script>
 </body>
