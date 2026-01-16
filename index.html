@@ -12,21 +12,20 @@
         .card { background: #161b22; border: 2px solid #444c56; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
         .img-box { height: 180px; background: #fff; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .img-box img { width: 90%; height: 90%; object-fit: contain; }
-        h3 { font-size: 18px; margin: 5px 0; color: #58a6ff; }
+        h3 { font-size: 18px; margin: 5px 0; color: #58a6ff; font-weight: bold; }
         .cat-tag { font-size: 12px; color: #8b949e; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-        .desc { font-size: 15px; color: #d1d5db; line-height: 1.4; margin-bottom: 15px; border-left: 3px solid #58a6ff; padding-left: 10px; flex-grow: 1; }
-        .price { font-size: 26px; font-weight: bold; margin-bottom: 15px; color: #58a6ff; }
-        .btn { background: #238636; color: #fff; text-decoration: none; padding: 14px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 18px; }
+        .desc { font-size: 14px; color: #d1d5db; line-height: 1.4; margin-bottom: 15px; border-left: 3px solid #58a6ff; padding-left: 10px; flex-grow: 1; }
+        .price { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #58a6ff; }
+        .btn { background: #238636; color: #fff; text-decoration: none; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="list" class="grid">Загрузка...</div>
+    <div id="list" class="grid">Загрузка товаров...</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
         async function load() {
-            // Запрашиваем товары вместе с их описаниями из связанной таблицы
             const { data, error } = await supabaseClient
                 .from('products')
                 .select('*, ai_content(fancy_description)')
@@ -35,7 +34,6 @@
             if (error) return console.log(error);
 
             document.getElementById('list').innerHTML = data.map(p => {
-                // Если ИИ не успел сделать описание, пишем заглушку
                 const description = (p.ai_content && p.ai_content.length > 0) 
                     ? p.ai_content[0].fancy_description 
                     : "Описание готовится...";
