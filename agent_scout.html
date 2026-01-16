@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Автопилот: Исправленный</title>
+    <title>Автопилот: Финальная проверка</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d1117; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: #161b22; padding: 20px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 400px; }
-        h1 { font-size: 20px; color: var(--accent); margin-bottom: 15px; text-align: center; }
-        .btn-main { background: var(--success); color: #fff; padding: 15px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; }
-        #log { margin-top: 15px; background: #010409; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 14px; line-height: 1.4; color: #7ee787; border: 1px solid #30363d; min-height: 150px; overflow-y: auto; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 400px; }
+        h1 { font-size: 20px; color: var(--accent); margin-bottom: 20px; text-align: center; }
+        .btn-main { background: var(--success); color: #fff; padding: 18px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 18px; text-transform: uppercase; }
+        #log { margin-top: 20px; background: #010409; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 15px; line-height: 1.4; color: #7ee787; border: 1px solid #30363d; min-height: 150px; }
         .err { color: #f85149; font-weight: bold; }
     </style>
 </head>
@@ -20,18 +20,18 @@
     <div class="container">
         <h1>АВТО-РАСПРЕДЕЛЕНИЕ</h1>
         <button class="btn-main" onclick="runSmartCycle()">ЗАПУСТИТЬ ЦИКЛ</button>
-        <div id="log">> Система готова...</div>
+        <div id="log">> Жду команду...</div>
     </div>
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         async function runSmartCycle() {
             const log = document.getElementById('log');
-            log.innerHTML = `<span style="color:#58a6ff">> Начинаю цикл...</span>`;
+            log.innerHTML = `<span style="color:#58a6ff">> Запуск автоматики...</span>`;
             const productNames = ["Фен Dyson Supersonic", "Часы Apple Watch Ultra 2", "Смартфон Xiaomi 14 Ultra"];
             const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
 
             for (let name of productNames) {
-                log.innerHTML += `<br>> Анализ: ${name}`;
+                log.innerHTML += `<br>> Анализирую: ${name}`;
                 try {
                     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                         method: "POST",
@@ -42,12 +42,12 @@
                         })
                     });
                     const aiData = await aiRes.json();
-                    if (aiData.error) throw new Error("ИИ: " + aiData.error.message);
+                    if (aiData.error) throw new Error(aiData.error.message);
                     
                     let cleanContent = aiData.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim();
                     const aiResult = JSON.parse(cleanContent);
 
-                    const img = `https://loremflickr.com/400/400/product,tech?lock=${Math.floor(Math.random()*999)}`;
+                    const img = `https://loremflickr.com/400/400/product,electronics?lock=${Math.floor(Math.random()*999)}`;
                     const searchUrl = "https://rozetka.com.ua/search/?text=" + encodeURIComponent(name);
                     const moneyUrl = `https://rdr.salesdoubler.com.ua/rel/t/direct/link/${CONFIG.AFFILIATE_ID}?url=${encodeURIComponent(searchUrl)}`;
 
@@ -57,13 +57,13 @@
                     if(pErr) throw pErr;
 
                     await supabaseClient.from('ai_content').insert({ product_id: p[0].id, fancy_description: aiResult.desc });
-                    log.innerHTML += `<br> <span style="color:cyan"> [ОК] Сохранено.</span>`;
+                    log.innerHTML += `<br> <span style="color:cyan"> [ОК] Успешно.</span>`;
                 } catch (e) {
                     log.innerHTML += `<br> <span class="err"> [!] СБОЙ: ${e.message}</span>`;
-                    if (e.message.includes("User not found")) log.innerHTML += `<br> <span class="err">ПРИЧИНА: Неверный AI_KEY в config.js</span>`;
+                    if (e.message.includes("User not found")) log.innerHTML += `<br> <span class="err">ОШИБКА КЛЮЧА ИИ В CONFIG.JS!</span>`;
                 }
             }
-            log.innerHTML += `<br><br><b>ГОТОВО.</b>`;
+            log.innerHTML += `<br><br><b>ЦИКЛ ЗАВЕРШЕН.</b>`;
         }
     </script>
 </body>
