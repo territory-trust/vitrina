@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Витрина: Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        :root { --bg: #0b0e14; --cyan: #00d4ff; --card: #151921; --red: #ff4b4b; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; padding: 30px; display: flex; flex-direction: column; align-items: center; }
+        .stats { display: flex; gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 12px; text-align: center; min-width: 150px; border: 1px solid #333; }
+        .stat-val { font-size: 32px; font-weight: bold; color: var(--cyan); display: block; }
+        .nav { display: flex; gap: 15px; margin-bottom: 40px; }
+        .btn { background: #1a1f2e; color: var(--cyan); padding: 12px 25px; border-radius: 8px; border: 1px solid var(--cyan); cursor: pointer; text-decoration: none; font-weight: bold; }
+        .btn-danger { border-color: var(--red); color: var(--red); }
+    </style>
+</head>
+<body>
+    <h1>УПРАВЛЕНИЕ ПРОЕКТОМ</h1>
+    <div class="stats">
+        <div class="stat-card"><span id="total" class="stat-val">0</span>Товаров</div>
+        <div class="stat-card"><span id="done" class="stat-val">0</span>Описано</div>
+    </div>
+    <div class="nav">
+        <a href="index.html" class="btn">Витрина</a>
+        <a href="agent_scout.html" class="btn">Разведчик</a>
+        <a href="agent_ai.html" class="btn">ИИ-Описатель</a>
+    </div>
+    <button class="btn btn-danger" onclick="clearDB()">ОЧИСТИТЬ ВСЮ БАЗУ</button>
+    <script>
+        const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        async function load() {
+            const { count: t } = await supabaseClient.from('products').select('*', { count: 'exact', head: true });
+            const { count: d } = await supabaseClient.from('products').select('*', { count: 'exact', head: true }).eq('is_processed_ai', true);
+            document.getElementById('total').innerText = t || 0;
+            document.getElementById('done').innerText = d || 0;
+        }
+        async function clearDB() {
+            if(!confirm("Удалить всё?")) return;
+            await supabaseClient.from('ai_content').delete().not('id', 'is', null);
+            await supabaseClient.from('products').delete().not('id', 'is', null);
+            load();
+        }
+        load();
+    </script>
+</body>
+</html>

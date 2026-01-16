@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Agent Filler: Fast Start</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+</head>
+<body style="background:#0b0e14; color:#00d4ff; text-align:center; padding:50px; font-family:sans-serif;">
+    <h2>ЗАПОЛНЕНИЕ ТЕСТОВЫМИ ТОВАРАМИ</h2>
+    <button onclick="fill()" style="padding:20px 40px; background:#1a1f2e; color:#00d4ff; border:2px solid #00d4ff; border-radius:12px; cursor:pointer; font-weight:bold;">ЗАПОЛНИТЬ БАЗУ</button>
+    <div id="st"></div>
+    <script>
+        const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        async function fill() {
+            const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
+            const items = [
+                { title: "iPhone 15 Pro", price: 45000, img: "https://loremflickr.com/400/400/iphone", url: "https://apple.com" },
+                { title: "MacBook Air M2", price: 52000, img: "https://loremflickr.com/400/400/macbook", url: "https://apple.com" },
+                { title: "AirPods Pro 2", price: 9500, img: "https://loremflickr.com/400/400/airpods", url: "https://apple.com" }
+            ];
+            for(let i of items) {
+                await supabaseClient.from('products').insert({ title: i.title, price: i.price, image_url: i.img, product_url: i.url, shop_id: shops[0].id, is_processed_ai: false });
+            }
+            document.getElementById('st').innerText = "Готово! Теперь включите ИИ-Описатель.";
+        }
+    </script>
+</body>
+</html>

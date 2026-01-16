@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Витрина: Global Market</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        :root { --bg: #0b0e14; --neon: #bd00ff; --cyan: #00d4ff; --card: #151921; --text: #e0e6ed; }
+        body { background-color: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
+        .product-card { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); border-color: var(--neon); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .img-box { height: 200px; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+        h3 { font-size: 18px; margin: 0 0 10px 0; color: #fff; height: 45px; overflow: hidden; }
+        .ai-desc { font-size: 14px; color: #94a3b8; line-height: 1.5; margin-bottom: 15px; border-left: 2px solid var(--neon); padding-left: 10px; height: 75px; overflow: hidden; }
+        .price { font-size: 22px; font-weight: bold; color: var(--cyan); margin-top: auto; margin-bottom: 15px; }
+        .buy-btn { background: #1a1f2e; color: var(--cyan); text-align: center; padding: 12px; border-radius: 8px; border: 1px solid var(--cyan); font-weight: bold; }
+        .buy-btn:hover { background: var(--cyan); color: #000; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>MARKETPLACE AI</h1></div>
+    <div id="list" class="products-grid">Загрузка...</div>
+    <script>
+        const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        async function render() {
+            const { data: products } = await supabaseClient.from('products').select('*, ai_content(fancy_description)').order('created_at', { ascending: false });
+            document.getElementById('list').innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="img-box"><img src="${p.image_url}"></div>
+                    <h3>${p.title}</h3>
+                    <div class="ai-desc">${(p.ai_content && p.ai_content[0]) ? p.ai_content[0].fancy_description : "Описание готовится..."}</div>
+                    <div class="price">${p.price.toLocaleString()} ₴</div>
+                    <a href="${p.product_url}" target="_blank" class="buy-btn">КУПИТЬ</a>
+                </div>`).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
