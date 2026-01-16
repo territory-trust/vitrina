@@ -1,6 +1,6 @@
-﻿// ГЛАВНЫЙ ЦЕНТР УПРАВЛЕНИЯ ПРОЕКТОМ
+// ГЛАВНЫЙ ЦЕНТР УПРАВЛЕНИЯ ПРОЕКТОМ
 const CONFIG = {
-    // Данные Supabase
+    // Данные Supabase (БД)
     SB_URL: 'https://udniuvrrlbeyivqqbjjw.supabase.co',
     SB_KEY: 'sb_publishable_W1xgtj3wLDplfGZb9_dwcw_OLxCLxX0',
 
@@ -9,9 +9,9 @@ const CONFIG = {
     AI_MODEL: 'openai/gpt-4o-mini',
 
     // --- НАСТРОЙКИ ПРИБЫЛИ ---
-    // Когда зарегистрируетесь в SalesDoubler, вставьте сюда ваш ID (число)
-    AFFILIATE_ID: '000000', 
+    // ВАШ РЕАЛЬНЫЙ ID ИЗ SALESDOUBLER
+    AFFILIATE_ID: '111958', 
     
-    // Тип сети (для правильного формирования ссылок)
+    // Тип сети
     NETWORK: 'SalesDoubler' 
 };
