@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Agent: V2</title>
+    <title>Vitrina: Quality Agent</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #05070a; --accent: #00ff41; --text: #ffffff; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .status-box { background: #111; padding: 30px; border-radius: 20px; border: 4px solid var(--accent); width: 100%; max-width: 600px; }
-        .main-btn { background: #238636; color: #fff; padding: 30px; border-radius: 15px; border: none; cursor: pointer; width: 100%; font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px; }
+        .main-btn { background: #238636; color: #fff; padding: 30px; border-radius: 15px; border: none; cursor: pointer; width: 100%; font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0, 255, 65, 0.4); }
         #log { text-align: left; color: var(--accent); font-family: monospace; font-size: 20px; line-height: 1.5; }
         .blue { color: #58a6ff; }
+        .yellow { color: #ffff00; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1 style="text-align:center; color:var(--accent);">АВТОПИЛОТ: ВЕРСИЯ 2.0</h1>
+    <h1 style="text-align:center; color:var(--accent); font-size: 32px;">АВТОПИЛОТ "КАЧЕСТВО"</h1>
     <div class="status-box">
         <button class="main-btn" onclick="startMegaCycle()">ЗАПУСТИТЬ ЦИКЛ</button>
-        <div id="log">> Нажмите кнопку для старта...</div>
+        <div id="log">> Ожидание команды...</div>
     </div>
 
     <script>
@@ -27,18 +28,19 @@
 
         async function startMegaCycle() {
             const log = document.getElementById('log');
-            log.innerHTML = `<br>> [1/2] ДОБАВЛЕНИЕ ТОВАРОВ...`;
+            log.innerHTML = `<br>> [1/2] ПОИСК И ГЕНЕРАЦИЯ ССЫЛОК...`;
 
+            // Обновленный список товаров для поиска
             const items = [
-                { q: "iPhone 15 Pro Max", cat: "Смартфоны", p: 52000 },
-                { q: "Игровая приставка Sony PS5", cat: "Гаджеты", p: 24000 }
+                { q: "Ноутбук Apple MacBook Air M2", cat: "Гаджеты", p: 46000, img_tag: "laptop,macbook" },
+                { q: "Смартфон Samsung Galaxy S23", cat: "Смартфоны", p: 32000, img_tag: "smartphone,samsung" }
             ];
 
             const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
 
             for (let item of items) {
-                // УЛУЧШЕННЫЙ ПОИСК КАРТИНКИ
-                const img = `https://loremflickr.com/400/400/phone,console,tech?lock=${Math.floor(Math.random()*1000)}`;
+                // Более точный запрос картинки
+                const img = `https://loremflickr.com/400/400/${item.img_tag},tech?lock=${Math.floor(Math.random()*500)}`;
                 const searchUrl = "https://rozetka.com.ua/search/?text=" + encodeURIComponent(item.q);
                 const moneyUrl = `https://rdr.salesdoubler.com.ua/rel/t/direct/link/${CONFIG.AFFILIATE_ID}?url=${encodeURIComponent(searchUrl)}`;
 
@@ -49,17 +51,17 @@
                 }).select();
 
                 if(!error) {
-                    log.innerHTML += `<br><span class="blue">+ Сохранен: ${item.q}</span>`;
+                    log.innerHTML += `<br><span class="blue">+ ${item.q} добавлен.</span>`;
                     
-                    // СРАЗУ ЗАПУСКАЕМ ИИ ДЛЯ ЭТОГО ТОВАРА
-                    log.innerHTML += `<br>> ИИ пишет описание...`;
+                    // Платный ИИ-описатель
+                    log.innerHTML += `<br>> Платный ИИ пишет текст...`;
                     try {
                         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                             method: "POST",
                             headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
                             body: JSON.stringify({
                                 model: CONFIG.AI_MODEL,
-                                messages: [{ role: "user", content: `Напиши 1 короткое рекламное предложение для: ${item.q}.` }]
+                                messages: [{ role: "user", content: `Напиши 1 премиальное рекламное предложение для: ${item.q}. Без лишних слов.` }]
                             })
                         });
                         const resData = await response.json();
@@ -67,11 +69,11 @@
 
                         await supabaseClient.from('ai_content').insert({ product_id: p[0].id, fancy_description: aiText });
                         await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p[0].id);
-                        log.innerHTML += `<br><span class="blue">  [ОК] Описание добавлено!</span>`;
+                        log.innerHTML += `<br><span class="blue">  [ИИ] Качественный текст готов.</span>`;
                     } catch (e) { log.innerHTML += `<br>! Ошибка ИИ`; }
                 }
             }
-            log.innerHTML += `<br><br><b style="color:yellow; font-size:24px;">ГОТОВО! МОЖНО СМОТРЕТЬ САЙТ.</b>`;
+            log.innerHTML += `<br><br><span class="yellow">>>> ЦИКЛ ЗАВЕРШЕН! СМОТРИТЕ ВИТРИНУ. <<<</span>`;
         }
     </script>
 </body>
