@@ -38,11 +38,12 @@
             
             try {
                 // Ищем 1 необработанный товар
-                const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
+                const { data: products, error: sbError } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
+                if (sbError) throw new Error("Supabase: " + sbError.message);
                 if (!products || products.length === 0) {
                     log.innerHTML += "<br>> Ожидание новых товаров...";
-                    setTimeout(start, 5000); // Проверка каждые 5 сек
+                    setTimeout(start, 5000);
                     return;
                 }
 
@@ -51,24 +52,34 @@
 
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
-                    headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
+                    headers: { 
+                        "Authorization": `Bearer ${CONFIG.AI_KEY}`, 
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.origin, // Требование OpenRouter
+                        "X-Title": "Vitrina Project"           // Название вашего проекта
+                    },
                     body: JSON.stringify({
                         model: CONFIG.AI_MODEL,
-                        messages: [{role: "user", content: `Напиши премиальное, дорогое рекламное описание (2 предложения) для товара: ${p.title}. Стиль: спокойный, уверенный.`}]
+                        messages: [{role: "user", content: `Напиши премиальное рекламное описание (2 предложения) для товара: ${p.title}.`}]
                     })
                 });
 
                 const data = await res.json();
-                if (data.error) throw new Error(data.error.message);
+                
+                if (data.error) {
+                    throw new Error("ИИ: " + data.error.message);
+                }
 
                 const desc = data.choices[0].message.content;
 
-                // Сохраняем и обновляем статус
-                await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
+                // Сохраняем результат
+                const { error: insError } = await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
+                if (insError) throw new Error("Ошибка записи: " + insError.message);
+
                 await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
 
                 log.innerHTML += " <span style='color:#00ff41'>[ГОТОВО]</span>";
-                setTimeout(start, 1000); // К следующему товару
+                setTimeout(start, 1000);
 
             } catch (err) {
                 log.innerHTML += `<br><span style="color:red">! Сбой: ${err.message}. Жду 10 сек...</span>`;
