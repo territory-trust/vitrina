@@ -3,94 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: AI Final Strike</title>
+    <title>Vitrina: AI Wake Up</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=999"></script>
+    <script src="config.js?v=wakeup"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(189,0,255,0.2); }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; }
         .velvet-btn { 
             background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); 
             color: white; padding: 25px; border-radius: 16px; border: none; 
             width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(189,0,255,0.4);
         }
-        #log { 
-            margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; 
-            font-family: monospace; font-size: 18px; color: var(--accent); 
-            border: 1px solid #333; min-height: 350px; text-align: left; overflow-y: auto; 
-        }
+        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 18px; color: var(--accent); border: 1px solid #333; min-height: 400px; text-align: left; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent); text-transform:uppercase;">AI КОНВЕЙЕР: ПРОРЫВ</h2>
-        <button class="velvet-btn" onclick="startAgent()">ЗАПУСТИТЬ</button>
-        <div id="log">> Жду команду...</div>
+        <h2 style="color:var(--accent);">ТЕСТ АКТИВАЦИИ</h2>
+        <button class="velvet-btn" onclick="wakeUp()">ЗАПУСТИТЬ ТЕСТ</button>
+        <div id="log">> Проверка связи...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-        async function startAgent() {
+        async function wakeUp() {
             const log = document.getElementById('log');
-            log.innerHTML = "> Подключение к базе...";
-
+            log.innerHTML = "> Подключение...";
             try {
-                const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
-                if (!products || products.length === 0) { log.innerHTML += "<br>> Все товары обработаны!"; return; }
-                
+                const { data: products } = await supabaseClient.from('products').select('*').limit(1);
                 const p = products[0];
-                log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
-
-                // Пробуем модель gemini-pro, она доступна всем
-                log.innerHTML += `<br>> Запрос к Gemini Pro...`;
+                log.innerHTML += `<br>> Товар: ${p.title}`;
                 
-                // Перебираем версии API прямо в коде
-                const apiVersions = ['v1beta', 'v1'];
-                let success = false;
-                let errorDetails = "";
+                log.innerHTML += `<br>> Пробуем модель 1.0 Pro...`;
+                // Модель 1.0-pro самая старая и часто доступна сразу
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${CONFIG.GOOGLE_AI_KEY}`;
+                
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Привет! Ты работаешь?" }] }] })
+                });
 
-                for (let ver of apiVersions) {
-                    try {
-                        const url = `https://generativelanguage.googleapis.com/${ver}/models/gemini-pro:generateContent?key=${CONFIG.GOOGLE_AI_KEY}`;
-                        const res = await fetch(url, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: "Напиши 2 рекламных предложения для: " + p.title }] }]
-                            })
-                        });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
 
-                        const data = await res.json();
-                        
-                        if (data.candidates && data.candidates[0].content) {
-                            const desc = data.candidates[0].content.parts[0].text;
-                            log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ на ${ver}!</span>`;
-
-                            await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-                            await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                            
-                            log.innerHTML += `<br>> Сохранено.`;
-                            success = true;
-                            break;
-                        } else {
-                            errorDetails = data.error ? data.error.message : "Неизвестно";
-                        }
-                    } catch (e) {
-                        errorDetails = e.message;
-                    }
-                }
-
-                if (success) {
-                    setTimeout(startAgent, 3000);
-                } else {
-                    throw new Error("Google отклонил все пути: " + errorDetails);
-                }
-
+                log.innerHTML += `<br><span style="color:#00ff41">✔ КАНАЛ ПРОБИТ!</span>`;
+                log.innerHTML += `<br>> ИИ ответил: ${data.candidates[0].content.parts[0].text}`;
+                
             } catch (err) {
-                log.innerHTML += `<br><span style="color:red">! ОШИБКА: ${err.message}</span>`;
+                log.innerHTML += `<br><span style="color:red">! ВСЕ ЕЩЕ СПИТ: ${err.message}</span>`;
+                log.innerHTML += `<br><br><b>Совет:</b> Оставьте проект до завтра. Google активирует ваш ключ автоматически в течение суток.`;
             }
         }
     </script>
