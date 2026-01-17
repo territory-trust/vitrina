@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: AI Force</title>
+    <title>Vitrina: AI Region Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=999"></script>
+    <script src="config.js?v=force_final"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; }
-        .velvet-btn { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 25px; border-radius: 16px; border: 1px solid var(--accent); width: 100%; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 16px; color: #bd00ff; border: 1px solid #333; min-height: 350px; text-align: left; overflow-y: auto; }
+        .velvet-btn { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 25px; border-radius: 16px; border: none; width: 100%; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(189,0,255,0.4); }
+        #log { margin-top: 25px; background: #000; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 16px; color: #bd00ff; border: 1px solid #333; min-height: 400px; text-align: left; overflow-y: auto; }
     </style>
 </head>
 <body>
 
     <div class="panel">
-        <h2 style="color:var(--accent);">AI КОНВЕЙЕР: ТРИПЛ-ТЕСТ</h2>
+        <h2 style="color:var(--accent);">AI КОНВЕЙЕР: РЕГИОН-ТЕСТ</h2>
         <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ</button>
-        <div id="log">> Готов к прорыву...</div>
+        <div id="log">> Готов к тесту...</div>
     </div>
 
     <script>
@@ -35,47 +35,55 @@
                 const p = products[0];
                 log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
 
-                // СПИСОК ВАРИАНТОВ (Google бывает капризным к именам)
-                const variants = [
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-                    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+                // Список моделей, которые чаще всего работают в нашем регионе
+                const models = [
+                    "gemini-1.5-flash-8b",
+                    "gemini-1.5-flash",
+                    "gemini-pro"
                 ];
 
                 let success = false;
-                for (let url of variants) {
-                    log.innerHTML += `<br>> Пробую: ${url.split('models/')[1].split(':')[0]}...`;
+                const cleanKey = CONFIG.GOOGLE_AI_KEY.trim();
+
+                for (let modelName of models) {
+                    log.innerHTML += `<br>> Пробую модель: ${modelName}...`;
                     
                     try {
-                        const res = await fetch(`${url}?key=${CONFIG.GOOGLE_AI_KEY}`, {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${cleanKey}`;
+                        
+                        const res = await fetch(url, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ contents: [{ parts: [{ text: "Напиши 2 дорогих предложения для: " + p.title }] }] })
+                            body: JSON.stringify({ 
+                                contents: [{ parts: [{ text: "Напиши 2 коротких рекламных предложения для: " + p.title }] }] 
+                            })
                         });
 
                         const data = await res.json();
+
                         if (data.candidates && data.candidates[0].content) {
                             const desc = data.candidates[0].content.parts[0].text;
-                            log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ!</span>`;
+                            log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ на ${modelName}!</span>`;
                             
                             await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                             await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                             
-                            log.innerHTML += `<br>> Сохранено.`;
+                            log.innerHTML += `<br>> Данные сохранены.`;
                             success = true;
                             break; 
                         } else {
-                            log.innerHTML += `<br><small style="color:orange">! Не подошло...</small>`;
+                            const errorMsg = data.error ? data.error.message : "Ошибка формата";
+                            log.innerHTML += `<br><small style="color:orange">! Отказ: ${errorMsg.substring(0, 30)}...</small>`;
                         }
                     } catch (e) {
-                        log.innerHTML += `<br><small style="color:red">! Ошибка ветки</small>`;
+                        log.innerHTML += `<br><small style="color:red">! Ошибка сети</small>`;
                     }
                 }
 
                 if (success) {
                     setTimeout(start, 3000);
                 } else {
-                    log.innerHTML += `<br><b style="color:red">! Все варианты отклонены Google.</b>`;
+                    log.innerHTML += `<br><b style="color:red">! Все модели заблокированы для этого ключа.</b>`;
                 }
 
             } catch (err) {
