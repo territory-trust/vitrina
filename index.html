@@ -3,110 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина: Спокойный Премиум</title>
+    <title>Premium Showcase</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=3"></script>
+    <script src="config.js"></script>
     <style>
-        :root { --bg: #0d1117; --card-bg: #161b22; --border: #30363d; --accent: #58a6ff; --text: #f0f6fc; --muted: #8b949e; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 15px; }
+        :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --accent: #58a6ff; --text: #f0f6fc; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
         
-        /* КАТЕГОРИИ: Спокойный стиль */
-        .category-bar { 
-            display: flex; gap: 12px; overflow-x: auto; padding: 10px 5px 20px 5px; 
-            position: sticky; top: 0; background: var(--bg); z-index: 100;
-        }
-        .cat-btn { 
-            background: var(--card-bg); color: var(--text); padding: 12px 22px; 
-            border-radius: 10px; border: 1px solid var(--border); 
-            font-size: 15px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: 0.2s;
-        }
-        .cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.1); }
+        .category-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+        .cat-btn { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+        .cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.05); }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        
-        /* КАРТОЧКА: Четкая рамка и дорогой стиль */
-        .card { 
-            background: var(--card-bg); 
-            border: 2px solid var(--border); /* Четкая рамка сразу */
-            border-radius: 14px; padding: 20px; 
-            display: flex; flex-direction: column; transition: 0.3s ease;
-        }
-        .card:hover { border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; transition: 0.3s; }
+        .card:hover { border-color: var(--accent); transform: translateY(-3px); }
 
-        .img-box { 
-            height: 200px; background: #fff; border-radius: 10px; 
-            margin-bottom: 18px; display: flex; align-items: center; 
-            justify-content: center; overflow: hidden; border: 1px solid var(--border);
-        }
-        .img-box img { width: 85%; height: 85%; object-fit: contain; }
-        
-        h3 { font-size: 18px; margin: 0 0 12px 0; color: #fff; font-weight: 600; line-height: 1.4; }
-        
-        /* Стандартный шрифт для клиентов */
-        .desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; flex-grow: 1; }
-        
-        .price { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: var(--accent); }
+        .img-box { height: 180px; background: white; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
+        .img-box img { max-width: 80%; max-height: 80%; object-fit: contain; }
 
-        /* БАРХАТНАЯ КНОПКА */
-        .btn { 
-            background: linear-gradient(180deg, #2ea043 0%, #238636 100%); 
-            color: #fff; text-decoration: none; padding: 15px; text-align: center; 
-            border-radius: 10px; font-weight: 600; font-size: 16px;
-            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3); border: 1px solid #3fb950;
+        h3 { font-size: 17px; margin: 0 0 10px 0; line-height: 1.4; }
+        .desc { font-size: 14px; color: #8b949e; line-height: 1.5; margin-bottom: 15px; flex-grow: 1; }
+        .price { font-size: 22px; font-weight: bold; color: var(--accent); margin-bottom: 15px; }
+
+        .buy-btn { 
+            background: linear-gradient(180deg, #2ea043, #238636); 
+            color: white; text-decoration: none; text-align: center; padding: 12px; 
+            border-radius: 8px; font-weight: 600; font-size: 15px; border: 1px solid #3fb950;
         }
-        #status { text-align: center; padding: 60px; color: var(--muted); font-size: 18px; }
     </style>
 </head>
 <body>
-    <div class="category-bar">
-        <button class="cat-btn active" onclick="filterCat('Все', this)">Все товары</button>
-        <button class="cat-btn" onclick="filterCat('Смартфоны', this)">Смартфоны</button>
-        <button class="cat-btn" onclick="filterCat('Гаджеты', this)">Гаджеты</button>
-        <button class="cat-btn" onclick="filterCat('Бытовая техника', this)">Техника</button>
+    <div id="cat-list" class="category-bar">
+        <button class="cat-btn active" onclick="filter('Все', this)">Все товары</button>
     </div>
 
-    <div id="status">Загрузка премиум-каталога...</div>
     <div id="list" class="grid"></div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let allProducts = [];
+        let store = [];
 
-        async function load() {
-            const { data, error } = await supabaseClient.from('products').select('*, ai_content(fancy_description)').order('created_at', { ascending: false });
-            const status = document.getElementById('status');
-            
-            if (error) { status.innerText = "Сбой связи. Проверьте настройки."; return; }
-            if (!data || data.length === 0) { status.innerText = "Витрина ожидает наполнения..."; return; }
-
-            status.style.display = 'none';
-            allProducts = data;
-            render(data);
+        async function init() {
+            const { data } = await supabaseClient.from('products').select('*, ai_content(fancy_description)').order('created_at', { ascending: false });
+            if (data) {
+                store = data;
+                render(data);
+                updateCategories(data);
+            }
         }
 
         function render(items) {
-            document.getElementById('list').innerHTML = items.map(p => {
-                const description = (p.ai_content && p.ai_content.length > 0) ? p.ai_content[0].fancy_description : "Описание уточняется...";
-                return `
+            document.getElementById('list').innerHTML = items.map(p => `
                 <div class="card">
                     <div class="img-box"><img src="${p.image_url}"></div>
-                    <div style="font-size:11px; color:var(--muted); text-transform:uppercase; margin-bottom:8px; font-weight:600; letter-spacing: 0.5px;">${p.category || 'Premium'}</div>
+                    <div style="font-size:10px; color:var(--accent); text-transform:uppercase; font-weight:bold; margin-bottom:5px;">${p.category}</div>
                     <h3>${p.title}</h3>
-                    <div class="desc">${description}</div>
+                    <div class="desc">${p.ai_content?.[0]?.fancy_description || "Создаем описание..."}</div>
                     <div class="price">${p.price.toLocaleString()} ₴</div>
-                    <a href="${p.product_url}" target="_blank" class="btn">Подробнее</a>
-                </div>`;
-            }).join('');
+                    <a href="${p.product_url}" target="_blank" class="buy-btn">Узнать цену</a>
+                </div>
+            `).join('');
         }
 
-        function filterCat(cat, btn) {
+        function updateCategories(data) {
+            const cats = ['Все', ...new Set(data.map(p => p.category))];
+            document.getElementById('cat-list').innerHTML = cats.map(c => 
+                `<button class="cat-btn ${c==='Все'?'active':''}" onclick="filter('${c}', this)">${c}</button>`
+            ).join('');
+        }
+
+        function filter(c, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            if (cat === 'Все') return render(allProducts);
-            render(allProducts.filter(p => p.category === cat));
+            render(c === 'Все' ? store : store.filter(p => p.category === c));
         }
 
-        load();
+        init();
     </script>
 </body>
 </html>
