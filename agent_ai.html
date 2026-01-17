@@ -4,88 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="unsafe-url">
-    <title>AI Agent: Final Check</title>
+    <title>Vitrina: AI Super-Agent</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=test_662a"></script>
+    <script src="config.js?v=force_start"></script>
     <style>
-        :root { --bg: #0b0e14; --card: #1c1326; --accent: #bd00ff; --text: #e0e6ed; --success: #00ff41; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; margin: 0; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #4a1d63; width: 100%; max-width: 550px; text-align: center; box-shadow: 0 10px 40px rgba(189,0,255,0.2); }
-        h1 { font-size: 24px; color: var(--accent); margin-bottom: 20px; text-transform: uppercase; }
-        .velvet-btn { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 25px; border-radius: 16px; border: 1px solid var(--accent); width: 100%; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 18px; color: var(--accent); border: 1px solid #333; min-height: 350px; text-align: left; overflow-y: auto; }
+        :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; --success: #238636; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .panel { background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid #30363d; width: 100%; max-width: 500px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .velvet-btn { background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); color: white; padding: 20px; border-radius: 12px; border: none; width: 100%; font-size: 20px; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 12px rgba(189,0,255,0.3); }
+        #log { margin-top: 20px; background: #010409; padding: 15px; border-radius: 8px; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 16px; color: #8b949e; border: 1px solid #30363d; min-height: 300px; overflow-y: auto; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="panel">
-        <h1>ИИ-АГЕНТ: ПРОВЕРКА</h1>
-        <button class="velvet-btn" onclick="runCheck()">ЗАПУСТИТЬ</button>
-        <div id="log">> Ожидание команды...</div>
+        <h2 style="margin-top:0; color:var(--accent);">AI КОНВЕЙЕР</h2>
+        <button class="velvet-btn" onclick="run()">ЗАПУСТИТЬ</button>
+        <div id="log">> Система готова...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        
-        async function runCheck() {
-            const log = document.getElementById('log');
-            
-            // 1. Проверяем, какой ключ видит программа
-            const key = CONFIG.AI_KEY.trim();
-            const lastFour = key.slice(-4);
-            
-            log.innerHTML = `<b style="color:#fff">ТЕСТ ФАЙЛОВ:</b><br>`;
-            log.innerHTML += `> Ключ заканчивается на: <b style="color:yellow">${lastFour}</b><br>`;
-            
-            if (lastFour !== "662a") {
-                log.innerHTML += `<span style="color:red">! ОШИБКА: GitHub всё еще выдает старый файл. Подождите 1 минуту и обновите страницу.</span>`;
-                return;
-            }
 
-            log.innerHTML += `> Связь с Supabase...<br>`;
+        async function run() {
+            const log = document.getElementById('log');
+            log.innerHTML = "> Подключение...";
 
             try {
-                // Поиск товара
+                // 1. Поиск товара
                 const { data: products } = await supabaseClient.from('products')
                     .select('*').eq('is_processed_ai', false).limit(1);
-                
+
                 if (!products || products.length === 0) {
-                    log.innerHTML += "> Очередь пуста."; return;
+                    log.innerHTML += "<br>> Все товары обработаны!"; return;
                 }
-
                 const p = products[0];
-                log.innerHTML += `> Товар: <b>${p.title}</b><br>`;
-                log.innerHTML += `> Запрос к ИИ (GPT-4o-mini)...<br>`;
+                log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
 
-                // Запрос к OpenRouter
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                // 2. Запрос к ИИ (Бесплатная модель-пробойник)
+                log.innerHTML += `<br>> Генерация через Zephyr (Free)...`;
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { 
-                        "Authorization": "Bearer " + key,
+                        "Authorization": "Bearer " + CONFIG.AI_KEY.trim(),
                         "Content-Type": "application/json",
                         "HTTP-Referer": "https://territory-trust.github.io"
                     },
                     body: JSON.stringify({
-                        model: CONFIG.AI_MODEL,
-                        messages: [{role: "user", content: "Напиши 2 премиальных предложения для: " + p.title}]
+                        model: "huggingfaceh4/zephyr-7b-beta:free",
+                        messages: [{role: "user", content: "Write 2 luxury sentences for: " + p.title}]
                     })
                 });
 
-                const data = await response.json();
+                const data = await res.json();
                 if (data.error) throw new Error(data.error.message);
 
                 const desc = data.choices[0].message.content;
-                log.innerHTML += `<span style="color:var(--success)">✔ УСПЕХ! Текст получен.</span><br>`;
+                log.innerHTML += `<br><span style="color:var(--success)">✔ ТЕКСТ ПОЛУЧЕН!</span>`;
 
-                // Сохранение
+                // 3. Запись в базу
                 await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                 await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
 
-                log.innerHTML += `> Сохранено в базу.<br>`;
-                setTimeout(runCheck, 3000);
+                log.innerHTML += `<br>> Сохранено. Жду 3 сек...`;
+                setTimeout(run, 3000);
 
             } catch (err) {
-                log.innerHTML += `<span style="color:red">! СБОЙ: ${err.message}</span>`;
+                log.innerHTML += `<br><span style="color:#f85149">! СБОЙ: ${err.message}</span>`;
             }
         }
     </script>
