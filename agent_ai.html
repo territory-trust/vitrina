@@ -1,50 +1,79 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>AI Writer: Pro Mode</title>
+    <title>AI Writer: Auto Mode</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0b0e14; --neon: #bd00ff; --cyan: #00d4ff; --card: #151921; }
-        body { background: var(--bg); color: #e0e6ed; font-family: sans-serif; text-align: center; padding: 30px; }
-        .panel { background: var(--card); border-radius: 12px; padding: 25px; border: 1px solid #333; margin-bottom: 20px; }
-        .velvet-btn { background: #1a1f2e; color: var(--cyan); padding: 20px 40px; border-radius: 12px; border: 1px solid var(--cyan); font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #000; font-size: 18px; }
-        #log { background: #000; padding: 20px; border-radius: 12px; color: #00ff41; font-family: monospace; text-align: left; height: 300px; overflow-y: auto; font-size: 16px; }
+        :root { --bg: #0b0e14; --card: #1c1326; --accent: #bd00ff; --text: #e0e6ed; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 30px; display: flex; flex-direction: column; align-items: center; }
+        .panel { background: var(--card); padding: 35px; border-radius: 16px; border: 1px solid #4a1d63; width: 100%; max-width: 500px; box-shadow: 0 10px 40px rgba(189,0,255,0.15); }
+        h1 { font-size: 22px; color: var(--accent); margin-bottom: 25px; text-align: center; }
+        
+        .velvet-btn { 
+            background: linear-gradient(145deg, #7d00aa, #5a007a);
+            color: white; padding: 20px; border-radius: 12px; border: 1px solid var(--accent);
+            width: 100%; font-size: 20px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4); transition: 0.3s;
+        }
+        #log { 
+            margin-top: 25px; background: #000; padding: 20px; border-radius: 10px;
+            font-family: 'Consolas', monospace; font-size: 17px; color: #bd00ff;
+            border: 1px solid #333; min-height: 200px; line-height: 1.5;
+        }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h1 style="color:var(--neon)">ПЛАТНЫЙ ИИ-ОПИСАТЕЛЬ</h1>
-        <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ (МОДЕЛЬ GPT-4O)</button>
+        <h1>АВТОПИЛОТ: ПРЕМИУМ-ОПИСАНИЯ</h1>
+        <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ АВТОМАТИКУ</button>
+        <div id="log">> Система готова (Бюджет: $5)</div>
     </div>
-    <div id="log">> Система готова к работе с балансом $5.</div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         async function start() {
             const log = document.getElementById('log');
-            const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
-            if (!products || products.length === 0) { log.innerHTML += "<br>> Все готово!"; return; }
             
-            const p = products[0];
-            log.innerHTML += `<br>> Описываю: ${p.title}...`;
+            try {
+                // Ищем 1 необработанный товар
+                const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
+                
+                if (!products || products.length === 0) {
+                    log.innerHTML += "<br>> Ожидание новых товаров...";
+                    setTimeout(start, 5000); // Проверка каждые 5 сек
+                    return;
+                }
 
-            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "model": CONFIG.AI_MODEL,
-                    "messages": [{"role": "user", "content": "Опиши кратко товар: " + p.title}]
-                })
-            });
-            const data = await res.json();
-            const desc = data.choices[0].message.content;
+                const p = products[0];
+                log.innerHTML += `<br>> Создаю шедевр для: ${p.title}...`;
 
-            await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-            await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-            log.innerHTML += " <span style='color:cyan'>ОК</span>";
-            setTimeout(start, 1000);
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: CONFIG.AI_MODEL,
+                        messages: [{role: "user", content: `Напиши премиальное, дорогое рекламное описание (2 предложения) для товара: ${p.title}. Стиль: спокойный, уверенный.`}]
+                    })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
+
+                const desc = data.choices[0].message.content;
+
+                // Сохраняем и обновляем статус
+                await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
+                await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
+
+                log.innerHTML += " <span style='color:#00ff41'>[ГОТОВО]</span>";
+                setTimeout(start, 1000); // К следующему товару
+
+            } catch (err) {
+                log.innerHTML += `<br><span style="color:red">! Сбой: ${err.message}. Жду 10 сек...</span>`;
+                setTimeout(start, 10000);
+            }
         }
     </script>
 </body>
