@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Writer: Simple Connect</title>
+    <title>AI Writer: Gemini Boost</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=999"></script>
+    <script src="config.js?v=2026"></script>
     <style>
         :root { --bg: #0b0e14; --card: #1c1326; --accent: #bd00ff; --text: #e0e6ed; --success: #00ff41; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; margin: 0; }
@@ -18,9 +18,9 @@
 <body>
 
     <div class="panel">
-        <h1>ИИ-ОПИСАТЕЛЬ (SIMPLE)</h1>
+        <h1>ИИ-ОПИСАТЕЛЬ (GEMINI)</h1>
         <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ</button>
-        <div id="log">> Ожидание...</div>
+        <div id="log">> Готов к работе...</div>
     </div>
 
     <script>
@@ -28,13 +28,13 @@
         
         async function start() {
             const log = document.getElementById('log');
-            log.innerHTML = `> Поиск товара...`;
+            log.innerHTML = `> Подключение к базе...`;
 
-            // 1. Берем ключ и чистим его ОТ ВСЕГО лишнего
-            const rawKey = CONFIG.AI_KEY;
-            const cleanKey = rawKey.replace(/[^a-zA-Z0-9-]/g, '').trim(); 
+            // Чистка ключа на всякий случай
+            const cleanKey = CONFIG.AI_KEY.trim().replace(/['"]/g, '');
 
             try {
+                // 1. Берем товар
                 const { data: products } = await supabaseClient.from('products')
                     .select('*').eq('is_processed_ai', false).limit(1);
                 
@@ -43,40 +43,48 @@
                 }
 
                 const p = products[0];
-                log.innerHTML += `<br>> Товар: ${p.title}`;
-                log.innerHTML += `<br>> Проверка ключа (первые 10): ${cleanKey.substring(0, 10)}`;
+                log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
+                log.innerHTML += `<br>> Генерирую описание...`;
 
-                // 2. Самый простой запрос
+                // 2. Запрос к Gemini через OpenRouter
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { 
                         "Authorization": "Bearer " + cleanKey,
                         "Content-Type": "application/json"
+                        // Заголовки Referer убраны, так как для Free моделей они не обязательны
                     },
                     body: JSON.stringify({
-                        model: CONFIG.AI_MODEL,
-                        messages: [{role: "user", content: "Напиши 1 короткое рекламное предложение для: " + p.title}]
+                        model: CONFIG.AI_MODEL, 
+                        messages: [{
+                            role: "user", 
+                            content: `Ты элитный копирайтер. Напиши 2 коротких, продающих предложения для товара "${p.title}". Используй слова: премиум, качество, выгода.`
+                        }]
                     })
                 });
 
                 const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(data.error?.message || "Ошибка API");
+                if (data.error) {
+                    throw new Error(data.error.message);
                 }
 
                 const desc = data.choices[0].message.content;
-                log.innerHTML += `<br>> Текст готов!`;
+                log.innerHTML += `<br>> <span style="color:#58a6ff">УСПЕХ! Описание создано.</span>`;
                 
-                // 3. Сохраняем
+                // 3. Сохранение
                 await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                 await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
 
-                log.innerHTML += " <span style='color:var(--success)'>[ОК]</span>";
+                log.innerHTML += " <span style='color:var(--success)'>[СОХРАНЕНО]</span>";
                 setTimeout(start, 2000);
 
             } catch (err) {
                 log.innerHTML += `<br><span style="color:red">! ОШИБКА: ${err.message}</span>`;
+                // Если снова User not found — значит ключ "мертвый" на стороне OpenRouter
+                if (err.message.includes("User not found")) {
+                     log.innerHTML += `<br><br>ВНИМАНИЕ: Если вы видите это на бесплатной модели, значит ключ был удален или заблокирован в OpenRouter.`;
+                }
             }
         }
     </script>
