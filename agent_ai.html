@@ -3,81 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Writer: Premium Auto-Pilot</title>
+    <title>AI Writer: Auto-Pilot</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { 
-            --bg: #0b0e14; 
-            --card: #1c1326; 
-            --accent: #bd00ff; 
-            --text: #e0e6ed; 
-            --success: #00ff41;
-        }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: -apple-system, sans-serif; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-
-        .panel { 
-            background: var(--card); 
-            padding: 40px 25px; 
-            border-radius: 20px; 
-            border: 1px solid #4a1d63; 
-            width: 100%; 
-            max-width: 550px; 
-            box-shadow: 0 10px 40px rgba(189,0,255,0.15); 
-            box-sizing: border-box;
-        }
-
-        h1 { 
-            font-size: 26px; 
-            color: var(--accent); 
-            margin-bottom: 30px; 
-            text-align: center; 
-            font-weight: 800;
-        }
-
-        /* ОГРОМНАЯ БАРХАТНАЯ КНОПКА */
-        .velvet-btn { 
-            background: linear-gradient(145deg, #7d00aa, #5a007a);
-            color: white; 
-            padding: 28px; 
-            border-radius: 16px; 
-            border: 1px solid var(--accent);
-            width: 100%; 
-            font-size: 24px; 
-            font-weight: bold; 
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4); 
-            transition: 0.2s;
-            text-transform: uppercase;
-        }
-        
-        .velvet-btn:active { transform: scale(0.98); }
-
-        /* УВЕЛИЧЕННЫЙ ЛОГ */
-        #log { 
-            margin-top: 30px; 
-            background: #000; 
-            padding: 25px; 
-            border-radius: 12px;
-            font-family: 'Consolas', monospace; 
-            font-size: 19px; /* Средний комфортный шрифт */
-            color: var(--accent);
-            border: 1px solid #333; 
-            min-height: 250px; 
-            line-height: 1.6;
-            overflow-y: auto;
-        }
-
-        .balance-info { color: #58a6ff; font-weight: bold; border-bottom: 1px solid #333; margin-bottom: 10px; padding-bottom: 5px; }
+        :root { --bg: #0b0e14; --card: #1c1326; --accent: #bd00ff; --text: #e0e6ed; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .panel { background: var(--card); padding: 35px; border-radius: 20px; border: 1px solid #4a1d63; width: 100%; max-width: 550px; box-shadow: 0 10px 40px rgba(189,0,255,0.15); }
+        h1 { font-size: 24px; color: var(--accent); margin-bottom: 25px; text-align: center; font-weight: 800; }
+        .velvet-btn { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 25px; border-radius: 15px; border: 1px solid var(--accent); width: 100%; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 18px; color: var(--accent); border: 1px solid #333; min-height: 250px; line-height: 1.5; overflow-y: auto; text-align: left; }
     </style>
 </head>
 <body>
@@ -90,83 +25,58 @@
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-        // Функция проверки баланса OpenRouter
-        async function checkBalance() {
-            try {
-                const res = await fetch("https://openrouter.ai/api/v1/user", {
-                    headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}` }
-                });
-                const data = await res.json();
-                if (data.data) {
-                    const credits = data.data.total_credits - data.data.usage;
-                    return `<div class="balance-info">💰 ОСТАТОК: $${credits.toFixed(4)}</div>`;
-                }
-            } catch (e) { return ""; }
-            return "";
-        }
-
         async function start() {
             const log = document.getElementById('log');
-            const balanceHtml = await checkBalance();
-            log.innerHTML = balanceHtml + `> Запуск цикла...`;
             
             try {
-                // Ищем товар, где is_processed_ai = false
-                const { data: products, error: sbError } = await supabaseClient
-                    .from('products')
+                const { data: products } = await supabaseClient.from('products')
                     .select('*')
                     .eq('is_processed_ai', false)
+                    .order('created_at', { ascending: true })
                     .limit(1);
                 
-                if (sbError) throw new Error("Supabase: " + sbError.message);
-                
                 if (!products || products.length === 0) {
-                    log.innerHTML += "<br>> Новых товаров нет. Жду 10 сек...";
-                    setTimeout(start, 10000);
+                    log.innerHTML += "<br>> Все товары в очереди обработаны.";
                     return;
                 }
 
                 const p = products[0];
-                log.innerHTML += `<br>> Описываю: <span style="color:#fff">${p.title}</span>...`;
+                log.innerHTML += `<br>> Описываю: <b>${p.title}</b>...`;
 
-                // Запрос к ИИ с учетом всех заголовков
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { 
                         "Authorization": `Bearer ${CONFIG.AI_KEY}`, 
                         "Content-Type": "application/json",
                         "HTTP-Referer": window.location.origin,
-                        "X-Title": "Vitrina Showcase"
+                        "X-Title": "Vitrina Premium"
                     },
                     body: JSON.stringify({
                         model: CONFIG.AI_MODEL,
-                        messages: [{role: "user", content: `Напиши премиальное, короткое рекламное описание для: ${p.title}`}]
+                        messages: [{role: "user", content: `Напиши 2 премиальных предложения для: ${p.title}`}]
                     })
                 });
 
                 const data = await res.json();
-                if (data.error) throw new Error("ИИ: " + data.error.message); // Решение ошибки "User not found"
+
+                if (data.error) {
+                    log.innerHTML += `<br><span style="color:red">! Сбой ИИ: ${data.error.message}</span>`;
+                    // Помечаем как обработанный, чтобы не зацикливаться на ошибке
+                    await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
+                    log.innerHTML += `<br>> Товар пропущен из-за ошибки. Перехожу к следующему...`;
+                    setTimeout(start, 3000);
+                    return;
+                }
 
                 const desc = data.choices[0].message.content;
-
-                // Записываем результат в ai_content
-                const { error: insError } = await supabaseClient
-                    .from('ai_content')
-                    .insert({ product_id: p.id, fancy_description: desc });
-                
-                if (insError) throw new Error("Запись: " + insError.message);
-
-                // Помечаем товар как готовый
+                await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                 await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
 
                 log.innerHTML += " <span style='color:#00ff41'>[OK]</span>";
-                
-                // Рекурсивный запуск
                 setTimeout(start, 2000);
 
             } catch (err) {
-                log.innerHTML += `<br><span style="color:#f85149">! ОШИБКА: ${err.message}</span>`;
-                log.innerHTML += `<br>> Повтор через 10 секунд...`;
+                log.innerHTML += `<br><span style="color:red">! Критическая ошибка: ${err.message}</span>`;
                 setTimeout(start, 10000);
             }
         }
