@@ -2,23 +2,118 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scout Agent: Control Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0b1014; --card: #161b22; --accent: #3fb950; --text: #e6edf3; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: var(--card); padding: 40px 25px; border-radius: 20px; border: 1px solid #30363d; width: 100%; max-width: 550px; }
-        h1 { font-size: 28px; color: var(--accent); text-align: center; margin-bottom: 35px; font-weight: 800; }
-        .btn-run { background: linear-gradient(180deg, #2ea043 0%, #238636 100%); color: #fff; padding: 30px; border-radius: 18px; border: 1px solid #3fb950; width: 100%; font-weight: 800; font-size: 26px; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 35px; background: #000; padding: 25px; border-radius: 12px; font-family: monospace; font-size: 19px; line-height: 1.5; color: #7ee787; border: 1px solid #30363d; min-height: 250px; text-align: left; }
+        :root { 
+            --bg: #0b1014; 
+            --card: #161b22; 
+            --accent: #3fb950; 
+            --text: #e6edf3; 
+            --link: #bd00ff; /* Фиолетовый акцент для ИИ */
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: -apple-system, sans-serif; 
+            padding: 15px; 
+            margin: 0;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        /* ГИГАНТСКАЯ КНОПКА ПЕРЕХОДА К ИИ */
+        .nav-container {
+            width: 100%;
+            max-width: 550px;
+            margin-bottom: 25px;
+        }
+        .nav-link-btn {
+            display: block;
+            background: #1c1326; /* Темно-фиолетовый, в стиле ИИ */
+            color: var(--link);
+            text-align: center;
+            padding: 25px;
+            border-radius: 18px;
+            border: 2px solid var(--link);
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 800;
+            box-shadow: 0 4px 15px rgba(189, 0, 255, 0.2);
+            text-transform: uppercase;
+        }
+
+        .container { 
+            background: var(--card); 
+            padding: 35px 20px; 
+            border-radius: 20px; 
+            border: 1px solid #30363d; 
+            width: 100%; 
+            max-width: 550px; 
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 { 
+            font-size: 26px; 
+            color: var(--accent); 
+            text-align: center; 
+            margin-bottom: 30px; 
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        /* КНОПКА ЗАПУСКА РАЗВЕДКИ */
+        .btn-run { 
+            background: linear-gradient(180deg, #2ea043 0%, #238636 100%);
+            color: #fff; 
+            padding: 30px; 
+            border-radius: 16px; 
+            border: 1px solid #3fb950; 
+            width: 100%; 
+            font-weight: 800; 
+            font-size: 26px; 
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+        
+        .btn-run:active { transform: scale(0.98); }
+
+        /* ОКНО ЛОГА */
+        #log { 
+            margin-top: 30px; 
+            background: #000; 
+            padding: 25px; 
+            border-radius: 12px;
+            font-family: 'Consolas', monospace; 
+            font-size: 19px; 
+            line-height: 1.6; 
+            color: #7ee787; 
+            border: 1px solid #30363d; 
+            min-height: 250px;
+            text-align: left;
+            overflow-y: auto;
+        }
+
+        .ok { color: #58a6ff; font-weight: bold; }
+        .skip { color: orange; }
     </style>
 </head>
 <body>
+
+    <div class="nav-container">
+        <a href="agent_ai.html" class="nav-link-btn">➔ ПЕРЕЙТИ К ИИ-ОПИСАТЕЛЮ</a>
+    </div>
+
     <div class="container">
         <h1>РАЗВЕДКА ТОВАРОВ</h1>
-        <button class="btn-run" onclick="startScout()">ЗАПУСТИТЬ ПРОЦЕСС</button>
-        <div id="log">> Ожидание...</div>
+        <button class="btn-run" onclick="startScout()">ЗАПУСТИТЬ ПОИСК</button>
+        <div id="log">> Система ожидает...</div>
     </div>
 
     <script>
@@ -30,34 +125,44 @@
 
             try {
                 const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
-                // Пример данных для поиска
+                
+                // Тестовый набор для проверки
                 const products = [
-                    {n: "Смартфон Apple iPhone 15 Pro", p: 48000, c: "Смартфоны", url: "https://rozetka.com.ua/iphone-15-pro"},
-                    {n: "Fujifilm X-T5 Mirrorless", p: 75000, c: "Фото", url: "https://rozetka.com.ua/fujifilm-xt5"}
+                    {n: "Смартфон Samsung Galaxy S24 Ultra", p: 52000, c: "Смартфоны", url: "https://rozetka.com.ua/samsung-s24-ultra"},
+                    {n: "Объектив Sony 24-70mm GM II", p: 95000, c: "Фото", url: "https://rozetka.com.ua/sony-24-70-gm2"}
                 ];
 
                 for (let item of products) {
                     log.innerHTML += `<br>> Анализ: ${item.n}`;
                     
-                    const { data: existing } = await supabaseClient.from('products').select('id').eq('product_url', item.url).maybeSingle();
+                    // Проверка на дубликат, чтобы не было ошибки Unique Constraint
+                    const { data: existing } = await supabaseClient.from('products')
+                        .select('id')
+                        .eq('product_url', item.url)
+                        .maybeSingle();
                     
                     if (existing) {
-                        log.innerHTML += ` <span style="color:orange">[УЖЕ В БАЗЕ]</span>`;
+                        log.innerHTML += ` <span class="skip">[УЖЕ В БАЗЕ]</span>`;
                         continue;
                     }
 
                     const { error } = await supabaseClient.from('products').insert({
-                        title: item.n, price: item.p, category: item.c, shop_id: shops[0].id,
+                        title: item.n, 
+                        price: item.p, 
+                        category: item.c, 
+                        shop_id: shops[0].id,
                         image_url: `https://loremflickr.com/400/400/tech?lock=${Math.random()}`,
                         product_url: item.url,
                         is_processed_ai: false
                     });
 
                     if(error) throw error;
-                    log.innerHTML += ` <span style="color:#58a6ff">[ДОБАВЛЕН]</span>`;
+                    log.innerHTML += ` <span class="ok">[ДОБАВЛЕН]</span>`;
                 }
-                log.innerHTML += `<br><br><b>ПРОЦЕСС ЗАВЕРШЕН.</b>`;
-            } catch (err) { log.innerHTML += `<br><br><span style="color:#f85149">[ОШИБКА] ${err.message}</span>`; }
+                log.innerHTML += `<br><br><b style="color:#fff">ЗАВЕРШЕНО.</b>`;
+            } catch (err) { 
+                log.innerHTML += `<br><br><span style="color:#f85149">[ОШИБКА] ${err.message}</span>`; 
+            }
         }
     </script>
 </body>
