@@ -2,65 +2,155 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Scout Agent: Premium Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout Agent: Control Panel</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0b0e14; --card: #151921; --accent: #3fb950; --text: #e0e6ed; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 30px; display: flex; flex-direction: column; align-items: center; }
-        .panel { background: var(--card); padding: 35px; border-radius: 16px; border: 1px solid #30363d; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { font-size: 22px; color: var(--accent); margin-bottom: 25px; text-align: center; letter-spacing: 1px; }
+        :root { 
+            --bg: #0b1014; 
+            --card: #161b22; 
+            --accent: #3fb950; 
+            --text: #e6edf3; 
+            --link: #58a6ff;
+        }
         
-        /* Бархатная объемная кнопка */
-        .velvet-btn { 
-            background: linear-gradient(145deg, #2ea043, #238636);
-            color: white; padding: 20px; border-radius: 12px; border: 1px solid #3fb950;
-            width: 100%; font-size: 20px; font-weight: bold; cursor: pointer;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 6px 15px rgba(0,0,0,0.4);
-            transition: 0.3s;
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: -apple-system, system-ui, sans-serif; 
+            padding: 20px; 
+            margin: 0;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
         }
-        .velvet-btn:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
 
-        #log { 
-            margin-top: 25px; background: #010409; padding: 20px; border-radius: 10px;
-            font-family: 'Consolas', monospace; font-size: 17px; color: #7ee787;
-            border: 1px solid #30363d; min-height: 150px; line-height: 1.6;
+        /* Навигация между агентами */
+        .nav-links {
+            width: 100%;
+            max-width: 550px;
+            margin-bottom: 20px;
+            text-align: right;
         }
+        .nav-links a {
+            color: var(--link);
+            text-decoration: none;
+            font-size: 20px; /* Крупно для телефона */
+            font-weight: 500;
+        }
+
+        .container { 
+            background: var(--card); 
+            padding: 40px 25px; 
+            border-radius: 20px; 
+            border: 1px solid #30363d; 
+            width: 100%; 
+            max-width: 550px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            box-sizing: border-box;
+        }
+
+        h1 { 
+            font-size: 28px; /* Увеличено */
+            color: var(--accent); 
+            text-align: center; 
+            margin-bottom: 35px; 
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        /* ОГРОМНАЯ БАРХАТНАЯ КНОПКА */
+        .btn-run { 
+            background: linear-gradient(180deg, #2ea043 0%, #238636 100%);
+            color: #ffffff; 
+            padding: 30px; /* Очень большая область нажатия */
+            border-radius: 18px; 
+            border: 1px solid #3fb950;
+            width: 100%; 
+            font-weight: 800; 
+            font-size: 26px; /* Крупный шрифт на кнопке */
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(35, 134, 54, 0.4), inset 0 2px 5px rgba(255,255,255,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+            text-transform: uppercase;
+        }
+        
+        .btn-run:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* УВЕЛИЧЕННЫЙ ЛОГ */
+        #log { 
+            margin-top: 35px; 
+            background: #000000; 
+            padding: 25px; 
+            border-radius: 12px;
+            font-family: 'Courier New', monospace; 
+            font-size: 19px; /* Средний, четкий шрифт для чтения с телефона */
+            line-height: 1.6; 
+            color: #7ee787; 
+            border: 1px solid #30363d; 
+            min-height: 250px;
+            overflow-y: auto;
+        }
+
+        .status-ok { color: #58a6ff; font-weight: bold; }
+        .status-err { color: #f85149; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <h1>СИСТЕМА РАЗВЕДКИ ТОВАРОВ</h1>
-        <button class="velvet-btn" onclick="scout()">ЗАПУСТИТЬ ПОИСК</button>
-        <div id="log">> Ожидание команды...</div>
+
+    <div class="nav-links">
+        <a href="agent_ai.html">Перейти к ИИ-Описателю →</a>
+    </div>
+
+    <div class="container">
+        <h1>РАЗВЕДКА ТОВАРОВ</h1>
+        <button class="btn-run" onclick="startScout()">ЗАПУСТИТЬ ПРОЦЕСС</button>
+        <div id="log">> Система ожидает...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function scout() {
+
+        async function startScout() {
             const log = document.getElementById('log');
-            log.innerHTML = `> Связь с Rozetka через SalesDoubler...`;
+            log.innerHTML = `> Подключение к базе...`;
 
             try {
+                // Берем ID магазина (Rozetka)
                 const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
-                // Имитация поиска (здесь будет ваш парсер)
-                const found = [
-                    {n: "Смартфон Samsung Galaxy S24 Ultra", p: 52000, c: "Смартфоны"},
-                    {n: "Планшет Apple iPad Air M2", p: 31000, c: "Гаджеты"}
+                
+                // Данные, которые мы имитируем (или будем парсить позже)
+                const products = [
+                    {n: "Смартфон Apple iPhone 15 Pro", p: 48000, c: "Смартфоны"},
+                    {n: "Наушники Sony WH-1000XM5", p: 14000, c: "Гаджеты"}
                 ];
 
-                for (let item of found) {
-                    log.innerHTML += `<br>> Найден: ${item.n}`;
+                for (let item of products) {
+                    log.innerHTML += `<br>> Анализ: <span style="color:#fff">${item.n}</span>`;
+                    
                     const { error } = await supabaseClient.from('products').insert({
-                        title: item.n, price: item.p, category: item.c, shop_id: shops[0].id,
+                        title: item.n,
+                        price: item.p,
+                        category: item.c,
+                        shop_id: shops[0].id,
                         image_url: `https://loremflickr.com/400/400/tech?lock=${Math.random()}`,
                         product_url: `https://rozetka.com.ua/search/?text=${encodeURIComponent(item.n)}`,
-                        is_processed_ai: false // ПЕРЕДАЕМ ОЧЕРЕДЬ ИИ-АГЕНТУ
+                        is_processed_ai: false // Помечаем для AI-агента
                     });
+
                     if(error) throw error;
+                    log.innerHTML += ` <span class="status-ok">[ДОБАВЛЕН]</span>`;
                 }
-                log.innerHTML += `<br><br><b style="color:white">ГОТОВО. Передано в ИИ-описатель.</b>`;
-            } catch (e) { log.innerHTML += `<br><br><span style="color:#f85149">! ОШИБКА: ${e.message}</span>`; }
+
+                log.innerHTML += `<br><br><b style="color:#fff">УСПЕХ. Теперь запустите Агента AI для создания описаний.</b>`;
+
+            } catch (err) {
+                log.innerHTML += `<br><br><span class="status-err">[ОШИБКА] ${err.message}</span>`;
+            }
         }
     </script>
 </body>
