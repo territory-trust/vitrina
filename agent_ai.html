@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vitrina: AI Agent Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=999"></script>
+    <script src="config.js?v=force_final"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
         .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(189,0,255,0.2); }
         .velvet-btn { 
             background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); 
@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">AI КОНВЕЙЕР</h2>
+        <h2 style="color:var(--accent); text-transform:uppercase;">AI КОНВЕЙЕР</h2>
         <button class="velvet-btn" onclick="startAgent()">ЗАПУСТИТЬ</button>
         <div id="log">> Система готова...</div>
     </div>
@@ -38,7 +38,7 @@
             log.innerHTML = "> Подключение к базе...";
 
             try {
-                // 1. Берем товар
+                // 1. Берем товар из базы
                 const { data: products } = await supabaseClient.from('products')
                     .select('*').eq('is_processed_ai', false).limit(1);
 
@@ -48,36 +48,35 @@
                 const p = products[0];
                 log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
 
-                // 2. Запрос к вашему Gemini (используем v1beta для макс. совместимости)
+                // 2. Запрос к ИИ (используем универсальное имя модели)
                 log.innerHTML += `<br>> Генерация через Gemini...`;
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CONFIG.GOOGLE_AI_KEY}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${CONFIG.GOOGLE_AI_KEY}`;
                 
                 const res = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: "Напиши 2 дорогих предложения для: " + p.title }] }]
+                        contents: [{ parts: [{ text: "Напиши 2 роскошных рекламных предложения для продажи: " + p.title }] }]
                     })
                 });
 
                 const data = await res.json();
 
-                // Проверка на ошибки API
                 if (data.error) throw new Error(data.error.message);
 
-                // Безопасное чтение текста (вот здесь мы фиксим вашу ошибку)
-                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                if (data.candidates && data.candidates[0].content) {
                     const desc = data.candidates[0].content.parts[0].text;
                     log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ ПОЛУЧЕН!</span>`;
 
-                    // 3. Сохранение
+                    // 3. Сохранение результата в Supabase
                     await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML += `<br>> Сохранено. Жду 3 сек...`;
+                    log.innerHTML += `<br>> Данные сохранены.`;
+                    // Пауза 3 секунды перед следующим товаром
                     setTimeout(startAgent, 3000);
                 } else {
-                    throw new Error("Пустой ответ от ИИ");
+                    throw new Error("Пустой ответ от Google");
                 }
 
             } catch (err) {
