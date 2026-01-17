@@ -2,83 +2,65 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout Agent: Control Panel</title>
+    <title>Scout Agent: Premium Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=3"></script>
+    <script src="config.js"></script>
     <style>
-        :root { --bg: #0d1117; --accent: #58a6ff; --text: #c9d1d9; --success: #238636; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root { --bg: #0b0e14; --card: #151921; --accent: #3fb950; --text: #e0e6ed; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 30px; display: flex; flex-direction: column; align-items: center; }
+        .panel { background: var(--card); padding: 35px; border-radius: 16px; border: 1px solid #30363d; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { font-size: 22px; color: var(--accent); margin-bottom: 25px; text-align: center; letter-spacing: 1px; }
         
-        /* Средний шрифт для комфортного чтения */
-        .container { background: #161b22; padding: 30px; border-radius: 12px; border: 1px solid #30363d; width: 100%; max-width: 480px; font-size: 19px; }
-        
-        h1 { font-size: 24px; color: var(--accent); text-align: center; margin-bottom: 25px; }
-        .btn-run { 
-            background: var(--success); color: #fff; padding: 22px; border-radius: 10px; 
-            border: none; cursor: pointer; width: 100%; font-weight: bold; font-size: 22px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        /* Бархатная объемная кнопка */
+        .velvet-btn { 
+            background: linear-gradient(145deg, #2ea043, #238636);
+            color: white; padding: 20px; border-radius: 12px; border: 1px solid #3fb950;
+            width: 100%; font-size: 20px; font-weight: bold; cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 6px 15px rgba(0,0,0,0.4);
+            transition: 0.3s;
         }
-        
+        .velvet-btn:active { transform: translateY(2px); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
         #log { 
-            margin-top: 25px; background: #010409; padding: 15px; border-radius: 8px;
-            font-family: 'Courier New', monospace; font-size: 17px; line-height: 1.5; 
-            color: #7ee787; border: 1px solid #30363d; min-height: 200px;
+            margin-top: 25px; background: #010409; padding: 20px; border-radius: 10px;
+            font-family: 'Consolas', monospace; font-size: 17px; color: #7ee787;
+            border: 1px solid #30363d; min-height: 150px; line-height: 1.6;
         }
-        .err { color: #f85149; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>АГЕНТ: КОНТРОЛЬ ПОИСКА</h1>
-        <button class="btn-run" onclick="start()">ЗАПУСТИТЬ ПРОЦЕСС</button>
+    <div class="panel">
+        <h1>СИСТЕМА РАЗВЕДКИ ТОВАРОВ</h1>
+        <button class="velvet-btn" onclick="scout()">ЗАПУСТИТЬ ПОИСК</button>
         <div id="log">> Ожидание команды...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function start() {
+        async function scout() {
             const log = document.getElementById('log');
-            log.innerHTML = `> Связь с базой...`;
+            log.innerHTML = `> Связь с Rozetka через SalesDoubler...`;
 
             try {
                 const { data: shops } = await supabaseClient.from('shops').select('id').limit(1);
-                const products = [
-                    {n: "Смартфон Apple iPhone 15 Pro", p: 48000, c: "Смартфоны"},
-                    {n: "Наушники Sony WH-1000XM5", p: 14000, c: "Гаджеты"}
+                // Имитация поиска (здесь будет ваш парсер)
+                const found = [
+                    {n: "Смартфон Samsung Galaxy S24 Ultra", p: 52000, c: "Смартфоны"},
+                    {n: "Планшет Apple iPad Air M2", p: 31000, c: "Гаджеты"}
                 ];
 
-                for (let item of products) {
-                    log.innerHTML += `<br>> Анализ: ${item.n}`;
-                    
-                    // Запрос к ИИ
-                    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                        method: "POST",
-                        headers: { "Authorization": `Bearer ${CONFIG.AI_KEY}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            model: CONFIG.AI_MODEL,
-                            messages: [{ role: "user", content: `Напиши 1 дорогое рекламное предложение для: ${item.n}` }]
-                        })
-                    });
-                    const aiData = await res.json();
-                    if(aiData.error) throw new Error("ИИ: " + aiData.error.message);
-
-                    // Сохранение
-                    const { data: p, error: pErr } = await supabaseClient.from('products').insert({
+                for (let item of found) {
+                    log.innerHTML += `<br>> Найден: ${item.n}`;
+                    const { error } = await supabaseClient.from('products').insert({
                         title: item.n, price: item.p, category: item.c, shop_id: shops[0].id,
                         image_url: `https://loremflickr.com/400/400/tech?lock=${Math.random()}`,
                         product_url: `https://rozetka.com.ua/search/?text=${encodeURIComponent(item.n)}`,
-                        is_processed_ai: true
-                    }).select();
-                    if(pErr) throw pErr;
-
-                    await supabaseClient.from('ai_content').insert({ product_id: p[0].id, fancy_description: aiData.choices[0].message.content });
-                    log.innerHTML += `<br><span style="color:cyan"> [ОК] Товар добавлен успешно.</span>`;
+                        is_processed_ai: false // ПЕРЕДАЕМ ОЧЕРЕДЬ ИИ-АГЕНТУ
+                    });
+                    if(error) throw error;
                 }
-                log.innerHTML += `<br><br><b>ВСЁ ГОТОВО. Проверьте Витрину.</b>`;
-            } catch (err) {
-                log.innerHTML += `<br><br><span class="err">[ОШИБКА] ${err.message}</span>`;
-            }
+                log.innerHTML += `<br><br><b style="color:white">ГОТОВО. Передано в ИИ-описатель.</b>`;
+            } catch (e) { log.innerHTML += `<br><br><span style="color:#f85149">! ОШИБКА: ${e.message}</span>`; }
         }
     </script>
 </body>
