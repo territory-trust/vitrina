@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Writer: Final Force</title>
+    <title>AI Writer: Clean Connection</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=101"></script>
+    <script src="config.js?v=202"></script>
     <style>
         :root { --bg: #0b0e14; --card: #1c1326; --accent: #bd00ff; --text: #e0e6ed; --success: #00ff41; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; padding: 15px; display: flex; flex-direction: column; align-items: center; margin: 0; }
@@ -14,20 +14,19 @@
         .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #4a1d63; width: 100%; max-width: 550px; box-sizing: border-box; box-shadow: 0 10px 40px rgba(189,0,255,0.2); }
         h1 { font-size: 26px; color: var(--accent); margin-bottom: 25px; text-align: center; font-weight: 800; text-transform: uppercase; }
         .velvet-btn { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 25px; border-radius: 16px; border: 1px solid var(--accent); width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: 'Consolas', monospace; font-size: 19px; color: var(--accent); border: 1px solid #333; min-height: 350px; line-height: 1.6; overflow-y: auto; text-align: left; }
-        .status-tag { color: #8b949e; font-size: 15px; margin-bottom: 10px; display: block; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: 'Consolas', monospace; font-size: 19px; color: var(--accent); border: 1px solid #333; min-height: 400px; line-height: 1.6; overflow-y: auto; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="nav-box">
-        <a href="agent_scout.html" class="nav-btn">← К РАЗВЕДКЕ ТОВАРОВ</a>
+        <a href="agent_scout.html" class="nav-btn">← ВЕРНУТЬСЯ К РАЗВЕДКЕ</a>
     </div>
 
     <div class="panel">
-        <h1>ИИ-ОПИСАТЕЛЬ (FORCE)</h1>
+        <h1>ИИ-ОПИСАТЕЛЬ (CLEAN)</h1>
         <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
-        <div id="log">> Ожидание команды...</div>
+        <div id="log">> Ожидание...</div>
     </div>
 
     <script>
@@ -36,74 +35,70 @@
 
         async function start() {
             const log = document.getElementById('log');
-            log.innerHTML = `<span class="status-tag">Ключ проверен: OK</span>`;
-            log.innerHTML += `<br>> Пробиваем связь с ИИ...`;
+            log.innerHTML = `> Проверка связи...`;
 
             try {
-                // 1. ПРОВЕРКА БАЛАНСА С ПРИНУДИТЕЛЬНЫМИ ЗАГОЛОВКАМИ
-                const bRes = await fetch("https://openrouter.ai/api/v1/user", {
-                    headers: { 
-                        "Authorization": `Bearer ${AI_KEY}`,
-                        "HTTP-Referer": "https://territory-trust.github.io",
-                        "X-Title": "Vitrina Premium Admin"
-                    }
-                });
-                const bData = await bRes.json();
-                
-                if (bData.data) {
-                    const balance = bData.data.total_credits - bData.data.usage;
-                    log.innerHTML += `<br><b style="color:#58a6ff">💰 БАЛАНС ПОДКЛЮЧЕН: $${balance.toFixed(4)}</b>`;
-                } else {
-                    log.innerHTML += `<br><span style="color:red">! СБОЙ АВТОРИЗАЦИИ: ${bData.error?.message || "User not found"}</span>`;
-                    log.innerHTML += `<br><br><small>Если баланс не виден, подождите 5 мин или проверьте оплату в OpenRouter.</small>`;
-                    return;
-                }
-
-                // 2. ПОИСК ТОВАРА
-                const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).order('created_at', { ascending: true }).limit(1);
+                // ШАГ 1: Поиск товара
+                const { data: products } = await supabaseClient.from('products')
+                    .select('*')
+                    .eq('is_processed_ai', false)
+                    .order('created_at', { ascending: true })
+                    .limit(1);
                 
                 if (!products || products.length === 0) {
-                    log.innerHTML += "<br>> Все товары в базе уже имеют описания.";
+                    log.innerHTML += "<br>> Все товары в очереди обработаны.";
                     return;
                 }
 
                 const p = products[0];
-                log.innerHTML += `<br>> Создаю текст для: <b style="color:#fff">${p.title}</b>`;
+                log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
+                log.innerHTML += `<br>> Отправка запроса к ИИ...`;
 
-                // 3. ЗАПРОС ИИ
+                // ШАГ 2: Прямой запрос к ИИ (без лишних заголовков)
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { 
-                        "Authorization": `Bearer ${AI_KEY}`, 
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://territory-trust.github.io", 
-                        "X-Title": "Vitrina Premium Admin"
+                        "Authorization": "Bearer " + AI_KEY,
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         model: CONFIG.AI_MODEL,
-                        messages: [{role: "user", content: `Напиши 2 дорогих предложения для: ${p.title}`}]
+                        messages: [{role: "user", content: "Напиши 2 коротких дорогих предложения для товара: " + p.title}]
                     })
                 });
 
-                const data = await res.json();
-                
-                if (data.error) {
-                    log.innerHTML += `<br><span style="color:red">! Ошибка ИИ: ${data.error.message}</span>`;
-                    await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                    setTimeout(start, 4000);
-                    return;
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error?.message || "Ошибка сервера");
                 }
 
+                const data = await res.json();
                 const desc = data.choices[0].message.content;
+
+                // ШАГ 3: Сохранение результата
+                log.innerHTML += `<br>> Текст готов. Запись в базу...`;
+                
                 await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                 await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
 
-                log.innerHTML += " <span style='color:var(--success)'>[ГОТОВО]</span>";
+                log.innerHTML += " <span style='color:var(--success)'>[ОК]</span>";
+                
+                // Авто-переход к следующему
                 setTimeout(start, 2500);
 
             } catch (err) {
-                log.innerHTML += `<br><span style="color:red">! СЕТЕВАЯ ОШИБКА: ${err.message}</span>`;
-                setTimeout(start, 10000);
+                log.innerHTML += `<br><span style="color:red">! ОШИБКА: ${err.message}</span>`;
+                log.innerHTML += `<br>> Пробую пропустить этот товар...`;
+                
+                // Если ошибка — помечаем товар, чтобы не стоять на месте
+                setTimeout(async () => {
+                   // Находим текущий ID снова, чтобы обновить статус
+                   const { data: toSkip } = await supabaseClient.from('products').select('id').eq('is_processed_ai', false).limit(1);
+                   if (toSkip && toSkip.length > 0) {
+                       await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', toSkip[0].id);
+                   }
+                   start();
+                }, 5000);
             }
         }
     </script>
