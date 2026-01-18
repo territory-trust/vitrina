@@ -3,59 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Vitrina AI: Premium Content</title>
+    <title>Vitrina Global AI: Stable Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; }
-        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
+        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
         input { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; font-size: 18px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        #log { margin-top: 25px; background: #000; padding: 25px; border-radius: 12px; color: #00ff41; text-align: left; min-height: 400px; font-family: monospace; font-size: 19px; border: 1px solid var(--olive); overflow-y: auto; }
+        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #log { margin-top: 25px; background: #000; padding: 25px; border-radius: 14px; color: #00ff41; text-align: left; min-height: 400px; font-family: monospace; font-size: 17px; border: 1px solid var(--olive); overflow-y: auto; line-height: 1.5; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">ГЕНЕРАТОР ОПИСАНИЙ 2.0</h2>
-        <input type="password" id="apiKey" placeholder="Вставьте Google Key...">
-        <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
-        <div id="log">> Жду старта...</div>
+        <h2 style="color:var(--olive);">PREMIUM AI CONVEYOR</h2>
+        <input type="password" id="apiKey" placeholder="Вставьте ваш API Key...">
+        <button class="btn" onclick="startStable()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
+        <div id="log">> Система готова. Режим: Стабильный...</div>
     </div>
+
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function startProcess() {
+        async function startStable() {
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
             if (!key) return log.innerHTML = "Введите ключ!";
-            
-            const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
-            if (!products?.length) return log.innerHTML += "<br>> ВСЕ ТОВАРЫ ОБРАБОТАНЫ!";
-            
-            const p = products[0];
-            log.innerHTML += `<br>> Работа над: ${p.title}`;
+            log.innerHTML = "> Запуск в безопасном ритме...";
+            runCycle(key);
+        }
 
-            // НОВЫЙ ПРОМТ ДЛЯ ДЛИННЫХ ОПИСАНИЙ
-            const prompt = `Напиши роскошное, статусное рекламное описание для товара: ${p.title}. 
-            Используй 2-3 предложения. Текст должен подчеркивать вкус владельца и технологическое превосходство. 
-            Максимум 250 символов. Не используй кавычки.`;
+        async function runCycle(key) {
+            const log = document.getElementById('log');
+            try {
+                // Ищем один необработанный товар
+                const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
+                
+                if (!products?.length) {
+                    log.innerHTML = "<b style='color:#fff'>> ВСЕ ТОВАРЫ ОБРАБОТАНЫ. Ожидание новинок...</b>";
+                    setTimeout(() => runCycle(key), 60000); // Проверка новых раз в минуту
+                    return;
+                }
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ "contents": [{"parts": [{"text": prompt}]}] })
-            });
-            const data = await res.json();
-            if (data.candidates) {
-                const desc = data.candidates[0].content.parts[0].text.trim();
-                await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-                await sb.from('products').update({ is_processed_ai: true }).eq( 'id', p.id);
-                log.innerHTML += `<br><span style="color:white">✔ ${desc}</span>`;
-                setTimeout(startProcess, 5000);
-            } else {
-                log.innerHTML += "<br>Лимит или ошибка. Пауза 90 сек...";
-                setTimeout(startProcess, 90000);
+                const p = products[0];
+                log.innerHTML = `> Описываем: <b>${p.title}</b>...`;
+
+                // Запрос к ИИ с инструкцией про 2-3 предложения
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ "contents": [{"parts": [{"text": "Напиши статусное, роскошное рекламное описание для: " + p.title + ". Используй 2-3 красивых предложения. Без кавычек."}]}] })
+                });
+
+                const data = await res.json();
+                if (data.candidates) {
+                    const desc = data.candidates[0].content.parts[0].text.trim();
+                    
+                    // Сохраняем результат
+                    await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
+                    await sb.from('products').update({ is_processed_ai: true }).eq('id', p.id);
+                    
+                    log.innerHTML = `<span style="color:white">✔ ГОТОВО:</span> ${p.title}<br><i style="color:#aaa">${desc}</i><br><br>> Следующий через 5 секунд...`;
+                    setTimeout(() => runCycle(key), 5000); // Безопасная пауза 5 секунд
+                } else {
+                    log.innerHTML = `<span style="color:red">! Ошибка: ${data.error?.message || "Сбой запроса"}</span>`;
+                    setTimeout(() => runCycle(key), 10000);
+                }
+            } catch (e) {
+                log.innerHTML = `! Ошибка сети: ${e.message}`;
+                setTimeout(() => runCycle(key), 10000);
             }
         }
     </script>
