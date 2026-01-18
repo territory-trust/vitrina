@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vitrina: AI Final Direct</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=final_fix_v10"></script>
+    <script src="config.js?v=final_fix_v11"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -16,42 +16,42 @@
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">AI КОНВЕЙЕР (FINAL)</h2>
+        <h2 style="color:var(--accent);">AI КОНВЕЙЕР (ПРЯМОЙ)</h2>
         <button class="velvet-btn" onclick="runAI()">ЗАПУСТИТЬ</button>
         <div id="log">> Жду новый ключ...</div>
     </div>
 
     <script>
-        // ВАЖНО: Вставьте ключ OpenRouter между одинарными кавычками
-        const NEW_KEY = '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'; 
+        // ВАЖНО: Вставьте здесь ваш САМЫЙ НОВЫЙ 5-й ключ.
+        // Используем двойные кавычки, как на вашем скрине.
+        const KEY = "sk-or-v1-ВСТАВЬТЕ_КЛЮЧ_СЮДА"; 
         
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
         async function runAI() {
             const log = document.getElementById('log');
-            log.innerHTML = '> Работа с базой...';
+            log.innerHTML = "> Работа с базой...";
             try {
                 const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
                 if (!products || products.length === 0) {
-                    log.innerHTML += '<br>> Все товары обработаны!';
+                    log.innerHTML += "<br>> Нет товаров для ИИ.";
                     return;
                 }
                 
                 const p = products[0];
                 log.innerHTML += `<br>> Товар: <b>${p.title}</b>`;
-                log.innerHTML += '<br>> Прорыв через OpenRouter...';
+                log.innerHTML += "<br>> Прямой прорыв к OpenRouter...";
 
-                const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
                     headers: {
-                        'Authorization': 'Bearer ' + NEW_KEY.trim(),
-                        'Content-Type': 'application/json',
-                        'HTTP-Referer': 'https://github.com/territory-trust/vitrina'
+                        "Authorization": "Bearer " + KEY.trim(),
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        'model': 'google/gemini-flash-1.5',
-                        'messages': [{'role': 'user', 'content': 'Напиши 1 роскошную фразу для продажи: ' + p.title}]
+                        "model": "google/gemini-flash-1.5",
+                        "messages": [{"role": "user", "content": "Напиши 1 фразу: " + p.title}]
                     })
                 });
 
@@ -59,19 +59,16 @@
                 
                 if (data.choices && data.choices[0]) {
                     const txt = data.choices[0].message.content;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ!</span><br>${txt}`;
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ ПРОРЫВ!</span><br>${txt}`;
                     
-                    // Сохраняем результат
                     await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: txt });
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                    
-                    log.innerHTML += '<br>> Готово. Следующий через 3 сек...';
                     setTimeout(runAI, 3000);
                 } else {
-                    log.innerHTML += `<br><span style="color:red">! ОШИБКА ИИ: ${JSON.stringify(data.error)}</span>`;
+                    log.innerHTML += `<br><span style="color:red">! ОТКАЗ: ${JSON.stringify(data.error)}</span>`;
                 }
             } catch (e) {
-                log.innerHTML += `<br>! СБОЙ СЕТИ: ${e.message}`;
+                log.innerHTML += `<br>! ОШИБКА: ${e.message}`;
             }
         }
     </script>
