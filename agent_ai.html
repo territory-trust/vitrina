@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Vitrina: Gemini Fix 1.5</title>
+    <title>Vitrina: Gemini Smart Connect</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=google_fix_v2"></script>
+    <script src="config.js?v=google_smart_v3"></script>
     <style>
-        body { background: #0b1016; color: #f0f6fc; font-family: sans-serif; text-align: center; padding: 20px; }
-        .panel { background: #161b22; padding: 30px; border-radius: 20px; border: 2px solid #00ff41; max-width: 500px; margin: auto; }
-        .btn { background: #00ff41; color: black; padding: 20px; border: none; width: 100%; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; color: #00ff41; text-align: left; min-height: 350px; font-family: monospace; border: 1px solid #333; overflow-y: auto; }
+        :root { --bg: #0b1016; --card: #161b22; --accent: #00ff41; --text: #f0f6fc; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; }
+        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 500px; margin: auto; box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+        .btn { background: var(--accent); color: black; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; color: var(--accent); text-align: left; min-height: 350px; font-family: monospace; border: 1px solid #333; overflow-y: auto; font-size: 18px; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:#00ff41;">GEMINI КОНВЕЙЕР (V2)</h2>
+        <h2 style="color:var(--accent);">GEMINI КОНВЕЙЕР (SMART)</h2>
         <button class="btn" onclick="start()">ЗАПУСТИТЬ</button>
         <div id="log">> Ожидание...</div>
     </div>
 
     <script>
-        // ВАШ КЛЮЧ УЖЕ ТУТ (из вашего скрина)
+        // Ваш ключ из скриншота
         const GOOGLE_KEY = "AIzaSyBmunos8jmgxkVeG3Dxjey44or9E9voOYw";
-
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
         async function start() {
@@ -40,32 +40,40 @@
                 
                 const p = products[0];
                 log.innerHTML += `<br>> Товар: <b>${p.title}</b>`;
-                log.innerHTML += "<br>> Запрос в Google AI...";
+                log.innerHTML += "<br>> Подбор модели Google...";
 
-                // ИСПРАВЛЕННЫЙ АДРЕС (v1 вместо v1beta и правильное имя модели)
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GOOGLE_KEY}`, {
+                // Пробуем универсальный адрес модели
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_KEY}`;
+
+                const res = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         "contents": [{
-                            "parts": [{"text": "Напиши одно роскошное рекламное предложение для: " + p.title}]
-                        }]
+                            "parts": [{"text": "Напиши одно роскошное рекламное предложение для продажи: " + p.title}]
+                        }],
+                        "generationConfig": { "temperature": 0.7, "maxOutputTokens": 100 }
                     })
                 });
 
                 const data = await res.json();
 
-                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                if (data.candidates && data.candidates[0].content) {
                     const aiDesc = data.candidates[0].content.parts[0].text;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ ГОТОВ!</span>`;
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ ПОЛУЧЕН!</span>`;
 
-                    await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: aiDesc });
+                    // Сохраняем в базу (RLS disabled позволяет это)
+                    await supabaseClient.from('ai_content').insert({ 
+                        product_id: p.id, 
+                        fancy_description: aiDesc.trim() 
+                    });
+                    
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
                     log.innerHTML += "<br>> Сохранено. Пауза 3 сек...";
                     setTimeout(start, 3000);
                 } else {
-                    log.innerHTML += `<br><span style="color:red">! ОШИБКА: ${JSON.stringify(data.error || data)}</span>`;
+                    log.innerHTML += `<br><span style="color:red">! ОТКАЗ: ${data.error ? data.error.message : 'Неверный ответ API'}</span>`;
                 }
             } catch (e) {
                 log.innerHTML += `<br>! СБОЙ СЕТИ: ${e.message}`;
