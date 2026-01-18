@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina Global AI: Stable Engine</title>
+    <title>Vitrina Global AI: 2.0 Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -17,19 +17,19 @@
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">PREMIUM AI CONVEYOR</h2>
+        <h2 style="color:var(--olive);">GEMINI 2.0 FLASH ACTIVATED</h2>
         <input type="password" id="apiKey" placeholder="Вставьте ваш API Key...">
-        <button class="btn" onclick="startStable()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
-        <div id="log">> Ожидание команды...</div>
+        <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
+        <div id="log">> Проверка готовности системы...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function startStable() {
+        async function startProcess() {
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
             if (!key) return log.innerHTML = "Введите ключ!";
-            log.innerHTML = "> Подключение к Stable API...";
+            log.innerHTML = "> Инициализация Gemini 2.0...";
             runCycle(key);
         }
 
@@ -39,16 +39,16 @@
                 const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
                 if (!products?.length) {
-                    log.innerHTML = "<b style='color:#fff'>> ГОТОВО. Все товары описаны.</b>";
+                    log.innerHTML = "<b style='color:#fff'>> ВСЕ ТОВАРЫ ОПИСАНЫ. ПЕРЕХОД В РЕЖИМ МОНИТОРИНГА.</b>";
                     setTimeout(() => runCycle(key), 30000);
                     return;
                 }
 
                 const p = products[0];
-                log.innerHTML = `> Обработка: <b>${p.title}</b>...`;
+                log.innerHTML = `> Работаем с: <b>${p.title}</b>...`;
 
-                // ИСПОЛЬЗУЕМ СТАБИЛЬНУЮ ВЕРСИЮ v1 ВМЕСТО v1beta
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                // ИСПОЛЬЗУЕМ АКТУАЛЬНУЮ МОДЕЛЬ 2026 ГОДА
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ "contents": [{"parts": [{"text": "Напиши статусное описание (2-3 роскошных предложения) для: " + p.title + ". Без кавычек."}]}] })
@@ -61,14 +61,14 @@
                     await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                     await sb.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML = `<span style="color:white">✔ УСПЕХ:</span> ${p.title}<br><br>> Пауза 5 сек...`;
-                    setTimeout(() => runCycle(key), 5000);
+                    log.innerHTML = `<span style="color:white">✔ УСПЕШНО:</span> ${p.title}<br><br>> Следующий через 5 сек...`;
+                    setTimeout(() => runCycle(key), 5000); 
                 } else {
-                    log.innerHTML = `<span style="color:red">! Ошибка API: ${data.error?.message || "Неизвестный сбой"}</span>`;
-                    console.log(data);
+                    log.innerHTML = `<span style="color:red">! Ошибка: ${data.error?.message || "Неизвестный статус"}</span>`;
+                    setTimeout(() => runCycle(key), 10000);
                 }
             } catch (e) {
-                log.innerHTML = `! Ошибка сети: ${e.message}`;
+                log.innerHTML = `! Ошибка связи: ${e.message}`;
                 setTimeout(() => runCycle(key), 10000);
             }
         }
