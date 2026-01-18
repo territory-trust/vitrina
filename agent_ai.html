@@ -3,76 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: AI OpenRouter Fix</title>
+    <title>Vitrina: AI Launch</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=final_fix_v5"></script>
+    <script src="config.js?v=final_fix"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 40px rgba(189,0,255,0.3); }
-        .velvet-btn { background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); color: white; padding: 25px; border-radius: 16px; border: none; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(189,0,255,0.4); }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; }
+        .velvet-btn { background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); color: white; padding: 25px; border-radius: 16px; border: none; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 18px; color: var(--accent); border: 1px solid #333; min-height: 400px; text-align: left; overflow-y: auto; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">AI КОНВЕЙЕР (FIX)</h2>
-        <button class="velvet-btn" onclick="runAI()">ЗАПУСТИТЬ</button>
-        <div id="log">> Ожидание запуска...</div>
+        <h2 style="color:var(--accent);">ЗАПУСК КОНВЕЙЕРА</h2>
+        <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ ИИ</button>
+        <div id="log">> Жду исправленный config.js...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-        async function runAI() {
+        async function start() {
             const log = document.getElementById('log');
-            log.innerHTML = "> Поиск товара...";
+            log.innerHTML = "> Проверка системы...";
+
+            if (!CONFIG.OPENROUTER_API_KEY || CONFIG.OPENROUTER_API_KEY.includes('AiZa')) {
+                log.innerHTML += "<br><span style='color:red'>! ОШИБКА: В config.js всё еще старый ключ или неверное имя переменной.</span>";
+                return;
+            }
 
             try {
                 const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
-                if (!products || products.length === 0) { log.innerHTML += "<br>> Все товары обработаны!"; return; }
+                if (!products || products.length === 0) { log.innerHTML += "<br>> Нет товаров для обработки."; return; }
                 const p = products[0];
-                log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
-
-                log.innerHTML += `<br>> Связь с OpenRouter...`;
-                
-                // Очищаем ключ от возможных пробелов и символов переноса
-                const cleanKey = CONFIG.OPENROUTER_API_KEY.trim().replace(/['"]/g, '');
+                log.innerHTML += `<br>> Товар: ${p.title}`;
 
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Authorization": "Bearer " + cleanKey,
+                        "Authorization": "Bearer " + CONFIG.OPENROUTER_API_KEY.trim(),
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         "model": "google/gemini-flash-1.5",
-                        "messages": [
-                            {"role": "user", "content": "Напиши 2 дорогих предложения для продажи: " + p.title}
-                        ]
+                        "messages": [{"role": "user", "content": "Напиши 2 рекламных предложения для: " + p.title}]
                     })
                 });
 
                 const result = await response.json();
-
-                if (result.choices && result.choices[0]) {
-                    const aiText = result.choices[0].message.content;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ! ТЕКСТ ГОТОВ.</span>`;
-
-                    await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: aiText });
+                if (result.choices) {
+                    const txt = result.choices[0].message.content;
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ! Текст создан.</span>`;
+                    
+                    await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: txt });
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML += `<br>> Сохранено. Жду 3 сек...`;
-                    setTimeout(runAI, 3000);
+                    log.innerHTML += `<br>> Сохранено.`;
+                    setTimeout(start, 3000);
                 } else {
-                    const errorMsg = result.error ? result.error.message : "Ошибка авторизации";
-                    log.innerHTML += `<br><span style="color:red">! ОТКАЗ: ${errorMsg}</span>`;
-                    log.innerHTML += `<br><small>Проверьте ключ в config.js!</small>`;
+                    log.innerHTML += `<br><span style="color:red">! Ошибка: ${result.error.message}</span>`;
                 }
-
-            } catch (err) {
-                log.innerHTML += `<br><span style="color:red">! СБОЙ СЕТИ: ${err.message}</span>`;
-            }
+            } catch (e) { log.innerHTML += `<br>! Сбой: ${e.message}`; }
         }
     </script>
 </body>
