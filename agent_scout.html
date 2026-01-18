@@ -5,20 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vitrina: Scout Agent</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=scout_v2"></script>
+    <script src="config.js?v=scout_stable"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; }
-        .velvet-btn { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 20px; border-radius: 12px; border: none; width: 100%; font-size: 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(189,0,255,0.4); }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(189,0,255,0.2); }
+        .btn-main { background: linear-gradient(145deg, #7d00aa, #5a007a); color: white; padding: 25px; border-radius: 16px; border: none; width: 100%; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(189,0,255,0.4); }
+        .btn-next { background: transparent; color: #bd00ff; padding: 15px; border-radius: 12px; border: 1px solid #bd00ff; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; text-decoration: none; display: block; box-sizing: border-box; }
         #log { margin-top: 25px; background: #000; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 18px; color: var(--accent); border: 1px solid #333; min-height: 200px; text-align: left; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">АГЕНТ-СКАУТ (РАЗВЕДКА)</h2>
-        <button class="velvet-btn" onclick="grabProduct()">ДОБЫТЬ ТОВАР С ROZETKA</button>
-        <div id="log">> Жду приказа...</div>
+        <h2 style="color:var(--accent); text-transform:uppercase; margin-bottom:25px;">Агент-Скаут</h2>
+        
+        <button class="btn-main" onclick="grabProduct()">ДОБЫТЬ ТОВАР В БАЗУ</button>
+        
+        <a href="agent_ai.html" class="btn-next">ПЕРЕЙТИ К АГЕНТУ ИИ →</a>
+
+        <div id="log">> Жду команду...</div>
     </div>
 
     <script>
@@ -26,10 +31,10 @@
 
         async function grabProduct() {
             const log = document.getElementById('log');
-            log.innerHTML = "> Подключение к SalesDoubler...";
+            log.innerHTML = "> Подключение к базе...";
             
             try {
-                // Имитируем захват реального товара для теста всей цепочки
+                // Данные тестового товара
                 const productData = {
                     title: "Samsung Galaxy S24 Ultra Titanium",
                     price: "52000",
@@ -38,16 +43,19 @@
                     is_processed_ai: false
                 };
 
-                log.innerHTML += `<br>> Найден: <b>${productData.title}</b>`;
+                log.innerHTML += `<br>> Добавляю: <b>${productData.title}</b>`;
                 
+                // Запись в таблицу products
                 const { error } = await supabaseClient.from('products').insert([productData]);
+                
                 if (error) throw error;
 
-                log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕШНО ЗАПИСАНО В БАЗУ!</span>`;
-                log.innerHTML += `<br>> Теперь переходи в Агент ИИ.`;
+                log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕШНО ЗАПИСАНО!</span>`;
+                log.innerHTML += `<br>> Можно переходить к ИИ.`;
 
             } catch (err) {
                 log.innerHTML += `<br><span style="color:red">! ОШИБКА: ${err.message}</span>`;
+                log.innerHTML += `<br><small>Если пишет 'column not found', проверьте SQL в Supabase.</small>`;
             }
         }
     </script>
