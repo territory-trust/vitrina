@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: AI Launch</title>
+    <title>Vitrina: AI Super Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=final_fix"></script>
+    <script src="config.js?v=force_no_rls"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -16,30 +16,30 @@
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">ЗАПУСК КОНВЕЙЕРА</h2>
-        <button class="velvet-btn" onclick="start()">ЗАПУСТИТЬ ИИ</button>
-        <div id="log">> Жду исправленный config.js...</div>
+        <h2 style="color:var(--accent);">AI КОНВЕЙЕР 2.0</h2>
+        <button class="velvet-btn" onclick="run()">ПУСК</button>
+        <div id="log">> Жду команду...</div>
     </div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
-        async function start() {
+        async function run() {
             const log = document.getElementById('log');
-            log.innerHTML = "> Проверка системы...";
-
-            if (!CONFIG.OPENROUTER_API_KEY || CONFIG.OPENROUTER_API_KEY.includes('AiZa')) {
-                log.innerHTML += "<br><span style='color:red'>! ОШИБКА: В config.js всё еще старый ключ или неверное имя переменной.</span>";
-                return;
-            }
+            log.innerHTML = "> Соединение с базой...";
 
             try {
-                const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
-                if (!products || products.length === 0) { log.innerHTML += "<br>> Нет товаров для обработки."; return; }
+                // Пытаемся взять товар
+                const { data: products, error: pErr } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
+                
+                if (pErr) { log.innerHTML += `<br><span style="color:red">! Ошибка базы: ${pErr.message}</span>`; return; }
+                if (!products || products.length === 0) { log.innerHTML += "<br>> Нет новых товаров."; return; }
+                
                 const p = products[0];
-                log.innerHTML += `<br>> Товар: ${p.title}`;
+                log.innerHTML += `<br>> Товар: <b>${p.title}</b>`;
+                log.innerHTML += `<br>> Запрос в OpenRouter...`;
 
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
                         "Authorization": "Bearer " + CONFIG.OPENROUTER_API_KEY.trim(),
@@ -47,22 +47,25 @@
                     },
                     body: JSON.stringify({
                         "model": "google/gemini-flash-1.5",
-                        "messages": [{"role": "user", "content": "Напиши 2 рекламных предложения для: " + p.title}]
+                        "messages": [{"role": "user", "content": "Напиши 2 дорогих предложения для: " + p.title}]
                     })
                 });
 
-                const result = await response.json();
+                const result = await res.json();
+                
                 if (result.choices) {
                     const txt = result.choices[0].message.content;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ! Текст создан.</span>`;
-                    
-                    await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: txt });
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ ИИ ОТВЕТИЛ!</span>`;
+
+                    // Сохраняем результат
+                    const { error: insErr } = await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: txt });
+                    if (insErr) { log.innerHTML += `<br>! Ошибка записи: ${insErr.message}`; return; }
+
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                    
-                    log.innerHTML += `<br>> Сохранено.`;
-                    setTimeout(start, 3000);
+                    log.innerHTML += `<br>> Готово. Иду дальше...`;
+                    setTimeout(run, 3000);
                 } else {
-                    log.innerHTML += `<br><span style="color:red">! Ошибка: ${result.error.message}</span>`;
+                    log.innerHTML += `<br>! Ошибка ИИ: ${result.error.message}`;
                 }
             } catch (e) { log.innerHTML += `<br>! Сбой: ${e.message}`; }
         }
