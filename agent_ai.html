@@ -4,54 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Vitrina AI: Short & Smart</title>
+    <title>Vitrina AI: Premium Content</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=short_ai"></script>
+    <script src="config.js"></script>
     <style>
-        :root { --bg: #0b1016; --card: #161b22; --accent: #00ff41; --purple: #bd00ff; --text: #f0f6fc; }
+        :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--purple); max-width: 500px; margin: auto; }
+        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
         input { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; font-size: 18px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn { background: linear-gradient(180deg, #00ff41 0%, #008f24 100%); color: black; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 24px; font-weight: bold; cursor: pointer; }
-        #log { margin-top: 25px; background: #000; padding: 25px; border-radius: 12px; color: var(--accent); text-align: left; min-height: 400px; font-family: monospace; font-size: 19px; border: 1px solid #333; overflow-y: auto; }
+        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #log { margin-top: 25px; background: #000; padding: 25px; border-radius: 12px; color: #00ff41; text-align: left; min-height: 400px; font-family: monospace; font-size: 19px; border: 1px solid var(--olive); overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--purple);">AI КОРОТКИЕ ОПИСАНИЯ</h2>
-        <input type="password" id="apiKey" placeholder="Вставьте ключ...">
-        <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ</button>
+        <h2 style="color:var(--olive);">ГЕНЕРАТОР ОПИСАНИЙ 2.0</h2>
+        <input type="password" id="apiKey" placeholder="Вставьте Google Key...">
+        <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
         <div id="log">> Жду старта...</div>
     </div>
     <script>
-        const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         async function startProcess() {
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
             if (!key) return log.innerHTML = "Введите ключ!";
             
-            const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
-            if (!products?.length) return log.innerHTML += "<br>> ВСЕ ГОТОВО!";
+            const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
+            if (!products?.length) return log.innerHTML += "<br>> ВСЕ ТОВАРЫ ОБРАБОТАНЫ!";
             
             const p = products[0];
-            log.innerHTML += `<br>> Товар: ${p.title}`;
+            log.innerHTML += `<br>> Работа над: ${p.title}`;
+
+            // НОВЫЙ ПРОМТ ДЛЯ ДЛИННЫХ ОПИСАНИЙ
+            const prompt = `Напиши роскошное, статусное рекламное описание для товара: ${p.title}. 
+            Используй 2-3 предложения. Текст должен подчеркивать вкус владельца и технологическое превосходство. 
+            Максимум 250 символов. Не используй кавычки.`;
 
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "contents": [{"parts": [{"text": "Напиши ОДНУ КОРОТКУЮ и дорогую рекламную фразу (макс 100 символов) для: " + p.title}]}]
-                })
+                body: JSON.stringify({ "contents": [{"parts": [{"text": prompt}]}] })
             });
             const data = await res.json();
             if (data.candidates) {
                 const desc = data.candidates[0].content.parts[0].text.trim();
-                await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-                await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                log.innerHTML += `<br>✔ ${desc}`;
+                await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
+                await sb.from('products').update({ is_processed_ai: true }).eq( 'id', p.id);
+                log.innerHTML += `<br><span style="color:white">✔ ${desc}</span>`;
                 setTimeout(startProcess, 5000);
-            } else if (data.error) {
-                log.innerHTML += "<br>Лимит! Ждем 90 сек...";
+            } else {
+                log.innerHTML += "<br>Лимит или ошибка. Пауза 90 сек...";
                 setTimeout(startProcess, 90000);
             }
         }
