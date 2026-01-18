@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina Global AI: 2.0 Engine</title>
+    <title>Vitrina Global AI: 2.0 Flash</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -17,10 +17,10 @@
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">GEMINI 2.0 FLASH ACTIVATED</h2>
+        <h2 style="color:var(--olive);">GEMINI 2.0 FLASH</h2>
         <input type="password" id="apiKey" placeholder="Вставьте ваш API Key...">
         <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
-        <div id="log">> Проверка готовности системы...</div>
+        <div id="log">> Система готова. Ждем запуск...</div>
     </div>
 
     <script>
@@ -36,18 +36,19 @@
         async function runCycle(key) {
             const log = document.getElementById('log');
             try {
+                // Ищем товар без описания
                 const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
                 if (!products?.length) {
-                    log.innerHTML = "<b style='color:#fff'>> ВСЕ ТОВАРЫ ОПИСАНЫ. ПЕРЕХОД В РЕЖИМ МОНИТОРИНГА.</b>";
+                    log.innerHTML = "<b style='color:#fff'>> ВСЕ ТОВАРЫ ОПИСАНЫ. МОНИТОРИНГ...</b>";
                     setTimeout(() => runCycle(key), 30000);
                     return;
                 }
 
                 const p = products[0];
-                log.innerHTML = `> Работаем с: <b>${p.title}</b>...`;
+                log.innerHTML = `> Описываем: <b>${p.title}</b>...`;
 
-                // ИСПОЛЬЗУЕМ АКТУАЛЬНУЮ МОДЕЛЬ 2026 ГОДА
+                // Запрос к новой модели 2.0
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -58,17 +59,19 @@
                 
                 if (data.candidates && data.candidates[0].content) {
                     const desc = data.candidates[0].content.parts[0].text.trim();
+                    
+                    // Сохраняем в базу
                     await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                     await sb.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML = `<span style="color:white">✔ УСПЕШНО:</span> ${p.title}<br><br>> Следующий через 5 сек...`;
+                    log.innerHTML = `<span style="color:white">✔ ГОТОВО:</span> ${p.title}<br><br>> Следующий через 5 сек...`;
                     setTimeout(() => runCycle(key), 5000); 
                 } else {
-                    log.innerHTML = `<span style="color:red">! Ошибка: ${data.error?.message || "Неизвестный статус"}</span>`;
+                    log.innerHTML = `<span style="color:red">! Ошибка API: ${data.error?.message || "Сбой"}</span>`;
                     setTimeout(() => runCycle(key), 10000);
                 }
             } catch (e) {
-                log.innerHTML = `! Ошибка связи: ${e.message}`;
+                log.innerHTML = `! Ошибка сети: ${e.message}`;
                 setTimeout(() => runCycle(key), 10000);
             }
         }
