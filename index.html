@@ -3,68 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина</title>
+    <title>Витрина: Elite Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=expand_fix"></script>
+    <script src="config.js?v=velvet_v1"></script>
     <style>
-        :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding-top: 70px; }
-        
-        /* Зафиксированное меню */
-        .header { position: fixed; top: 0; left: 0; right: 0; background: rgba(11,16,22,0.9); backdrop-filter: blur(10px); z-index: 100; padding: 10px 0; border-bottom: 1px solid #333; }
-        .categories { display: flex; overflow-x: auto; padding: 5px 15px; gap: 10px; }
-        .cat-btn { background: var(--card); color: #8b949e; border: 1px solid #333; padding: 8px 18px; border-radius: 20px; white-space: nowrap; font-size: 15px; }
-        .cat-btn.active { border-color: var(--accent); color: #fff; }
-
-        .grid { padding: 15px; display: grid; gap: 15px; }
-        .card { background: var(--card); border-radius: 20px; border: 1px solid #30363d; padding: 20px; }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
-        
-        /* Сворачиваемое описание */
-        .card-desc { 
-            font-size: 16px; color: #8b949e; line-height: 1.4;
-            display: -webkit-box; -webkit-line-clamp: 2; /* Сначала 2 строки */
-            -webkit-box-orient: vertical; overflow: hidden;
-            transition: all 0.3s;
+        :root { 
+            --bg: #05070a; 
+            --card-bg: #12151c; 
+            --accent: #bd00ff; 
+            --text: #e0e0e0;
+            --gold: #d4af37;
         }
-        .card.open .card-desc { -webkit-line-clamp: unset; display: block; } /* Разворачиваем */
-
-        .more-link { color: var(--accent); font-size: 14px; margin-top: 5px; display: block; }
         
-        .buy-btn { display: block; background: var(--accent); color: #fff; text-align: center; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: bold; margin-top: 15px; }
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            padding-top: 90px;
+        }
+
+        /* Бархатная фиксированная шапка */
+        .header { 
+            position: fixed; top: 0; left: 0; right: 0; 
+            background: linear-gradient(180deg, #12151c 0%, #05070a 100%);
+            z-index: 1000; padding: 15px 0;
+            border-bottom: 1px solid #1f232b;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+        
+        .categories { display: flex; overflow-x: auto; padding: 0 15px; gap: 12px; scrollbar-width: none; }
+        .categories::-webkit-scrollbar { display: none; }
+        
+        /* Объёмные кнопки категорий */
+        .cat-btn { 
+            background: #1a1f29; color: var(--text); 
+            border: 1px solid #2d3440; padding: 12px 24px; 
+            border-radius: 12px; white-space: nowrap; font-size: 16px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 8px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+        .cat-btn.active { 
+            border-color: var(--accent); 
+            background: linear-gradient(180deg, #250033 0%, #12151c 100%);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(189, 0, 255, 0.3);
+        }
+
+        .grid { padding: 20px; display: grid; gap: 25px; }
+
+        /* Бархатная карточка товара */
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 28px; 
+            border: 1px solid #222832;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+
+        /* Место для картинки */
+        .card-img {
+            width: 100%; height: 220px;
+            background: #0a0c10;
+            display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid #1f232b;
+        }
+        .card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .no-img { color: #2d3440; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .card-content { padding: 25px; }
+        
+        .card-title { font-size: 24px; font-weight: 600; margin-bottom: 12px; color: #ffffff; letter-spacing: -0.5px; }
+
+        .card-desc { 
+            font-size: 17px; color: #a0a6b1; line-height: 1.6;
+            display: -webkit-box; -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .card.open .card-desc { -webkit-line-clamp: unset; display: block; }
+
+        /* Объёмная золотисто-фиолетовая кнопка */
+        .buy-btn { 
+            display: block; margin-top: 25px;
+            background: linear-gradient(180deg, #bd00ff 0%, #7a00a6 100%);
+            color: white; text-align: center; padding: 20px; 
+            border-radius: 18px; text-decoration: none; font-weight: bold; font-size: 18px;
+            box-shadow: 0 6px 20px rgba(189, 0, 255, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
+
     <div class="header">
-        <div class="categories">
-            <button class="cat-btn active" onclick="load('all')">Все</button>
-            <button class="cat-btn" onclick="load('Apple')">Apple</button>
-            <button class="cat-btn" onclick="load('Samsung')">Samsung</button>
+        <div class="categories" id="catList">
+            <button class="cat-btn active" onclick="filter('all')">Все коллекции</button>
+            <button class="cat-btn" onclick="filter('Apple')">Apple</button>
+            <button class="cat-btn" onclick="filter('Samsung')">Samsung</button>
+            <button class="cat-btn" onclick="filter('Dyson')">Dyson</button>
         </div>
     </div>
-    <div class="grid" id="grid"></div>
+
+    <div class="grid" id="productGrid"></div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function load(brand) {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = 'Загрузка...';
-            let q = sb.from('products').select('*, ai_content(fancy_description)');
-            if(brand !== 'all') q = q.ilike('title', `%${brand}%`);
-            const { data } = await q;
+
+        async function loadProducts(brand = 'all') {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '<div style="text-align:center;color:#444;margin-top:50px;">Загрузка коллекции...</div>';
+
+            let query = sb.from('products').select('*, ai_content(fancy_description)');
+            if (brand !== 'all') query = query.ilike('title', `%${brand}%`);
+
+            const { data, error } = await query;
+            if (error) return grid.innerHTML = "Ошибка связи.";
+
             grid.innerHTML = '';
             data.forEach(p => {
-                const desc = p.ai_content?.[0]?.fancy_description || "Премиальный выбор.";
+                const desc = p.ai_content?.[0]?.fancy_description || "Истинное воплощение стиля и технологий.";
+                const img = p.image_url ? `<img src="${p.image_url}">` : `<div class="no-img">Image Placeholder</div>`;
+
                 grid.innerHTML += `
                     <div class="card" onclick="this.classList.toggle('open')">
-                        <div class="card-title">${p.title}</div>
-                        <div class="card-desc">${desc}</div>
-                        <span class="more-link">нажмите, чтобы развернуть</span>
-                        <a href="${p.url}" class="buy-btn">ПОДРОБНЕЕ</a>
+                        <div class="card-img">${img}</div>
+                        <div class="card-content">
+                            <div class="card-title">${p.title}</div>
+                            <div class="card-desc">${desc}</div>
+                            <a href="${p.url}" class="buy-btn">Узнать цену</a>
+                        </div>
                     </div>`;
             });
         }
-        load('all');
+
+        function filter(brand) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            loadProducts(brand);
+        }
+
+        loadProducts();
     </script>
 </body>
 </html>
