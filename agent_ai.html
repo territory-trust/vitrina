@@ -4,33 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Vitrina AI: Quota Master</title>
+    <title>Vitrina AI: Quota Master V6</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=quota_fix_v5"></script>
+    <script src="config.js?v=final_fix_90s"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #00ff41; --purple: #bd00ff; --text: #f0f6fc; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--purple); max-width: 500px; margin: 20px auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        label { color: var(--accent); display: block; margin-bottom: 10px; font-size: 18px; }
-        input { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; font-size: 16px; box-sizing: border-box; }
-        .btn { background: linear-gradient(180deg, #00ff41 0%, #008f24 100%); color: black; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        #log { margin-top: 25px; background: #000; padding: 25px; border-radius: 12px; color: var(--accent); text-align: left; min-height: 400px; font-family: monospace; border: 1px solid #333; overflow-y: auto; font-size: 19px; line-height: 1.6; }
-        .timer { color: #ffcc00; font-weight: bold; }
+        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--purple); max-width: 500px; margin: 20px auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .input-group { margin-bottom: 25px; text-align: left; }
+        label { color: var(--accent); display: block; margin-bottom: 12px; font-size: 20px; font-weight: bold; }
+        input { width: 100%; padding: 20px; border-radius: 14px; border: 1px solid #333; background: #000; color: #fff; font-size: 18px; box-sizing: border-box; }
+        .btn { background: linear-gradient(180deg, #00ff41 0%, #008f24 100%); color: black; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 26px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        #log { margin-top: 30px; background: #000; padding: 25px; border-radius: 14px; color: var(--accent); text-align: left; min-height: 450px; font-family: monospace; border: 1px solid #333; overflow-y: auto; font-size: 20px; line-height: 1.6; }
+        .timer { color: #ffcc00; font-weight: bold; font-size: 24px; }
+        b { color: #fff; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--purple); margin-bottom: 25px;">AI КОНВЕЙЕР (V5)</h2>
+        <h2 style="color:var(--purple); margin-bottom: 25px; font-size: 28px;">AI КОНВЕЙЕР (V6)</h2>
         
         <div class="input-group">
             <label>Ваш Google API Key:</label>
-            <input type="password" id="apiKey" placeholder="AIzaSy...">
+            <input type="password" id="apiKey" placeholder="Вставьте ключ здесь...">
         </div>
 
         <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ</button>
         
-        <div id="log">> Готов продолжить...</div>
+        <div id="log">> Готов к работе...</div>
     </div>
 
     <script>
@@ -45,20 +46,20 @@
                 return;
             }
 
-            log.innerHTML = "> Соединение с базой...";
+            log.innerHTML = "> Подключение к базе...";
 
             try {
-                // Берем следующий товар
+                // Ищем товар, который еще не обработан
                 const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
                 if (!products || products.length === 0) {
-                    log.innerHTML += "<br><b style='color:#bd00ff'>> УСПЕХ! Все товары обработаны.</b>";
+                    log.innerHTML += "<br><br><b style='color:#00ff41; font-size:24px;'>✔ УРА! ВСЕ ТОВАРЫ ГОТОВЫ!</b>";
                     return;
                 }
                 
                 const p = products[0];
                 log.innerHTML += `<br>> Товар: <b>${p.title}</b>`;
-                log.innerHTML += `<br>> Запрос в Gemini...`;
+                log.innerHTML += `<br>> Запрос в Gemini 2.5 Flash...`;
 
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyInput}`;
 
@@ -66,38 +67,52 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        "contents": [{"parts": [{"text": "Напиши 1 роскошную рекламную фразу для: " + p.title}]}]
+                        "contents": [{"parts": [{"text": "Напиши 1 роскошную фразу для продажи: " + p.title}]}]
                     })
                 });
 
                 const data = await res.json();
 
+                // Если всё успешно
                 if (data.candidates && data.candidates[0].content) {
                     const aiDesc = data.candidates[0].content.parts[0].text;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ ГОТОВ.</span>`;
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ СОЗДАН.</span>`;
 
-                    await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: aiDesc.trim() });
+                    // Сохраняем в таблицу ai_content
+                    await supabaseClient.from('ai_content').insert({ 
+                        product_id: p.id, 
+                        fancy_description: aiDesc.trim() 
+                    });
+                    
+                    // Помечаем товар в основной таблице
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML += "<br>> Сохранено. Пауза 5 сек...";
+                    log.innerHTML += "<br>> Данные сохранены. Пауза 5 сек...";
                     setTimeout(startProcess, 5000);
                 } 
+                // Если сработал лимит Google
                 else if (data.error && data.error.message.includes("quota")) {
-                    log.innerHTML += `<br><span class="timer">! ЛИМИТ ИСЧЕРПАН. Жду 60 секунд...</span>`;
-                    let seconds = 60;
+                    log.innerHTML += `<br><br><span class="timer">! ЛИМИТ GOOGLE.</span><br>Нужна пауза. Отдыхаем 90 секунд...`;
+                    
+                    let seconds = 90;
                     const countdown = setInterval(() => {
                         seconds--;
-                        log.innerHTML = `> Лимит Google. Ожидание: <span class="timer">${seconds} сек.</span>`;
+                        log.innerHTML = `> Ожидание разблокировки: <span class="timer">${seconds} сек.</span><br>Не закрывайте вкладку!`;
+                        
                         if (seconds <= 0) {
                             clearInterval(countdown);
+                            log.innerHTML = "> Лимит сброшен. Продолжаю...";
                             startProcess();
                         }
                     }, 1000);
                 }
+                // Любая другая ошибка
                 else {
-                    log.innerHTML += `<br><span style='color:red'>! ОШИБКА: ${data.error ? data.error.message : 'Сбой'}</span>`;
+                    log.innerHTML += `<br><span style='color:red'>! ОШИБКА: ${data.error ? data.error.message : 'Сбой связи'}</span>`;
                 }
-            } catch (e) { log.innerHTML += `<br>! СБОЙ СЕТИ: ${e.message}`; }
+            } catch (e) { 
+                log.innerHTML += `<br><span style='color:red'>! СБОЙ СЕТИ: ${e.message}</span>`; 
+            }
         }
     </script>
 </body>
