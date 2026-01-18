@@ -3,70 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina: AI Debug Mode</title>
+    <title>Vitrina: AI Final Push</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=debug_or"></script>
+    <script src="config.js?v=force_update_99"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; }
-        .velvet-btn { background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); color: white; padding: 25px; border-radius: 16px; border: none; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 16px; color: var(--accent); border: 1px solid #333; min-height: 400px; text-align: left; overflow-x: auto; width: 100%; box-sizing: border-box; }
+        .velvet-btn { background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); color: white; padding: 25px; border-radius: 16px; border: none; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(189,0,255,0.4); }
+        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; font-family: monospace; font-size: 18px; color: var(--accent); border: 1px solid #333; min-height: 400px; text-align: left; overflow-y: auto; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">AI КОНВЕЙЕР (DEBUG)</h2>
-        <button class="velvet-btn" onclick="runAI()">ЗАПУСТИТЬ ТЕСТ</button>
-        <div id="log">> Ожидание...</div>
+        <h2 style="color:var(--accent);">AI КОНВЕЙЕР (DIRECT)</h2>
+        <button class="velvet-btn" onclick="runAI()">ЗАПУСТИТЬ</button>
+        <div id="log">> Жду запуска...</div>
     </div>
 
     <script>
+        // ПРЯМАЯ ВСТАВКА ВАШЕГО 4-ГО КЛЮЧА
+        const KEY_DIRECT = "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";
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
         async function runAI() {
             const log = document.getElementById('log');
-            log.innerHTML = "> Запрос к базе...";
-
+            log.innerHTML = "> Работа с базой...";
             try {
                 const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
-                if (!products || products.length === 0) { log.innerHTML += "<br>> Нет товаров."; return; }
+                if (!products || products.length === 0) { log.innerHTML += "<br>> Нет товаров!"; return; }
+                
                 const p = products[0];
-                log.innerHTML += `<br>> Товар: ${p.title}`;
+                log.innerHTML += `<br>> Товар: <b>${p.title}</b>`;
+                log.innerHTML += `<br>> Прямой запрос к OpenRouter...`;
 
-                // Жесткая очистка ключа
-                const api_key = CONFIG.OPENROUTER_API_KEY.trim();
-                log.innerHTML += `<br>> Отправка в OpenRouter...`;
-
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${api_key}`
+                        "Authorization": "Bearer " + KEY_DIRECT.trim(),
+                        "Content-Type": "application/json"
                     },
-                    mode: 'cors',
                     body: JSON.stringify({
                         "model": "google/gemini-flash-1.5",
-                        "messages": [{"role": "user", "content": "Напиши 1 рекламную фразу для: " + p.title}]
+                        "messages": [{"role": "user", "content": "Напиши 1 роскошное рекламное предложение для: " + p.title}]
                     })
                 });
 
-                const result = await response.json();
-
-                if (result.choices) {
-                    const txt = result.choices[0].message.content;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ: ${txt}</span>`;
+                const data = await res.json();
+                if (data.choices) {
+                    const txt = data.choices[0].message.content;
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ УСПЕХ! ТЕКСТ:</span><br>${txt}`;
                     
                     await supabaseClient.from('ai_content').insert({ product_id: p.id, fancy_description: txt });
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                    log.innerHTML += `<br>> Записано в базу.`;
+                    
+                    log.innerHTML += `<br>> Сохранено. Пауза 3 сек...`;
+                    setTimeout(runAI, 3000);
                 } else {
-                    // Выводим полный объект ошибки для анализа
-                    log.innerHTML += `<br><span style="color:red">! ОШИБКА ИИ: ${JSON.stringify(result.error)}</span>`;
+                    log.innerHTML += `<br><span style="color:red">! ОШИБКА ИИ: ${JSON.stringify(data.error)}</span>`;
                 }
-            } catch (err) {
-                log.innerHTML += `<br>! СБОЙ СЕТИ: ${err.message}`;
-            }
+            } catch (e) { log.innerHTML += `<br>! СБОЙ: ${e.message}`; }
         }
     </script>
 </body>
