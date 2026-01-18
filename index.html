@@ -3,82 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Showcase</title>
+    <title>Витрина: Территория Доверия</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
+    <script src="config.js?v=final_showcase"></script>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --accent: #58a6ff; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
+        :root { --bg: #0b1016; --card: #161b22; --accent: #bd00ff; --text: #f0f6fc; --gray: #8b949e; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; line-height: 1.5; }
         
-        .category-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 20px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
-        .cat-btn { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
-        .cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.05); }
+        /* Заголовок и Категории */
+        header { text-align: center; margin-bottom: 30px; }
+        .categories { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-btn { background: var(--card); border: 1px solid #333; color: var(--text); padding: 10px 20px; border-radius: 20px; white-space: nowrap; font-size: 16px; cursor: pointer; }
+        .cat-btn.active { border-color: var(--accent); color: var(--accent); }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; transition: 0.3s; }
-        .card:hover { border-color: var(--accent); transform: translateY(-3px); }
-
-        .img-box { height: 180px; background: white; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
-        .img-box img { max-width: 80%; max-height: 80%; object-fit: contain; }
-
-        h3 { font-size: 17px; margin: 0 0 10px 0; line-height: 1.4; }
-        .desc { font-size: 14px; color: #8b949e; line-height: 1.5; margin-bottom: 15px; flex-grow: 1; }
-        .price { font-size: 22px; font-weight: bold; color: var(--accent); margin-bottom: 15px; }
-
-        .buy-btn { 
-            background: linear-gradient(180deg, #2ea043, #238636); 
-            color: white; text-decoration: none; text-align: center; padding: 12px; 
-            border-radius: 8px; font-weight: 600; font-size: 15px; border: 1px solid #3fb950;
-        }
+        /* Сетка товаров */
+        .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .card { background: var(--card); border-radius: 20px; border: 1px solid #222; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .card-img { width: 100%; aspect-ratio: 1/1; background: #000; display: flex; align-items: center; justify-content: center; color: #333; font-size: 40px; }
+        
+        /* Текстовые блоки */
+        .card-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .card-category { color: var(--accent); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        .card-title { font-size: 20px; font-weight: bold; margin: 0; }
+        .card-ai-desc { color: var(--gray); font-size: 17px; font-style: italic; border-left: 2px solid var(--accent); padding-left: 10px; margin: 10px 0; }
+        
+        /* Кнопка покупки */
+        .buy-btn { background: linear-gradient(180deg, #bd00ff 0%, #8a00ba 100%); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; text-decoration: none; text-align: center; margin-top: auto; }
+        
+        #loading { text-align: center; color: var(--accent); font-size: 20px; margin-top: 50px; }
     </style>
 </head>
 <body>
-    <div id="cat-list" class="category-bar">
-        <button class="cat-btn active" onclick="filter('Все', this)">Все товары</button>
+
+    <header>
+        <h1 style="font-size: 28px; margin-bottom: 5px;">ВИТРИНА</h1>
+        <p style="color: var(--gray);">Премиальные предложения для вас</p>
+    </header>
+
+    <div class="categories" id="catList">
+        <button class="cat-btn active" onclick="filterCat('all')">Все</button>
     </div>
 
-    <div id="list" class="grid"></div>
+    <div id="loading">Загрузка витрины...</div>
+    <div class="grid" id="productGrid"></div>
 
     <script>
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let store = [];
+        let allProducts = [];
 
-        async function init() {
-            const { data } = await supabaseClient.from('products').select('*, ai_content(fancy_description)').order('created_at', { ascending: false });
-            if (data) {
-                store = data;
-                render(data);
-                updateCategories(data);
+        async function loadShowcase() {
+            try {
+                // Загружаем товары и их ИИ-описания одновременно
+                const { data: products, error: pErr } = await supabaseClient
+                    .from('products')
+                    .select('*, ai_content(fancy_description)');
+
+                if (pErr) throw pErr;
+                allProducts = products;
+
+                // Собираем уникальные категории
+                const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+                const catList = document.getElementById('catList');
+                cats.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.className = 'cat-btn';
+                    btn.innerText = c;
+                    btn.onclick = () => filterCat(c, btn);
+                    catList.appendChild(btn);
+                });
+
+                renderProducts(allProducts);
+                document.getElementById('loading').style.display = 'none';
+            } catch (e) {
+                document.getElementById('loading').innerHTML = "Ошибка загрузки: " + e.message;
             }
         }
 
-        function render(items) {
-            document.getElementById('list').innerHTML = items.map(p => `
-                <div class="card">
-                    <div class="img-box"><img src="${p.image_url}"></div>
-                    <div style="font-size:10px; color:var(--accent); text-transform:uppercase; font-weight:bold; margin-bottom:5px;">${p.category}</div>
-                    <h3>${p.title}</h3>
-                    <div class="desc">${p.ai_content?.[0]?.fancy_description || "Создаем описание..."}</div>
-                    <div class="price">${p.price.toLocaleString()} ₴</div>
-                    <a href="${p.product_url}" target="_blank" class="buy-btn">Узнать цену</a>
-                </div>
-            `).join('');
+        function renderProducts(list) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '';
+            
+            list.forEach(p => {
+                // Берем описание из таблицы ai_content, если его нет - ставим заглушку
+                const aiText = p.ai_content && p.ai_content[0] 
+                    ? p.ai_content[0].fancy_description 
+                    : "Эксклюзивное предложение. Детали уточняйте.";
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-img">📦</div>
+                    <div class="card-body">
+                        <span class="card-category">${p.category || 'Общее'}</span>
+                        <h3 class="card-title">${p.title}</h3>
+                        <p class="card-ai-desc">${aiText}</p>
+                        <a href="${p.url}" class="buy-btn" target="_blank">ПОСМОТРЕТЬ</a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        function updateCategories(data) {
-            const cats = ['Все', ...new Set(data.map(p => p.category))];
-            document.getElementById('cat-list').innerHTML = cats.map(c => 
-                `<button class="cat-btn ${c==='Все'?'active':''}" onclick="filter('${c}', this)">${c}</button>`
-            ).join('');
-        }
-
-        function filter(c, btn) {
+        function filterCat(cat, btn) {
+            // Обновляем активную кнопку
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            render(c === 'Все' ? store : store.filter(p => p.category === c));
+            if(btn) btn.classList.add('active');
+            else document.querySelector('.cat-btn').classList.add('active');
+
+            if (cat === 'all') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.category === cat);
+                renderProducts(filtered);
+            }
         }
 
-        init();
+        loadShowcase();
     </script>
 </body>
 </html>
