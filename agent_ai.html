@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>Vitrina: Gemini Smart Connect</title>
+    <title>Vitrina: Gemini Pro Connect</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js?v=google_smart_v3"></script>
+    <script src="config.js?v=google_pro_v4"></script>
     <style>
         :root { --bg: #0b1016; --card: #161b22; --accent: #00ff41; --text: #f0f6fc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; }
-        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 500px; margin: auto; box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
+        .panel { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--accent); max-width: 500px; margin: 20px auto; box-shadow: 0 0 20px rgba(0,255,65,0.2); }
         .btn { background: var(--accent); color: black; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; color: var(--accent); text-align: left; min-height: 350px; font-family: monospace; border: 1px solid #333; overflow-y: auto; font-size: 18px; }
+        #log { margin-top: 25px; background: #000; padding: 20px; border-radius: 12px; color: var(--accent); text-align: left; min-height: 350px; font-family: monospace; border: 1px solid #333; overflow-y: auto; font-size: 18px; line-height: 1.5; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--accent);">GEMINI КОНВЕЙЕР (SMART)</h2>
+        <h2 style="color:var(--accent);">GEMINI PRO КОНВЕЙЕР</h2>
         <button class="btn" onclick="start()">ЗАПУСТИТЬ</button>
-        <div id="log">> Ожидание...</div>
+        <div id="log">> Жду команду...</div>
     </div>
 
     <script>
-        // Ваш ключ из скриншота
+        // Ваш ключ из скрина
         const GOOGLE_KEY = "AIzaSyBmunos8jmgxkVeG3Dxjey44or9E9voOYw";
         const supabaseClient = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
 
@@ -31,28 +31,28 @@
             log.innerHTML = "> Соединение с базой...";
 
             try {
+                // Получаем товар (is_processed_ai = false)
                 const { data: products } = await supabaseClient.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
                 if (!products || products.length === 0) {
-                    log.innerHTML += "<br>> Все 23 товара обработаны!";
+                    log.innerHTML += "<br>> Все товары успешно обработаны!";
                     return;
                 }
                 
                 const p = products[0];
-                log.innerHTML += `<br>> Товар: <b>${p.title}</b>`;
-                log.innerHTML += "<br>> Подбор модели Google...";
+                log.innerHTML += `<br>> Товар: <b style="color:#fff">${p.title}</b>`;
+                log.innerHTML += "<br>> Запрос в Gemini Pro...";
 
-                // Пробуем универсальный адрес модели
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_KEY}`;
+                // Используем стабильную версию v1 и модель gemini-pro
+                const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${GOOGLE_KEY}`;
 
                 const res = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         "contents": [{
-                            "parts": [{"text": "Напиши одно роскошное рекламное предложение для продажи: " + p.title}]
-                        }],
-                        "generationConfig": { "temperature": 0.7, "maxOutputTokens": 100 }
+                            "parts": [{"text": "Напиши одно роскошное рекламное предложение для: " + p.title}]
+                        }]
                     })
                 });
 
@@ -60,23 +60,27 @@
 
                 if (data.candidates && data.candidates[0].content) {
                     const aiDesc = data.candidates[0].content.parts[0].text;
-                    log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ ПОЛУЧЕН!</span>`;
+                    log.innerHTML += `<br><span style="color:#00ff41">✔ ТЕКСТ ГОТОВ!</span>`;
 
-                    // Сохраняем в базу (RLS disabled позволяет это)
-                    await supabaseClient.from('ai_content').insert({ 
+                    // Сохраняем в таблицу ai_content
+                    const { error: insErr } = await supabaseClient.from('ai_content').insert({ 
                         product_id: p.id, 
                         fancy_description: aiDesc.trim() 
                     });
-                    
+
+                    if (insErr) throw new Error("Ошибка записи: " + insErr.message);
+
+                    // Помечаем товар как обработанный
                     await supabaseClient.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML += "<br>> Сохранено. Пауза 3 сек...";
-                    setTimeout(start, 3000);
+                    log.innerHTML += "<br>> Успешно сохранено.";
+                    setTimeout(start, 3000); // Автоматический переход к следующему товару
                 } else {
-                    log.innerHTML += `<br><span style="color:red">! ОТКАЗ: ${data.error ? data.error.message : 'Неверный ответ API'}</span>`;
+                    const errorMsg = data.error ? data.error.message : "Неизвестная ошибка API";
+                    log.innerHTML += `<br><span style="color:red">! ОТКАЗ: ${errorMsg}</span>`;
                 }
             } catch (e) {
-                log.innerHTML += `<br>! СБОЙ СЕТИ: ${e.message}`;
+                log.innerHTML += `<br><span style="color:yellow">! СБОЙ: ${e.message}</span>`;
             }
         }
     </script>
