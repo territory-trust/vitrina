@@ -20,7 +20,7 @@
         <h2 style="color:var(--olive);">PREMIUM AI CONVEYOR</h2>
         <input type="password" id="apiKey" placeholder="Вставьте ваш API Key...">
         <button class="btn" onclick="startStable()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
-        <div id="log">> Система готова. Режим: Стабильный...</div>
+        <div id="log">> Ожидание команды...</div>
     </div>
 
     <script>
@@ -29,45 +29,43 @@
             const key = document.getElementById('apiKey').value.trim();
             const log = document.getElementById('log');
             if (!key) return log.innerHTML = "Введите ключ!";
-            log.innerHTML = "> Запуск в безопасном ритме...";
+            log.innerHTML = "> Подключение к Stable API...";
             runCycle(key);
         }
 
         async function runCycle(key) {
             const log = document.getElementById('log');
             try {
-                // Ищем один необработанный товар
                 const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
                 
                 if (!products?.length) {
-                    log.innerHTML = "<b style='color:#fff'>> ВСЕ ТОВАРЫ ОБРАБОТАНЫ. Ожидание новинок...</b>";
-                    setTimeout(() => runCycle(key), 60000); // Проверка новых раз в минуту
+                    log.innerHTML = "<b style='color:#fff'>> ГОТОВО. Все товары описаны.</b>";
+                    setTimeout(() => runCycle(key), 30000);
                     return;
                 }
 
                 const p = products[0];
-                log.innerHTML = `> Описываем: <b>${p.title}</b>...`;
+                log.innerHTML = `> Обработка: <b>${p.title}</b>...`;
 
-                // Запрос к ИИ с инструкцией про 2-3 предложения
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                // ИСПОЛЬЗУЕМ СТАБИЛЬНУЮ ВЕРСИЮ v1 ВМЕСТО v1beta
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ "contents": [{"parts": [{"text": "Напиши статусное, роскошное рекламное описание для: " + p.title + ". Используй 2-3 красивых предложения. Без кавычек."}]}] })
+                    body: JSON.stringify({ "contents": [{"parts": [{"text": "Напиши статусное описание (2-3 роскошных предложения) для: " + p.title + ". Без кавычек."}]}] })
                 });
 
                 const data = await res.json();
-                if (data.candidates) {
+                
+                if (data.candidates && data.candidates[0].content) {
                     const desc = data.candidates[0].content.parts[0].text.trim();
-                    
-                    // Сохраняем результат
                     await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                     await sb.from('products').update({ is_processed_ai: true }).eq('id', p.id);
                     
-                    log.innerHTML = `<span style="color:white">✔ ГОТОВО:</span> ${p.title}<br><i style="color:#aaa">${desc}</i><br><br>> Следующий через 5 секунд...`;
-                    setTimeout(() => runCycle(key), 5000); // Безопасная пауза 5 секунд
+                    log.innerHTML = `<span style="color:white">✔ УСПЕХ:</span> ${p.title}<br><br>> Пауза 5 сек...`;
+                    setTimeout(() => runCycle(key), 5000);
                 } else {
-                    log.innerHTML = `<span style="color:red">! Ошибка: ${data.error?.message || "Сбой запроса"}</span>`;
-                    setTimeout(() => runCycle(key), 10000);
+                    log.innerHTML = `<span style="color:red">! Ошибка API: ${data.error?.message || "Неизвестный сбой"}</span>`;
+                    console.log(data);
                 }
             } catch (e) {
                 log.innerHTML = `! Ошибка сети: ${e.message}`;
