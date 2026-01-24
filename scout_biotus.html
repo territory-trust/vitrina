@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Разведчик: Biotus</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
+        .panel { background: #14171c; padding: 20px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; font-size: 16px; margin-bottom: 15px; box-sizing: border-box; }
+        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; }
+        .btn-alt { background: #2a2e35; color: var(--text); padding: 12px; border-radius: 10px; text-decoration: none; display: block; margin-top: 15px; font-size: 14px; border: 1px solid #444; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; min-height: 100px; font-family: monospace; border: 1px solid var(--olive); }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h2 style="color:var(--olive);">РАЗВЕДЧИК: BIOTUS</h2>
+        <input type="text" id="biotusUrl" placeholder="Ссылка на товар Biotus.ua">
+        <button class="btn" onclick="startScout()">ОТПРАВИТЬ В БАЗУ</button>
+        
+        <div id="log">> Жду ссылку на товар...</div>
+
+        <a href="agent_ai.html" class="btn-alt">Перейти к Агенту-Описателю →</a>
+    </div>
+
+    <script>
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        const AFF_ID = "111958"; // Ваш ID
+
+        async function startScout() {
+            const log = document.getElementById('log');
+            const url = document.getElementById('biotusUrl').value.trim();
+            if (!url) return log.innerHTML = "! Вставьте ссылку с сайта Biotus";
+
+            log.innerHTML = "> Формирование реферальной ссылки...";
+
+            try {
+                // Создаем DeepLink для Biotus (ID 8363)
+                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/8363?aff_id=${AFF_ID}&url=${encodeURIComponent(url)}`;
+
+                // Вытягиваем название из ссылки для временного заголовка
+                const tempTitle = url.split('/').filter(Boolean).pop().replace('.html', '').replace(/-/g, ' ');
+
+                log.innerHTML += "<br>> Запись в Supabase...";
+
+                const { error } = await sb.from('products').insert({
+                    title: tempTitle,
+                    affiliate_url: deepLink,
+                    category: "Здоровье",
+                    image_url: "https://biotus.ua/skin/frontend/biotus/default/images/logo.png", // Временное фото
+                    is_processed_ai: false
+                });
+
+                if (error) throw error;
+
+                log.innerHTML = "<span style='color:white'>✔ ТОВАР УСПЕШНО ДОБАВЛЕН!</span><br><br>Теперь перейдите к Агенту-Описателю, чтобы ИИ создал роскошный текст.";
+                document.getElementById('biotusUrl').value = "";
+            } catch (e) {
+                log.innerHTML = "<span style='color:red'>! ОШИБКА: " + e.message + "</span>";
+            }
+        }
+    </script>
+</body>
+</html>
