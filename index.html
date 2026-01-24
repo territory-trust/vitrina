@@ -33,17 +33,15 @@
 
         h1 {
             color: var(--olive);
-            /* Уменьшенный шрифт для мобильных */
             font-size: clamp(1.2rem, 5vw, 1.8rem); 
             text-transform: uppercase;
             letter-spacing: 1px;
             margin: 10px 0 20px;
-            white-space: nowrap; /* Запрет переноса на новую строку */
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Поиск */
         .search-container {
             margin-bottom: 20px;
             max-width: 600px;
@@ -63,13 +61,11 @@
             outline: none;
         }
 
-        /* Категории */
         .categories-wrapper {
             overflow-x: auto;
             white-space: nowrap;
             padding: 5px 0 15px;
             scrollbar-width: none;
-            -ms-overflow-style: none;
         }
         .categories-wrapper::-webkit-scrollbar { display: none; }
 
@@ -83,7 +79,6 @@
             border: 1px solid #333;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.2s;
         }
 
         .category-btn.active {
@@ -93,7 +88,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        /* Сетка товаров */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -132,8 +126,17 @@
         .card .description {
             font-size: 14px;
             color: #9ca3af;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             flex-grow: 1;
+        }
+
+        /* Стиль цены */
+        .price {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-bright);
+            margin: 10px 0 15px;
+            text-align: left;
         }
 
         .buy-btn {
@@ -159,11 +162,9 @@
 
 <header>
     <h1>Витрина Маркет</h1>
-    
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Поиск товаров..." oninput="filterProducts()">
     </div>
-
     <div class="categories-wrapper" id="categoryTabs">
         <button class="category-btn active" onclick="setCategory('Все')">Все</button>
         <button class="category-btn" onclick="setCategory('Смартфоны')">Смартфоны</button>
@@ -205,12 +206,15 @@
         }
         products.forEach(p => {
             const desc = p.ai_content?.[0]?.fancy_description || 'Описание готовится...';
+            const priceDisplay = p.price ? `${Number(p.price).toLocaleString()} грн` : 'Цену уточняйте';
+            
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
                 <img src="${p.image_url}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Нет+фото'">
                 <h3>${p.title}</h3>
                 <div class="description">${desc}</div>
+                <div class="price">${priceDisplay}</div>
                 <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТЬ</a>
             `;
             grid.appendChild(card);
