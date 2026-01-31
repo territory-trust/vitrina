@@ -1,35 +1,213 @@
-<div style="max-width: 600px; margin: 0 auto; padding: 10px 15px;">
-    <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Пошук (наприклад: EcoFlow, iPhone, шуруповерт)..." 
-           style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1d23; color: #fff; margin-bottom: 15px;">
-    
-    <div class="categories-container" style="overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;">
-        <div id="categoryTabs" style="display: inline-flex; gap: 8px; padding-bottom: 10px;">
-            <button class="category-btn active" onclick="setCategory('Все')">Усе</button>
-            <button class="category-btn" onclick="setCategory('Енергонезалежність')">Енергія</button>
-            <button class="category-btn" onclick="setCategory('Смартфони та гаджети')">Гаджети</button>
-            <button class="category-btn" onclick="setCategory('Побутова техніка')">Техніка</button>
-            <button class="category-btn" onclick="setCategory('Електроінструмент')">Інструмент</button>
-            <button class="category-btn" onclick="setCategory('Комп\'ютерна техніка')">Комп'ютери</button>
-        </div>
-    </div>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вітрина Проекту</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        /* Багатий бархатний стиль */
+        :root {
+            --bg-deep: #0a0c10;
+            --panel-bg: #14171c;
+            --olive-glow: #556b2f;
+            --text-main: #d1d5db;
+            --text-bright: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Заголовок та пошук */
+        .header {
+            padding: 25px 15px;
+            text-align: center;
+            background: linear-gradient(180deg, #1a1d23 0%, var(--bg-deep) 100%);
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #2a2e35;
+            background: #000;
+            color: #fff;
+            font-size: 16px; /* Середній зручний текст */
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Категорії з об'ємними кнопками */
+        .categories-nav {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 5px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .cat-btn {
+            background: var(--panel-bg);
+            color: var(--text-main);
+            border: 1px solid #2a2e35;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 0 #000; /* Ефект натискання */
+            transition: 0.1s;
+        }
+
+        .cat-btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        .cat-btn.active {
+            background: var(--olive-glow);
+            color: white;
+            border-color: var(--olive-glow);
+        }
+
+        /* Сітка товарів */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 15px;
+        }
+
+        /* Картка товару */
+        .card {
+            background: var(--panel-bg);
+            border-radius: 15px;
+            border: 1px solid #2a2e35;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: #fff;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: var(--text-bright);
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #9ca3af;
+            flex-grow: 1;
+            margin-bottom: 15px;
+            white-space: pre-line; /* Щоб тех-характеристики були списком */
+        }
+
+        .buy-btn {
+            background: linear-gradient(180deg, #556b2f 0%, #3e4e22 100%);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #2d3a18;
+        }
+
+        .buy-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1 style="color: var(--olive-glow);">ВІТРИНА ПРОЕКТУ</h1>
+    <input type="text" id="search" class="search-box" placeholder="Пошук техніки..." onkeyup="filterProducts()">
 </div>
 
-<style>
-    .category-btn {
-        background: #14171c; color: #8e949f; border: 1px solid #2a2e35;
-        padding: 8px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
-    }
-    .category-btn.active { background: #556b2f; color: #fff; border-color: #556b2f; }
-    .categories-container::-webkit-scrollbar { display: none; }
-</style>
+<div class="categories-nav" id="cats">
+    <button class="cat-btn active" onclick="filterCat('Все', this)">Усе</button>
+    <button class="cat-btn" onclick="filterCat('Енергонезалежність', this)">Енергія</button>
+    <button class="cat-btn" onclick="filterCat('Смартфони та гаджети', this)">Гаджети</button>
+    <button class="cat-btn" onclick="filterCat('Електроінструмент', this)">Інструмент</button>
+    <button class="cat-btn" onclick="filterCat('Побутова техніка', this)">Техніка</button>
+</div>
+
+<div class="grid" id="productGrid">
+    </div>
 
 <script>
-function searchProducts() {
-    let input = document.getElementById('searchInput').value.toLowerCase();
-    let cards = document.getElementsByClassName('product-card');
-    for (let card of cards) {
-        let title = card.querySelector('.product-title').innerText.toLowerCase();
-        card.style.display = title.includes(input) ? "" : "none";
+    const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+    let allProducts = [];
+
+    async function loadProducts() {
+        const { data, error } = await sb
+            .from('products')
+            .select('*, ai_content(fancy_description)')
+            .eq('is_processed_ai', true);
+
+        if (data) {
+            allProducts = data;
+            render(allProducts);
+        }
     }
-}
+
+    function render(list) {
+        const container = document.getElementById('productGrid');
+        container.innerHTML = '';
+        list.forEach(p => {
+            const desc = p.ai_content?.[0]?.fancy_description || "Опис оновлюється...";
+            container.innerHTML += `
+                <div class="card">
+                    <img src="${p.image_url || 'https://via.placeholder.com/200?text=MTA'}" alt="photo">
+                    <div class="card-title">${p.title}</div>
+                    <div class="card-desc">${desc}</div>
+                    <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ ЗАРАЗ</a>
+                </div>
+            `;
+        });
+    }
+
+    function filterProducts() {
+        const val = document.getElementById('search').value.toLowerCase();
+        const filtered = allProducts.filter(p => p.title.toLowerCase().includes(val));
+        render(filtered);
+    }
+
+    function filterCat(cat, btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (cat === 'Все') {
+            render(allProducts);
+        } else {
+            const filtered = allProducts.filter(p => p.category === cat);
+            render(filtered);
+        }
+    }
+
+    loadProducts();
 </script>
+
+</body>
+</html>
