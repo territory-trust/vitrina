@@ -2,21 +2,23 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Надійний Розвідник MTA</title>
+    <title>Розвідник MTA (Fix)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
-        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 200px; font-family: monospace; overflow-y: auto; }
+        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
+        .btn-start:active { transform: translateY(2px); box-shadow: none; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 180px; font-family: monospace; font-size: 12px; border: 1px solid #222; overflow-y: auto; }
+        .nav-link { display: block; margin-top: 20px; color: var(--olive); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">РОЗВІДНИК (FIX)</h2>
+        <h2 style="color:var(--olive);">РОЗВІДНИК (ПОВНА ВЕРСІЯ)</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
@@ -25,30 +27,37 @@
             <option value="Комп'ютерна техніка">Комп'ютерна техніка</option>
         </select>
         <button class="btn-start" onclick="runScout()">ЗАПУСТИТИ ЗБІР</button>
-        <div id="log">> Готовий до роботи...</div>
+        <div id="log">> Система готова...</div>
+        <a href="agent_ai.html" class="nav-link">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
     </div>
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        const AFF_ID = "111958";
         const data = {
             "Електроінструмент": [
-                {t: "Дриль-шуруповерт Makita DF333", id: "625211", p: "5400", url: "https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye"}
+                {t: "Дриль-шуруповерт Makita DF333", id: "625211", p: "5400", u: "https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye"}
             ],
             "Енергонезалежність": [
-                {t: "Зарядна станція EcoFlow DELTA 2", id: "648601", p: "45999", url: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2"}
+                {t: "Зарядна станція EcoFlow DELTA 2", id: "648601", p: "45999", u: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2"}
+            ],
+            "Смартфони та гаджети": [
+                {t: "iPhone 15 Pro 128GB", id: "681234", p: "48000", u: "https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb-black-titanium"}
             ]
         };
         async function runScout() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            log.innerHTML += `<br>> Збір: ${cat}`;
+            log.innerHTML += `<br>> Початок збору: ${cat}`;
             for (let item of data[cat] || []) {
-                const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${encodeURIComponent(item.url)}`;
+                const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(item.u)}`;
                 const img = `https://mta.ua/image/cache/catalog/products/${item.id}/1-600x600.jpg`;
                 const { error } = await sb.from('products').insert({
                     title: item.t, affiliate_url: deep, image_url: img, price: item.p, category: cat, is_processed_ai: false
                 });
                 if(!error) log.innerHTML += `<br>✔ Додано: ${item.t}`;
+                await new Promise(r => setTimeout(r, 500));
             }
+            log.innerHTML += `<br>> Готово! Тепер тисніть на перехід до Описувача.`;
         }
     </script>
 </body>
