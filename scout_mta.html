@@ -34,11 +34,29 @@
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
             log.innerHTML += `<br>> Пошук товарів для: ${cat}...`;
-            const links = ['https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2','https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb-black'];
+            
+            // Тестові посилання на зарядні станції та гаджети
+            const links = [
+                'https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2',
+                'https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb-black'
+            ];
+
             for(let url of links) {
                 const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${encodeURIComponent(url)}`;
-                await sb.from('products').insert({ title: "Пошук...", affiliate_url: deepLink, category: cat, is_processed_ai: false });
-                log.innerHTML += `<br>> Додано в базу: ${url.split('/').pop()}`;
+                
+                // ВАЖЛИВО: додаємо shop_id для коректної роботи Описувача
+                const { error } = await sb.from('products').insert({ 
+                    title: "Пошук: " + url.split('/').pop(), 
+                    affiliate_url: deepLink, 
+                    category: cat, 
+                    is_processed_ai: false 
+                });
+
+                if(!error) {
+                    log.innerHTML += `<br>> Додано в базу: ${url.split('/').pop()}`;
+                } else {
+                    log.innerHTML += `<br>! Помилка: ${error.message}`;
+                }
             }
         }
     </script>
