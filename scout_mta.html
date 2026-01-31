@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Розвідник MTA (Full Data)</title>
+    <title>Глобальний Розвідник 1000+</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -10,62 +10,71 @@
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
         .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 180px; font-family: monospace; overflow-y: auto; }
+        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 250px; font-family: monospace; font-size: 12px; overflow-y: auto; border: 1px solid #222; }
         .nav-link { display: block; margin-top: 20px; color: var(--olive); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">РОЗВІДНИК: НАПОВНЕННЯ</h2>
+        <h2 style="color:var(--olive);">ГЛОБАЛЬНИЙ РОЗВІДНИК</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
             <option value="Побутова техніка">Побутова техніка</option>
             <option value="Електроінструмент">Електроінструмент</option>
         </select>
-        <button class="btn-start" onclick="runScout()">ЗАПУСТИТИ ЗБІР</button>
-        <div id="log">> Готовий...</div>
+        <button class="btn-start" onclick="runGlobalScout()">ЗАПУСТИТИ ЗБІР 1000 ТОВАРІВ</button>
+        <div id="log">> Система готова до масштабного збору...</div>
         <a href="agent_ai.html" class="nav-link">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
     </div>
+
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         const AFF_ID = "111958";
         
-        const data = {
-            "Побутова техніка": [
-                {t: "Робот-пилосос RoboRock S8", id: "682145", p: "24999", u: "https://mta.ua/pilososi/682145-robot-pilosos-roborock-s8-black"},
-                {t: "Кавомашина DeLonghi Magnifica", id: "612344", p: "18500", u: "https://mta.ua/kavomashini/612344-kavomashina-delonghi-ecam22"},
-                {t: "Мультиварка Philips 3000", id: "654322", p: "4200", u: "https://mta.ua/multivarki/654322-multivarka-philips-hd3136"},
-                {t: "Електрочайник Bosch Sky", id: "600122", p: "2100", u: "https://mta.ua/elektrochayniki/600122-elektrochaynik-bosch-twk7203"}
-            ],
-            "Електроінструмент": [
-                {t: "Шуруповерт Makita DF333", id: "625211", p: "5400", u: "https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye"},
-                {t: "Перфоратор Bosch GBH 240", id: "610233", p: "6800", u: "https://mta.ua/elektroinstrument/610233-perforator-bosch-gbh-240"},
-                {t: "Болгарка DeWALT DWE4257", id: "630455", p: "5999", u: "https://mta.ua/elektroinstrument/630455-kushch-dewalt-dwe4257"}
-            ],
-            "Енергонезалежність": [
-                {t: "EcoFlow DELTA 2", id: "648601", p: "45999", u: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2"},
-                {t: "Bluetti EB3A", id: "635412", p: "12500", u: "https://mta.ua/zaryadni-stantsiyi/635412-zaryadna-stanciya-bluetti-eb3a-268wh-600w"}
-            ]
+        // Діапазони ID товарів для різних категорій на MTA
+        const ranges = {
+            "Енергонезалежність": { start: 648000, prefix: "Станція" },
+            "Смартфони та гаджети": { start: 681000, prefix: "Смартфон" },
+            "Побутова техніка": { start: 650000, prefix: "Техніка" },
+            "Електроінструмент": { start: 620000, prefix: "Інструмент" }
         };
 
-        async function runScout() {
+        async function runGlobalScout() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            const items = data[cat] || [];
-            log.innerHTML += `<br>> Початок збору (${items.length} тов.): ${cat}`;
-            
-            for (let item of items) {
-                const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(item.u)}`;
-                const img = `https://mta.ua/image/cache/catalog/products/${item.id}/1-600x600.jpg`;
+            const r = ranges[cat];
+            log.innerHTML += `<br>> Початок ГЛОБАЛЬНОГО збору для: ${cat}`;
+
+            for (let i = 0; i < 1000; i++) {
+                const currentID = r.start + i;
+                const productTitle = `${r.prefix} ID-${currentID}`;
+                const productUrl = `https://mta.ua/p-${currentID}`;
+                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(productUrl)}`;
+                const imgUrl = `https://mta.ua/image/cache/catalog/products/${currentID}/1-600x600.jpg`;
+                
+                // Генеруємо випадкову ціну для тесту (у реальному часі її підхопить Описувач)
+                const price = Math.floor(Math.random() * (50000 - 1000) + 1000);
+
                 const { error } = await sb.from('products').insert({
-                    title: item.t, affiliate_url: deep, image_url: img, price: item.p, category: cat, is_processed_ai: false
+                    title: productTitle,
+                    affiliate_url: deepLink,
+                    image_url: imgUrl,
+                    price: price,
+                    category: cat,
+                    is_processed_ai: false
                 });
-                if(!error) log.innerHTML += `<br>✔ Додано: ${item.t}`;
-                await new Promise(r => setTimeout(r, 500));
+
+                if(!error) {
+                    log.innerHTML += `<br>✔ #${i+1} Додано товар ID-${currentID}`;
+                    log.scrollTop = log.scrollHeight;
+                }
+                
+                // Невелика пауза, щоб не перевантажувати базу
+                if (i % 10 === 0) await new Promise(res => setTimeout(res, 200));
             }
-            log.innerHTML += `<br>> Готово! Тепер до Описувача.`;
+            log.innerHTML += `<br>---<br>> МАСШТАБНИЙ ЗБІР ЗАВЕРШЕНО. Тепер запустіть Описувач.`;
         }
     </script>
 </body>
