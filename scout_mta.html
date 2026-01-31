@@ -10,62 +10,45 @@
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
         .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
-        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 250px; font-family: monospace; font-size: 12px; border: 1px solid #222; overflow-y: auto; }
+        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 200px; font-family: monospace; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">НАДІЙНИЙ РОЗВІДНИК</h2>
+        <h2 style="color:var(--olive);">РОЗВІДНИК (FIX)</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
+            <option value="Побутова техніка">Побутова техніка</option>
             <option value="Електроінструмент">Електроінструмент</option>
+            <option value="Комп'ютерна техніка">Комп'ютерна техніка</option>
         </select>
-        <button class="btn-start" onclick="runReliableScout()">ЗАПУСТИТИ ЗБІР</button>
+        <button class="btn-start" onclick="runScout()">ЗАПУСТИТИ ЗБІР</button>
         <div id="log">> Готовий до роботи...</div>
     </div>
-
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        const AFF_ID = "111958";
-
-        // Тільки перевірені посилання з реальними фото
         const data = {
-            "Енергонезалежність": [
-                {t: "Зарядна станція EcoFlow DELTA 2", u: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2", i: "https://mta.ua/img/648601/1.jpg", p: "45999"},
-                {t: "Зарядна станція Bluetti EB3A", u: "https://mta.ua/zaryadni-stantsiyi/635412-zaryadna-stanciya-bluetti-eb3a-268wh-600w", i: "https://mta.ua/img/635412/1.jpg", p: "12500"}
-            ],
-            "Смартфони та гаджети": [
-                {t: "Apple iPhone 15 Pro 128GB", u: "https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb-black-titanium", i: "https://mta.ua/img/681234/1.jpg", p: "48000"},
-                {t: "Samsung Galaxy S24 Ultra", u: "https://mta.ua/smartfoni/702134-smartfon-samsung-galaxy-s24-ultra-12-512gb-titanium-black", i: "https://mta.ua/img/702134/1.jpg", p: "52000"}
-            ],
             "Електроінструмент": [
-                {t: "Дриль-шуруповерт Makita DF333", u: "https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye", i: "https://mta.ua/img/625211/1.jpg", p: "5400"}
+                {t: "Дриль-шуруповерт Makita DF333", id: "625211", p: "5400", url: "https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye"}
+            ],
+            "Енергонезалежність": [
+                {t: "Зарядна станція EcoFlow DELTA 2", id: "648601", p: "45999", url: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2"}
             ]
         };
-
-        async function runReliableScout() {
+        async function runScout() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            log.innerHTML += `<br>> Початок збору: ${cat}`;
-
+            log.innerHTML += `<br>> Збір: ${cat}`;
             for (let item of data[cat] || []) {
-                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(item.u)}`;
-                
+                const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${encodeURIComponent(item.url)}`;
+                const img = `https://mta.ua/image/cache/catalog/products/${item.id}/1-600x600.jpg`;
                 const { error } = await sb.from('products').insert({
-                    title: item.t,
-                    affiliate_url: deepLink,
-                    image_url: item.i,
-                    price: item.p, // Додаємо ціну
-                    category: cat,
-                    is_processed_ai: false
+                    title: item.t, affiliate_url: deep, image_url: img, price: item.p, category: cat, is_processed_ai: false
                 });
-
                 if(!error) log.innerHTML += `<br>✔ Додано: ${item.t}`;
-                await new Promise(r => setTimeout(r, 500));
             }
-            log.innerHTML += `<br>> Готово! Тепер запустіть Описувач.`;
         }
     </script>
 </body>
