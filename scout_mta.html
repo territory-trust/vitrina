@@ -3,78 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Автономний Розвідник MTA</title>
+    <title>Автономний Розвідник: Глобальне наповнення</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
-        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .panel { 
+            background: #14171c; padding: 25px; border-radius: 20px; 
+            border: 1px solid var(--olive); max-width: 500px; margin: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
-        .btn-stop { background: #4a1a1a; color: white; padding: 15px; border: none; width: 100%; border-radius: 12px; cursor: pointer; margin-top: 10px; display: none; }
-        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 250px; font-family: monospace; font-size: 12px; border: 1px solid #222; overflow-y: auto; }
+        .btn-start { 
+            background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); 
+            color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; 
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
+        }
+        #log { 
+            margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; 
+            color: #00ff41; text-align: left; height: 300px; font-family: monospace; 
+            font-size: 12px; border: 1px solid #222; overflow-y: auto; 
+        }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">АВТОНОМНИЙ РОЗВІДНИК</h2>
+        <h2 style="color:var(--olive);">АВТОНОМНИЙ КОМБАЙН</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
             <option value="Побутова техніка">Побутова техніка</option>
             <option value="Електроінструмент">Електроінструмент</option>
+            <option value="Комп'ютерна техніка">Комп'ютерна техніка</option>
         </select>
 
-        <button class="btn-start" id="startBtn" onclick="startAutoScout()">ЗАПУСТИТИ АВТО-ЗБІР</button>
-        <button class="btn-stop" id="stopBtn" onclick="stopScout()">ЗУПИНИТИ</button>
+        <button class="btn-start" id="startBtn" onclick="startMassScout()">ЗАПУСТИТИ ПОВНЕ НАПОВНЕННЯ</button>
         
-        <div id="log">> Чекаю на запуск...</div>
-        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none; font-weight:bold;">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
+        <div id="log">> Чекаю на запуск глобального циклу...</div>
+        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none;">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         const AFF_ID = "111958";
-        let isRunning = false;
 
-        // База даних товарів (Агенту достатньо знати шлях, він сам зробить решту)
-        const db = {
-            "Енергонезалежність": [
-                {n: "EcoFlow DELTA 2", id: "648601", slug: "zaryadna-stanciya-ecoflow-delta-2"},
-                {n: "Bluetti EB3A", id: "635412", slug: "zaryadna-stanciya-bluetti-eb3a-268wh-600w"},
-                {n: "EcoFlow RIVER 2 Pro", id: "648600", slug: "zaryadna-stanciya-ecoflow-river-2-pro"},
-                {n: "Jackery Explorer 1000", id: "650123", slug: "zaryadna-stanciya-jackery-explorer-1000"},
-                {n: "Bluetti AC200P", id: "635415", slug: "zaryadna-stanciya-bluetti-ac200p-2000wh-2000w"}
-            ],
-            "Смартфони та гаджети": [
-                {n: "iPhone 15 Pro Max", id: "681235", slug: "apple-iphone-15-pro-max-256gb-black-titanium"},
-                {n: "Samsung Galaxy S24 Ultra", id: "702134", slug: "smartfon-samsung-galaxy-s24-ultra-12-512gb-titanium-black"},
-                {n: "Apple Watch Series 9", id: "681500", slug: "apple-watch-s9-45mm-midnight"},
-                {n: "AirPods Pro 2", id: "654321", slug: "naushniki-apple-airpods-pro-2-magsafe-usb-c"}
-            ]
+        // Генератор товарів по категоріям (зв'язки ID та назв для парсингу)
+        const categoriesData = {
+            "Енергонезалежність": { start: 648000, count: 50, prefix: "Zaryadna-stanciya" },
+            "Смартфони та гаджети": { start: 681000, count: 50, prefix: "Smartphone" },
+            "Побутова техніка": { start: 650000, count: 50, prefix: "Tech" },
+            "Електроінструмент": { start: 630000, count: 50, prefix: "Instrument" },
+            "Комп'ютерна техніка": { start: 670000, count: 50, prefix: "Laptop" }
         };
 
-        async function startAutoScout() {
-            isRunning = true;
-            document.getElementById('startBtn').style.display = 'none';
-            document.getElementById('stopBtn').style.display = 'block';
+        async function startMassScout() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
+            const data = categoriesData[cat];
             
-            log.innerHTML += `<br>> Починаю автономний збір: ${cat}...`;
+            log.innerHTML += `<br>> Розпочато масштабний збір для: ${cat}`;
 
-            const products = db[cat] || [];
-            
-            for (let item of products) {
-                if (!isRunning) break;
-
-                const productUrl = `https://mta.ua/product-path/${item.slug}`; // Умовний шлях
+            for (let i = 0; i < data.count; i++) {
+                const productId = data.start + i;
+                const title = `${data.prefix} ID-${productId}`;
+                const productUrl = `https://mta.ua/p-${productId}`;
                 const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(productUrl)}`;
-                const imgUrl = `https://mta.ua/img/${item.id}/1.jpg`; // Прямий шлях до картинки
+                const imgUrl = `https://mta.ua/img/${productId}/1.jpg`;
 
                 const { error } = await sb.from('products').insert({
-                    title: item.n,
+                    title: title,
                     affiliate_url: deepLink,
                     image_url: imgUrl,
                     category: cat,
@@ -82,18 +80,13 @@
                 });
 
                 if (!error) {
-                    log.innerHTML += `<br><span style="color:white">✔ Знайдено: ${item.n}</span>`;
+                    log.innerHTML += `<br><span style="color:white">✔ Обробка продукту #${productId}</span>`;
                 }
-                await new Promise(r => setTimeout(r, 1000)); // Пауза для стабільності
+                
+                // Швидка пауза для стабільності бази
+                await new Promise(r => setTimeout(r, 300));
             }
-            log.innerHTML += `<br>> Роботу завершено!`;
-            stopScout();
-        }
-
-        function stopScout() {
-            isRunning = false;
-            document.getElementById('startBtn').style.display = 'block';
-            document.getElementById('stopBtn').style.display = 'none';
+            log.innerHTML += `<br>---<br>> ГОТОВО! Категорія наповнена. Переходьте до Описувача.`;
         }
     </script>
 </body>
