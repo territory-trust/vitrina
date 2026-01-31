@@ -3,99 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авто-Розвідник MTA | Вітрина</title>
+    <title>Масштабний Розвідник MTA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
         .panel { 
-            background: #14171c; padding: 30px; border-radius: 20px; 
+            background: #14171c; padding: 25px; border-radius: 20px; 
             border: 1px solid var(--olive); max-width: 500px; margin: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
-        select, input { 
-            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333; 
-            background: #000; color: #fff; margin-bottom: 15px; box-sizing: border-box; 
-        }
+        select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
         .btn-start { 
             background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); 
             color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; 
             font-weight: bold; cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 4px 0 #2d3a18; transition: 0.1s;
+            box-shadow: 0 4px 0 #2d3a18;
         }
-        .btn-start:active { transform: translateY(3px); box-shadow: none; }
+        .btn-start:active { transform: translateY(2px); box-shadow: none; }
         #log { 
             margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; 
-            color: #00ff41; text-align: left; height: 160px; font-family: monospace; 
-            font-size: 13px; border: 1px solid #222; overflow-y: auto; 
-        }
-        .nav-link { 
-            display: block; margin-top: 25px; color: var(--olive); 
-            text-decoration: none; font-weight: bold; font-size: 14px; 
+            color: #00ff41; text-align: left; height: 250px; font-family: monospace; 
+            font-size: 12px; border: 1px solid #222; overflow-y: auto; 
         }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive); margin-top:0;">РОЗВІДНИК MTA</h2>
-        
-        <p style="font-size: 13px; color: #777;">Оберіть категорію та запустіть збір товарів</p>
+        <h2 style="color:var(--olive);">МАСШТАБНИЙ РОЗВІДНИК</h2>
         
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
             <option value="Побутова техніка">Побутова техніка</option>
             <option value="Електроінструмент">Електроінструмент</option>
-            <option value="Комп'ютерна техніка">Комп'ютерна техніка</option>
         </select>
 
-        <button class="btn-start" onclick="runScout()">Запустити авто-збір</button>
+        <button class="btn-start" id="mainBtn" onclick="runMassScout()">Запустити масовий збір</button>
         
-        <div id="log">> Система готова до сканування...</div>
-
-        <a href="agent_ai.html" class="nav-link">⚙️ ПЕРЕЙТИ ДО АГЕНТА-ОПИСУВАЧА →</a>
+        <div id="log">> Готовий до завантаження великої партії...</div>
+        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none;">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        const AFF_ID = "111958"; // Ваш ID
+        const AFF_ID = "111958";
 
-        async function runScout() {
+        // Великий список товарів для наповнення
+        const productList = [
+            { t: "EcoFlow DELTA 2", u: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2", i: "https://mta.ua/img/648601/1.jpg" },
+            { t: "Bluetti EB3A", u: "https://mta.ua/zaryadni-stantsiyi/bluetti-eb3a", i: "https://mta.ua/img/bluetti/1.jpg" },
+            { t: "iPhone 15 Pro", u: "https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb", i: "https://mta.ua/img/681234/1.jpg" },
+            { t: "Samsung Galaxy S24", u: "https://mta.ua/smartfoni/samsung-galaxy-s24-ultra", i: "https://mta.ua/img/s24/1.jpg" },
+            { t: "Шуруповерт Makita", u: "https://mta.ua/elektroinstrument/makita-df333dwye", i: "https://mta.ua/img/makita/1.jpg" },
+            { t: "Перфоратор Bosch", u: "https://mta.ua/elektroinstrument/bosch-gbh-240", i: "https://mta.ua/img/bosch/1.jpg" },
+            { t: "Кавомашина DeLonghi", u: "https://mta.ua/kavomashini/delonghi-ecam-22", i: "https://mta.ua/img/delonghi/1.jpg" },
+            { t: "Пилосос Dyson V15", u: "https://mta.ua/pilososi/dyson-v15-detect", i: "https://mta.ua/img/dyson/1.jpg" }
+            // Можна додати ще 50+ посилань
+        ];
+
+        async function runMassScout() {
             const log = document.getElementById('log');
+            const btn = document.getElementById('mainBtn');
             const cat = document.getElementById('catSelect').value;
             
-            log.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] Початок збору: ${cat}`;
+            btn.disabled = true;
+            btn.innerText = "ЙДЕ ОБРОБКА...";
+            log.innerHTML += `<br>> Початок масового завантаження в категорію: ${cat}`;
 
-            // Актуальні посилання для тесту (можна замінити на будь-які з mta.ua)
-            const links = [
-                'https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2',
-                'https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb-black',
-                'https://mta.ua/elektroinstrument/shurupoverti'
-            ];
+            for(let item of productList) {
+                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(item.u)}`;
+                
+                const { error } = await sb.from('products').insert({
+                    title: item.t,
+                    affiliate_url: deepLink,
+                    image_url: item.i, // Передаємо картинку
+                    category: cat,
+                    is_processed_ai: false
+                });
 
-            for(let url of links) {
-                try {
-                    // Формуємо DeepLink
-                    const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(url)}`;
-                    
-                    // Робимо технічну назву з посилання
-                    const rawTitle = url.split('/').pop().replace(/-/g, ' ');
-
-                    const { error } = await sb.from('products').insert({
-                        title: rawTitle,
-                        affiliate_url: deepLink,
-                        category: cat,
-                        is_processed_ai: false
-                    });
-
-                    if(error) throw error;
-                    log.innerHTML += `<br><span style="color:white">✔ Додано: ${rawTitle.substring(0, 20)}...</span>`;
-                } catch (e) {
-                    log.innerHTML += `<br><span style="color:#ff4444">! Помилка: ${e.message}</span>`;
+                if(!error) {
+                    log.innerHTML += `<br><span style="color:white">✔ Додано: ${item.t}</span>`;
+                } else {
+                    log.innerHTML += `<br><span style="color:red">! Помилка: ${error.message}</span>`;
                 }
+                
+                // Коротка пауза, щоб не спамити базу
+                await new Promise(r => setTimeout(r, 500));
             }
-            log.innerHTML += `<br>> Цикл завершено. Можна переходити до опису.`;
+
+            log.innerHTML += `<br>---<br>> ВСІ ТОВАРИ ДОДАНО. Тепер запустіть ОПИСУВАЧ.`;
+            btn.disabled = false;
+            btn.innerText = "ЗАПУСТИТИ ЗНОВУ";
         }
     </script>
 </body>
