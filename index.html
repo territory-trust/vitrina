@@ -1,244 +1,35 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Витрина — Премиум Маркет</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    <style>
-        :root {
-            --bg-color: #0d0f12;
-            --card-bg: #14171c;
-            --olive: #556b2f;
-            --olive-dark: #3e4e22;
-            --text-main: #d1d5db;
-            --text-bright: #ffffff;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 15px;
-            line-height: 1.6;
-        }
-
-        header {
-            max-width: 1200px;
-            margin: 0 auto 20px;
-            text-align: center;
-        }
-
-        h1 {
-            color: var(--olive);
-            font-size: clamp(1.2rem, 5vw, 1.8rem); 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 10px 0 20px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .search-container {
-            margin-bottom: 20px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        #searchInput {
-            width: 100%;
-            padding: 12px 15px;
-            background: #000;
-            border: 1px solid var(--olive);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        .categories-wrapper {
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 5px 0 15px;
-            scrollbar-width: none;
-        }
-        .categories-wrapper::-webkit-scrollbar { display: none; }
-
-        .category-btn {
-            display: inline-block;
-            background: linear-gradient(180deg, #2a2e35 0%, #1a1d22 100%);
-            color: var(--text-main);
-            padding: 10px 20px;
-            margin-right: 8px;
-            border-radius: 40px;
-            border: 1px solid #333;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .category-btn.active {
-            background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%);
-            color: white;
-            border-color: var(--olive);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            border: 1px solid #222;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
-
-        .card img {
-            width: 100%;
-            height: 180px;
-            object-fit: contain;
-            border-radius: 12px;
-            background: #000;
-            margin-bottom: 12px;
-        }
-
-        .card h3 {
-            font-size: 1.1rem;
-            margin: 5px 0;
-            color: var(--text-bright);
-            height: 2.4em;
-            overflow: hidden;
-        }
-
-        .card .description {
-            font-size: 14px;
-            color: #9ca3af;
-            margin-bottom: 10px;
-            flex-grow: 1;
-        }
-
-        /* Стиль цены */
-        .price {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--text-bright);
-            margin: 10px 0 15px;
-            text-align: left;
-        }
-
-        .buy-btn {
-            background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%);
-            color: white;
-            text-decoration: none;
-            padding: 12px;
-            text-align: center;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        #empty-state {
-            text-align: center;
-            padding: 40px;
-            color: var(--olive);
-            grid-column: 1 / -1;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Витрина Маркет</h1>
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Поиск товаров..." oninput="filterProducts()">
+<div style="max-width: 600px; margin: 0 auto; padding: 10px 15px;">
+    <input type="text" id="searchInput" onkeyup="searchProducts()" placeholder="Пошук (наприклад: EcoFlow, iPhone, шуруповерт)..." 
+           style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1d23; color: #fff; margin-bottom: 15px;">
+    
+    <div class="categories-container" style="overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;">
+        <div id="categoryTabs" style="display: inline-flex; gap: 8px; padding-bottom: 10px;">
+            <button class="category-btn active" onclick="setCategory('Все')">Усе</button>
+            <button class="category-btn" onclick="setCategory('Енергонезалежність')">Енергія</button>
+            <button class="category-btn" onclick="setCategory('Смартфони та гаджети')">Гаджети</button>
+            <button class="category-btn" onclick="setCategory('Побутова техніка')">Техніка</button>
+            <button class="category-btn" onclick="setCategory('Електроінструмент')">Інструмент</button>
+            <button class="category-btn" onclick="setCategory('Комп\'ютерна техніка')">Комп'ютери</button>
+        </div>
     </div>
-    <div class="categories-wrapper" id="categoryTabs">
-        <button class="category-btn active" onclick="setCategory('Все')">Все</button>
-        <button class="category-btn" onclick="setCategory('Смартфоны')">Смартфоны</button>
-        <button class="category-btn" onclick="setCategory('Электротранспорт')">Электротранспорт</button>
-        <button class="category-btn" onclick="setCategory('Гаджеты')">Гаджеты</button>
-        <button class="category-btn" onclick="setCategory('Ноутбуки')">Ноутбуки</button>
-        <button class="category-btn" onclick="setCategory('Электроинструмент')">Инструмент</button>
-        <button class="category-btn" onclick="setCategory('Бытовая техника')">Техника</button>
-        <button class="category-btn" onclick="setCategory('Дом и Сад')">Дом и Сад</button>
-    </div>
-</header>
-
-<div class="grid" id="productGrid">
-    <div id="empty-state">Загрузка товаров...</div>
 </div>
 
+<style>
+    .category-btn {
+        background: #14171c; color: #8e949f; border: 1px solid #2a2e35;
+        padding: 8px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .category-btn.active { background: #556b2f; color: #fff; border-color: #556b2f; }
+    .categories-container::-webkit-scrollbar { display: none; }
+</style>
+
 <script>
-    const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-    let allProducts = [];
-    let currentCategory = 'Все';
-
-    async function loadProducts() {
-        const { data, error } = await sb
-            .from('products')
-            .select('*, ai_content(fancy_description)')
-            .order('created_at', { ascending: false });
-
-        if (error) return;
-        allProducts = data;
-        renderProducts(allProducts);
+function searchProducts() {
+    let input = document.getElementById('searchInput').value.toLowerCase();
+    let cards = document.getElementsByClassName('product-card');
+    for (let card of cards) {
+        let title = card.querySelector('.product-title').innerText.toLowerCase();
+        card.style.display = title.includes(input) ? "" : "none";
     }
-
-    function renderProducts(products) {
-        const grid = document.getElementById('productGrid');
-        grid.innerHTML = '';
-        if (products.length === 0) {
-            grid.innerHTML = '<div id="empty-state">Товары не найдены</div>';
-            return;
-        }
-        products.forEach(p => {
-            const desc = p.ai_content?.[0]?.fancy_description || 'Описание готовится...';
-            const priceDisplay = p.price ? `${Number(p.price).toLocaleString()} грн` : 'Цену уточняйте';
-            
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <img src="${p.image_url}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Нет+фото'">
-                <h3>${p.title}</h3>
-                <div class="description">${desc}</div>
-                <div class="price">${priceDisplay}</div>
-                <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТЬ</a>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    function setCategory(cat) {
-        currentCategory = cat;
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.includes(cat) || (cat === 'Все' && btn.innerText === 'Все'));
-        });
-        filterProducts();
-    }
-
-    function filterProducts() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allProducts.filter(p => {
-            const matchesSearch = p.title.toLowerCase().includes(searchTerm);
-            const matchesCategory = currentCategory === 'Все' || p.category === currentCategory;
-            return matchesSearch && matchesCategory;
-        });
-        renderProducts(filtered);
-    }
-    loadProducts();
+}
 </script>
-</body>
-</html>
