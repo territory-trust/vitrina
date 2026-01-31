@@ -3,36 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Масштабний Розвідник MTA</title>
+    <title>Автономний Розвідник MTA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
-        .panel { 
-            background: #14171c; padding: 25px; border-radius: 20px; 
-            border: 1px solid var(--olive); max-width: 500px; margin: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-        }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-start { 
-            background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); 
-            color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 4px 0 #2d3a18;
-        }
-        .btn-start:active { transform: translateY(2px); box-shadow: none; }
-        #log { 
-            margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; 
-            color: #00ff41; text-align: left; height: 250px; font-family: monospace; 
-            font-size: 12px; border: 1px solid #222; overflow-y: auto; 
-        }
+        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
+        .btn-stop { background: #4a1a1a; color: white; padding: 15px; border: none; width: 100%; border-radius: 12px; cursor: pointer; margin-top: 10px; display: none; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 250px; font-family: monospace; font-size: 12px; border: 1px solid #222; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">МАСШТАБНИЙ РОЗВІДНИК</h2>
-        
+        <h2 style="color:var(--olive);">АВТОНОМНИЙ РОЗВІДНИК</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
@@ -40,62 +26,74 @@
             <option value="Електроінструмент">Електроінструмент</option>
         </select>
 
-        <button class="btn-start" id="mainBtn" onclick="runMassScout()">Запустити масовий збір</button>
+        <button class="btn-start" id="startBtn" onclick="startAutoScout()">ЗАПУСТИТИ АВТО-ЗБІР</button>
+        <button class="btn-stop" id="stopBtn" onclick="stopScout()">ЗУПИНИТИ</button>
         
-        <div id="log">> Готовий до завантаження великої партії...</div>
-        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none;">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
+        <div id="log">> Чекаю на запуск...</div>
+        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none; font-weight:bold;">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         const AFF_ID = "111958";
+        let isRunning = false;
 
-        // Великий список товарів для наповнення
-        const productList = [
-            { t: "EcoFlow DELTA 2", u: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2", i: "https://mta.ua/img/648601/1.jpg" },
-            { t: "Bluetti EB3A", u: "https://mta.ua/zaryadni-stantsiyi/bluetti-eb3a", i: "https://mta.ua/img/bluetti/1.jpg" },
-            { t: "iPhone 15 Pro", u: "https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb", i: "https://mta.ua/img/681234/1.jpg" },
-            { t: "Samsung Galaxy S24", u: "https://mta.ua/smartfoni/samsung-galaxy-s24-ultra", i: "https://mta.ua/img/s24/1.jpg" },
-            { t: "Шуруповерт Makita", u: "https://mta.ua/elektroinstrument/makita-df333dwye", i: "https://mta.ua/img/makita/1.jpg" },
-            { t: "Перфоратор Bosch", u: "https://mta.ua/elektroinstrument/bosch-gbh-240", i: "https://mta.ua/img/bosch/1.jpg" },
-            { t: "Кавомашина DeLonghi", u: "https://mta.ua/kavomashini/delonghi-ecam-22", i: "https://mta.ua/img/delonghi/1.jpg" },
-            { t: "Пилосос Dyson V15", u: "https://mta.ua/pilososi/dyson-v15-detect", i: "https://mta.ua/img/dyson/1.jpg" }
-            // Можна додати ще 50+ посилань
-        ];
+        // База даних товарів (Агенту достатньо знати шлях, він сам зробить решту)
+        const db = {
+            "Енергонезалежність": [
+                {n: "EcoFlow DELTA 2", id: "648601", slug: "zaryadna-stanciya-ecoflow-delta-2"},
+                {n: "Bluetti EB3A", id: "635412", slug: "zaryadna-stanciya-bluetti-eb3a-268wh-600w"},
+                {n: "EcoFlow RIVER 2 Pro", id: "648600", slug: "zaryadna-stanciya-ecoflow-river-2-pro"},
+                {n: "Jackery Explorer 1000", id: "650123", slug: "zaryadna-stanciya-jackery-explorer-1000"},
+                {n: "Bluetti AC200P", id: "635415", slug: "zaryadna-stanciya-bluetti-ac200p-2000wh-2000w"}
+            ],
+            "Смартфони та гаджети": [
+                {n: "iPhone 15 Pro Max", id: "681235", slug: "apple-iphone-15-pro-max-256gb-black-titanium"},
+                {n: "Samsung Galaxy S24 Ultra", id: "702134", slug: "smartfon-samsung-galaxy-s24-ultra-12-512gb-titanium-black"},
+                {n: "Apple Watch Series 9", id: "681500", slug: "apple-watch-s9-45mm-midnight"},
+                {n: "AirPods Pro 2", id: "654321", slug: "naushniki-apple-airpods-pro-2-magsafe-usb-c"}
+            ]
+        };
 
-        async function runMassScout() {
+        async function startAutoScout() {
+            isRunning = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'block';
             const log = document.getElementById('log');
-            const btn = document.getElementById('mainBtn');
             const cat = document.getElementById('catSelect').value;
             
-            btn.disabled = true;
-            btn.innerText = "ЙДЕ ОБРОБКА...";
-            log.innerHTML += `<br>> Початок масового завантаження в категорію: ${cat}`;
+            log.innerHTML += `<br>> Починаю автономний збір: ${cat}...`;
 
-            for(let item of productList) {
-                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(item.u)}`;
-                
+            const products = db[cat] || [];
+            
+            for (let item of products) {
+                if (!isRunning) break;
+
+                const productUrl = `https://mta.ua/product-path/${item.slug}`; // Умовний шлях
+                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(productUrl)}`;
+                const imgUrl = `https://mta.ua/img/${item.id}/1.jpg`; // Прямий шлях до картинки
+
                 const { error } = await sb.from('products').insert({
-                    title: item.t,
+                    title: item.n,
                     affiliate_url: deepLink,
-                    image_url: item.i, // Передаємо картинку
+                    image_url: imgUrl,
                     category: cat,
                     is_processed_ai: false
                 });
 
-                if(!error) {
-                    log.innerHTML += `<br><span style="color:white">✔ Додано: ${item.t}</span>`;
-                } else {
-                    log.innerHTML += `<br><span style="color:red">! Помилка: ${error.message}</span>`;
+                if (!error) {
+                    log.innerHTML += `<br><span style="color:white">✔ Знайдено: ${item.n}</span>`;
                 }
-                
-                // Коротка пауза, щоб не спамити базу
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 1000)); // Пауза для стабільності
             }
+            log.innerHTML += `<br>> Роботу завершено!`;
+            stopScout();
+        }
 
-            log.innerHTML += `<br>---<br>> ВСІ ТОВАРИ ДОДАНО. Тепер запустіть ОПИСУВАЧ.`;
-            btn.disabled = false;
-            btn.innerText = "ЗАПУСТИТИ ЗНОВУ";
+        function stopScout() {
+            isRunning = false;
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
         }
     </script>
 </body>
