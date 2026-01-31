@@ -2,29 +2,25 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ІІ-Описувач Техніки (Введення ключа)</title>
+    <title>ІІ-Описувач Техніки (Універсальний)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
-        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 2px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 50px rgba(0,0,0,0.8); }
-        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; margin-bottom: 15px; box-sizing: border-box; font-size: 14px; }
-        .btn-work { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 15px; }
-        #status { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 180px; font-family: monospace; font-size: 12px; overflow-y: auto; border: 1px solid #333; }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 50px rgba(0,0,0,0.8); }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; margin-bottom: 20px; box-sizing: border-box; }
+        .btn-work { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
+        #status { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 200px; font-family: monospace; font-size: 13px; border: 1px solid #222; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="panel">
         <h2 style="color:var(--olive);">ІІ-ОПИСУВАЧ (ТЕХНІКА)</h2>
-        
-        <input type="password" id="userApiKey" placeholder="Вставте ваш Gemini API Key сюди">
-        
-        <p style="font-size: 12px; color: #888; margin-bottom: 15px;">Стиль: Технічний/Діловий | Мова: Українська</p>
-        
+        <input type="password" id="userApiKey" placeholder="Вставте ваш Gemini API Key">
+        <p style="font-size: 11px; color: #888; margin-bottom: 20px;">Авто-вибір моделі: Gemini 2.0 Flash / Pro</p>
         <button class="btn-work" onclick="startProcessing()">ОБРОБИТИ ТОВАРИ</button>
-        
-        <div id="status">> Чекаю на ключ та запуск...</div>
+        <div id="status">> Чекаю на запуск...</div>
     </div>
 
     <script>
@@ -33,58 +29,43 @@
         async function startProcessing() {
             const status = document.getElementById('status');
             const key = document.getElementById('userApiKey').value.trim();
+            if (!key) { status.innerHTML = "<span style='color:red'>! Введіть ключ</span>"; return; }
 
-            if (!key) {
-                status.innerHTML = "<span style='color:red'>! Помилка: Вставте API ключ</span>";
-                return;
-            }
-
-            status.innerHTML = "> Пошук нових товарів у базі...";
-            
-            const { data: products, error: sbErr } = await sb.from('products')
-                .select('*')
-                .eq('is_processed_ai', false)
-                .limit(3);
-            
-            if (sbErr) return status.innerHTML += `<br>! Помилка бази: ${sbErr.message}`;
-            if (!products?.length) return status.innerHTML += "<br>> Все оброблено.";
+            status.innerHTML = "> Пошук товарів...";
+            const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(3);
+            if (!products?.length) { status.innerHTML += "<br>> Немає нових товарів."; return; }
 
             for (let p of products) {
-                status.innerHTML += `<br>> Обробка товару...`;
+                status.innerHTML += `<br>> Спроба опису товару...`;
                 
-                try {
-                    const prompt = `Ти — технічний експерт. Напиши професійний опис для товару: "${p.title}". 
-                    Мова: Українська. Стиль: Діловий, технічний. 
-                    1. Виправ назву на чисту та лаконічну.
-                    2. Напиши короткий опис та головні характеристики (ємність, порти, потужність тощо).`;
+                // Пробуємо спочатку 2.0-flash, потім gemini-pro
+                const models = ["gemini-2.0-flash", "gemini-pro"];
+                let success = false;
 
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
+                for (let modelName of models) {
+                    if (success) break;
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: `Ти технічний експерт. Опиши українською: ${p.title}. Стиль діловий.` }] }] })
+                        });
 
-                    const resData = await response.json();
-                    
-                    if (resData.error) throw new Error(resData.error.message);
-                    
-                    const aiTxt = resData.candidates[0].content.parts[0].text;
-
-                    // Зберігаємо опис в ai_content
-                    await sb.from('ai_content').insert({ product_id: p.id, fancy_description: aiTxt });
-                    
-                    // Оновлюємо товар
-                    const newTitle = aiTxt.split('\n')[0].replace(/#/g, '').trim().substring(0, 60);
-                    await sb.from('products').update({ title: newTitle, is_processed_ai: true }).eq('id', p.id);
-
-                    status.innerHTML += `<br><span style="color:white">✔ Готово: ${newTitle}</span>`;
-
-                } catch (e) {
-                    status.innerHTML += `<br><span style="color:red">! Помилка: Перевірте ключ (баланс або блокування)</span>`;
-                    console.error(e);
+                        const resData = await response.json();
+                        if (resData.candidates && resData.candidates[0].content) {
+                            const aiTxt = resData.candidates[0].content.parts[0].text;
+                            await sb.from('ai_content').insert({ product_id: p.id, fancy_description: aiTxt });
+                            const newTitle = aiTxt.split('\n')[0].replace(/#/g, '').trim().substring(0, 60);
+                            await sb.from('products').update({ title: newTitle, is_processed_ai: true }).eq('id', p.id);
+                            status.innerHTML += `<br><span style="color:white">✔ ОК (${modelName}): ${newTitle}</span>`;
+                            success = true;
+                        }
+                    } catch (e) {
+                        status.innerHTML += `<br>! ${modelName} не підійшла...`;
+                    }
                 }
+                if (!success) status.innerHTML += `<br><span style="color:red">! Помилка ключа на всіх моделях.</span>`;
             }
-            status.innerHTML += `<br>> Сесія завершена.`;
         }
     </script>
 </body>
