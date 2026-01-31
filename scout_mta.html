@@ -1,92 +1,71 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Автономний Розвідник: Глобальне наповнення</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Надійний Розвідник MTA</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
-        .panel { 
-            background: #14171c; padding: 25px; border-radius: 20px; 
-            border: 1px solid var(--olive); max-width: 500px; margin: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-        }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn-start { 
-            background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); 
-            color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; 
-            font-weight: bold; cursor: pointer; text-transform: uppercase;
-        }
-        #log { 
-            margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; 
-            color: #00ff41; text-align: left; height: 300px; font-family: monospace; 
-            font-size: 12px; border: 1px solid #222; overflow-y: auto; 
-        }
+        .btn-start { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 250px; font-family: monospace; font-size: 12px; border: 1px solid #222; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">АВТОНОМНИЙ КОМБАЙН</h2>
+        <h2 style="color:var(--olive);">НАДІЙНИЙ РОЗВІДНИК</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
-            <option value="Побутова техніка">Побутова техніка</option>
             <option value="Електроінструмент">Електроінструмент</option>
-            <option value="Комп'ютерна техніка">Комп'ютерна техніка</option>
         </select>
-
-        <button class="btn-start" id="startBtn" onclick="startMassScout()">ЗАПУСТИТИ ПОВНЕ НАПОВНЕННЯ</button>
-        
-        <div id="log">> Чекаю на запуск глобального циклу...</div>
-        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none;">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
+        <button class="btn-start" onclick="runReliableScout()">ЗАПУСТИТИ ЗБІР</button>
+        <div id="log">> Готовий до роботи...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         const AFF_ID = "111958";
 
-        // Генератор товарів по категоріям (зв'язки ID та назв для парсингу)
-        const categoriesData = {
-            "Енергонезалежність": { start: 648000, count: 50, prefix: "Zaryadna-stanciya" },
-            "Смартфони та гаджети": { start: 681000, count: 50, prefix: "Smartphone" },
-            "Побутова техніка": { start: 650000, count: 50, prefix: "Tech" },
-            "Електроінструмент": { start: 630000, count: 50, prefix: "Instrument" },
-            "Комп'ютерна техніка": { start: 670000, count: 50, prefix: "Laptop" }
+        // Тільки перевірені посилання з реальними фото
+        const data = {
+            "Енергонезалежність": [
+                {t: "Зарядна станція EcoFlow DELTA 2", u: "https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2", i: "https://mta.ua/img/648601/1.jpg", p: "45999"},
+                {t: "Зарядна станція Bluetti EB3A", u: "https://mta.ua/zaryadni-stantsiyi/635412-zaryadna-stanciya-bluetti-eb3a-268wh-600w", i: "https://mta.ua/img/635412/1.jpg", p: "12500"}
+            ],
+            "Смартфони та гаджети": [
+                {t: "Apple iPhone 15 Pro 128GB", u: "https://mta.ua/smartfoni/681234-apple-iphone-15-pro-128gb-black-titanium", i: "https://mta.ua/img/681234/1.jpg", p: "48000"},
+                {t: "Samsung Galaxy S24 Ultra", u: "https://mta.ua/smartfoni/702134-smartfon-samsung-galaxy-s24-ultra-12-512gb-titanium-black", i: "https://mta.ua/img/702134/1.jpg", p: "52000"}
+            ],
+            "Електроінструмент": [
+                {t: "Дриль-шуруповерт Makita DF333", u: "https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye", i: "https://mta.ua/img/625211/1.jpg", p: "5400"}
+            ]
         };
 
-        async function startMassScout() {
+        async function runReliableScout() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            const data = categoriesData[cat];
-            
-            log.innerHTML += `<br>> Розпочато масштабний збір для: ${cat}`;
+            log.innerHTML += `<br>> Початок збору: ${cat}`;
 
-            for (let i = 0; i < data.count; i++) {
-                const productId = data.start + i;
-                const title = `${data.prefix} ID-${productId}`;
-                const productUrl = `https://mta.ua/p-${productId}`;
-                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(productUrl)}`;
-                const imgUrl = `https://mta.ua/img/${productId}/1.jpg`;
-
+            for (let item of data[cat] || []) {
+                const deepLink = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=${AFF_ID}&url=${encodeURIComponent(item.u)}`;
+                
                 const { error } = await sb.from('products').insert({
-                    title: title,
+                    title: item.t,
                     affiliate_url: deepLink,
-                    image_url: imgUrl,
+                    image_url: item.i,
+                    price: item.p, // Додаємо ціну
                     category: cat,
                     is_processed_ai: false
                 });
 
-                if (!error) {
-                    log.innerHTML += `<br><span style="color:white">✔ Обробка продукту #${productId}</span>`;
-                }
-                
-                // Швидка пауза для стабільності бази
-                await new Promise(r => setTimeout(r, 300));
+                if(!error) log.innerHTML += `<br>✔ Додано: ${item.t}`;
+                await new Promise(r => setTimeout(r, 500));
             }
-            log.innerHTML += `<br>---<br>> ГОТОВО! Категорія наповнена. Переходьте до Описувача.`;
+            log.innerHTML += `<br>> Готово! Тепер запустіть Описувач.`;
         }
     </script>
 </body>
