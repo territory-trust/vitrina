@@ -1,78 +1,43 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitrina Global AI: 2.0 Flash</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ІІ-Описувач Техніки</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; text-align: center; padding: 20px; }
-        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
-        input { width: 100%; padding: 18px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; font-size: 18px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 25px; border: none; width: 100%; border-radius: 16px; font-size: 22px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        #log { margin-top: 25px; background: #000; padding: 25px; border-radius: 14px; color: #00ff41; text-align: left; min-height: 400px; font-family: monospace; font-size: 17px; border: 1px solid var(--olive); overflow-y: auto; line-height: 1.5; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 2px solid var(--olive); max-width: 500px; margin: auto; }
+        .btn-work { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #status { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 150px; font-family: monospace; font-size: 12px; overflow-y: auto; border: 1px solid #333; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">GEMINI 2.0 FLASH</h2>
-        <input type="password" id="apiKey" placeholder="Вставьте ваш API Key...">
-        <button class="btn" onclick="startProcess()">ЗАПУСТИТЬ КОНВЕЙЕР</button>
-        <div id="log">> Система готова. Ждем запуск...</div>
+        <h2 style="color:var(--olive);">ІІ-ОПИСУВАЧ (ТЕХНІКА)</h2>
+        <button class="btn-work" onclick="startProcessing()">ОБРОБИТИ НОВІ ТОВАРИ</button>
+        <div id="status">> Чекаю на запуск...</div>
     </div>
-
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        async function startProcess() {
-            const key = document.getElementById('apiKey').value.trim();
-            const log = document.getElementById('log');
-            if (!key) return log.innerHTML = "Введите ключ!";
-            log.innerHTML = "> Инициализация Gemini 2.0...";
-            runCycle(key);
-        }
-
-        async function runCycle(key) {
-            const log = document.getElementById('log');
-            try {
-                // Ищем товар без описания
-                const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(1);
-                
-                if (!products?.length) {
-                    log.innerHTML = "<b style='color:#fff'>> ВСЕ ТОВАРЫ ОПИСАНЫ. МОНИТОРИНГ...</b>";
-                    setTimeout(() => runCycle(key), 30000);
-                    return;
-                }
-
-                const p = products[0];
-                log.innerHTML = `> Описываем: <b>${p.title}</b>...`;
-
-                // Запрос к новой модели 2.0
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ "contents": [{"parts": [{"text": "Напиши статусное описание (2-3 роскошных предложения) для: " + p.title + ". Без кавычек."}]}] })
+        async function startProcessing() {
+            const status = document.getElementById('status');
+            status.innerHTML = "> Пошук товарів...";
+            const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(3);
+            if (!products?.length) return status.innerHTML += "<br>> Все вже описано.";
+            for (let p of products) {
+                status.innerHTML += `<br>> Описую: ${p.id}...`;
+                const prompt = `Напиши технічний опис для "${p.title}" українською мовою. Стиль: діловий, лише характеристики та факти. Зроби заголовок коротким.`;
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST", headers: { "Authorization": `Bearer ${CONFIG.OPENROUTER_API_KEY || CONFIG.GEMINI_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ model: "google/gemini-2.0-flash-001", messages: [{ role: "user", content: prompt }] })
                 });
-
-                const data = await res.json();
-                
-                if (data.candidates && data.candidates[0].content) {
-                    const desc = data.candidates[0].content.parts[0].text.trim();
-                    
-                    // Сохраняем в базу
-                    await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-                    await sb.from('products').update({ is_processed_ai: true }).eq('id', p.id);
-                    
-                    log.innerHTML = `<span style="color:white">✔ ГОТОВО:</span> ${p.title}<br><br>> Следующий через 5 сек...`;
-                    setTimeout(() => runCycle(key), 5000); 
-                } else {
-                    log.innerHTML = `<span style="color:red">! Ошибка API: ${data.error?.message || "Сбой"}</span>`;
-                    setTimeout(() => runCycle(key), 10000);
-                }
-            } catch (e) {
-                log.innerHTML = `! Ошибка сети: ${e.message}`;
-                setTimeout(() => runCycle(key), 10000);
+                const resData = await response.json();
+                const aiTxt = resData.choices[0].message.content;
+                await sb.from('ai_content').insert({ product_id: p.id, fancy_description: aiTxt });
+                await sb.from('products').update({ title: aiTxt.split('\n')[0].substring(0,50), is_processed_ai: true }).eq('id', p.id);
+                status.innerHTML += `<br>✔ Готово.`;
             }
         }
     </script>
