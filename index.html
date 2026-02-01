@@ -1,59 +1,83 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вітрина</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вітрина Проекту</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0a0c10; --panel: #14171c; --olive: #556b2f; --text: #d1d5db; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; }
-        .nav { display: flex; gap: 8px; overflow-x: auto; padding: 15px; justify-content: center; background: #1a1d23; }
-        .cat-btn { background: var(--panel); color: var(--text); border: 1px solid #2a2e35; padding: 10px 15px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 0; }
+        .header { padding: 20px; text-align: center; background: #1a1d23; }
+        .search-box { width: 90%; max-width: 450px; padding: 15px; border-radius: 12px; border: 1px solid #333; background: #000; color: #fff; font-size: 16px; margin-bottom: 15px; }
+        .nav { display: flex; gap: 8px; overflow-x: auto; padding: 15px; justify-content: center; }
+        .cat-btn { background: var(--panel); color: var(--text); border: 1px solid #2a2e35; padding: 10px 18px; border-radius: 8px; cursor: pointer; white-space: nowrap; box-shadow: 0 3px 0 #000; }
         .cat-btn.active { background: var(--olive); color: #fff; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 15px; padding: 15px; }
-        .card { background: var(--panel); border-radius: 15px; border: 1px solid #2a2e35; padding: 15px; display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 200px; object-fit: contain; background: #fff; border-radius: 10px; margin-bottom: 10px; }
-        .price { color: var(--olive); font-size: 22px; font-weight: bold; margin: 10px 0; }
-        .desc { font-size: 14px; color: #9ca3af; white-space: pre-line; max-height: 150px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; }
-        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 15px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 0 #2d3a18; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding: 15px; }
+        .card { background: var(--panel); border-radius: 15px; border: 1px solid #2a2e35; padding: 20px; display: flex; flex-direction: column; }
+        .card img { width: 100%; height: 220px; object-fit: contain; background: #fff; border-radius: 10px; margin-bottom: 15px; }
+        .price { color: var(--olive); font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .title { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 10px; }
+        /* Згортання опису */
+        .desc { font-size: 15px; color: #9ca3af; line-height: 1.5; max-height: 120px; overflow-y: auto; margin-bottom: 20px; white-space: pre-line; border-top: 1px solid #222; padding-top: 10px; }
+        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 16px; border-radius: 12px; font-weight: bold; box-shadow: 0 4px 0 #2d3a18; }
+        .buy-btn:active { transform: translateY(2px); box-shadow: none; }
     </style>
 </head>
 <body>
-<div class="nav" id="catNav">
-    <button class="cat-btn active" onclick="filterCat('Все', this)">Усе</button>
-    <button class="cat-btn" onclick="filterCat('Енергонезалежність', this)">Енергія</button>
-    <button class="cat-btn" onclick="filterCat('Смартфони та гаджети', this)">Гаджети</button>
-    <button class="cat-btn" onclick="filterCat('Побутова техніка', this)">Техніка</button>
-    <button class="cat-btn" onclick="filterCat('Електроінструмент', this)">Інструмент</button>
+
+<div class="header">
+    <h1 style="color: var(--olive); margin: 0 0 15px 0;">ВІТРИНА ПРОЕКТУ</h1>
+    <input type="text" id="search" class="search-box" placeholder="Пошук техніки за назвою..." onkeyup="filter()">
 </div>
+
+<div class="nav" id="catNav">
+    <button class="cat-btn active" onclick="setCat('Все', this)">Усе</button>
+    <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">Енергія</button>
+    <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">Гаджети</button>
+    <button class="cat-btn" onclick="setCat('Побутова техніка', this)">Техніка</button>
+    <button class="cat-btn" onclick="setCat('Електроінструмент', this)">Інструмент</button>
+</div>
+
 <div class="grid" id="grid"></div>
+
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-    let allItems = [];
+    let items = [];
+
     async function load() {
         const { data } = await sb.from('products').select('*, ai_content(fancy_description)').eq('is_processed_ai', true);
-        if (data) { allItems = data; render(data); }
+        if (data) { items = data; render(items); }
     }
+
     function render(list) {
-        const g = document.getElementById('grid'); g.innerHTML = '';
+        const g = document.getElementById('grid');
+        g.innerHTML = '';
         list.forEach(p => {
-            const d = p.ai_content?.[0]?.fancy_description || "Опис оновлюється...";
+            const d = p.ai_content?.[0]?.fancy_description || "Опис готується...";
             g.innerHTML += `
                 <div class="card">
                     <img src="${p.image_url}" onerror="this.src='https://mta.ua/catalog/view/theme/mta/img/logo.svg'">
-                    <div style="font-weight:bold; font-size:18px; color:#fff;">${p.title}</div>
+                    <div class="title">${p.title}</div>
                     <div class="price">${p.price} грн</div>
                     <div class="desc">${d}</div>
                     <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ ЗАРАЗ</a>
                 </div>`;
         });
     }
-    function filterCat(c, b) {
-        document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-        b.classList.add('active');
-        render(c === 'Все' ? allItems : allItems.filter(i => i.category === c));
+
+    function filter() {
+        const val = document.getElementById('search').value.toLowerCase();
+        render(items.filter(i => i.title.toLowerCase().includes(val)));
     }
+
+    function setCat(c, btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render(c === 'Все' ? items : items.filter(i => i.category === c));
+    }
+
     load();
 </script>
 </body>
