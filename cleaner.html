@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Системний Очисник</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        :root { --bg: #0d0f12; --olive: #556b2f; --danger: #8b0000; --text: #d1d5db; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 0; margin: 0; text-align: center; font-size: 16px; }
+        
+        /* Навігація */
+        .system-nav { background: #000; padding: 10px; display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid #333; margin-bottom: 20px; }
+        .sys-btn { text-decoration: none; color: #888; font-size: 14px; padding: 8px 15px; border-radius: 6px; border: 1px solid #333; }
+        .sys-btn:hover { color: #fff; border-color: var(--olive); }
+        .sys-btn.active { background: var(--danger); color: #fff; border-color: red; }
+
+        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid #333; max-width: 500px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .btn { padding: 20px; border: none; width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; color: #fff; transition: 0.2s; }
+        
+        /* Кнопка повної очистки - Бордова */
+        .btn-nuke { background: linear-gradient(180deg, #8b0000 0%, #580000 100%); box-shadow: 0 4px 0 #3d0000; }
+        .btn-nuke:active { transform: translateY(4px); box-shadow: none; }
+        .btn-nuke:hover { background: linear-gradient(180deg, #a50000 0%, #700000 100%); }
+
+        /* Кнопка часткової очистки - Сіра */
+        .btn-soft { background: #2a2e35; border: 1px solid #444; box-shadow: 0 4px 0 #1a1c20; }
+        .btn-soft:active { transform: translateY(4px); box-shadow: none; }
+        .btn-soft:hover { background: #333840; border-color: #666; }
+
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #ff4141; text-align: left; height: 200px; font-family: monospace; overflow-y: auto; font-size: 13px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+    <div class="system-nav">
+        <a href="index.html" class="sys-btn">🏠 ВІТРИНА</a>
+        <a href="scout_mta.html" class="sys-btn">🕵️ РОЗВІДНИК</a>
+        <a href="agent_ai.html" class="sys-btn">🤖 AI АГЕНТ</a>
+        <a href="cleaner.html" class="sys-btn active">🗑️ ОЧИСНИК</a>
+    </div>
+
+    <div class="panel">
+        <h2 style="color:var(--danger); margin-top:0;">СИСТЕМНИЙ ОЧИСНИК</h2>
+        <p style="color:#777; margin-bottom:20px;">Увага! Ця дія незворотна.</p>
+        
+        <button class="btn btn-nuke" onclick="nukeAll()">☢️ ВИДАЛИТИ ВСІ ТОВАРИ (RESET)</button>
+        <button class="btn btn-soft" onclick="cleanUnprocessed()">🧹 Видалити тільки необроблені (без AI)</button>
+        
+        <div id="log">> Система готова до очищення...</div>
+    </div>
+
+    <script>
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        const log = document.getElementById('log');
+
+        // Функція повного видалення
+        async function nukeAll() {
+            if(!confirm("ВИ ВПЕВНЕНІ? Це видалить ВСІ товари з бази даних.")) return;
+            
+            log.innerHTML += `<br>> Початок повного видалення...`;
+            
+            // Видаляємо зв'язані описи спочатку (хоча каскад має спрацювати, але так надійніше)
+            await sb.from('ai_content').delete().neq('id', 0);
+            
+            // Видаляємо товари
+            const { error, count } = await sb.from('products').delete().neq('id', 0); // neq id 0 - хак для видалення всього
+            
+            if(error) {
+                log.innerHTML += `<br>❌ Помилка: ${error.message}`;
+            } else {
+                log.innerHTML += `<br>✅ База повністю очищена!`;
+                log.innerHTML += `<br>> Можете запускати Розвідника заново.`;
+            }
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Функція видалення тільки "сміття" (те, що ще не пройшло через AI)
+        async function cleanUnprocessed() {
+            if(!confirm("Видалити товари, які ще НЕ мають опису від AI?")) return;
+
+            log.innerHTML += `<br>> Очищення необроблених чернеток...`;
+            
+            const { error } = await sb.from('products').delete().eq('is_processed_ai', false);
+            
+            if(error) {
+                log.innerHTML += `<br>❌ Помилка: ${error.message}`;
+            } else {
+                log.innerHTML += `<br>✅ Чернетки видалено. Готові товари залишено.`;
+            }
+            log.scrollTop = log.scrollHeight;
+        }
+    </script>
+</body>
+</html>
