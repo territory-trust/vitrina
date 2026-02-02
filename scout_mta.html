@@ -2,51 +2,57 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Розвідник MTA (Final Fix)</title>
+    <title>Глобальний Розвідник 1000+</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 15px; text-align: center; }
-        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
         select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 0 #2d3a18; }
-        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 150px; font-family: monospace; overflow-y: auto; font-size: 12px; }
-        .nav-link { display: block; margin-top: 15px; color: var(--olive); text-decoration: none; font-weight: bold; }
+        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; height: 150px; overflow-y: auto; text-align: left; font-size: 12px; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h2 style="color:var(--olive);">РОЗВІДНИК</h2>
+        <h2 style="color:var(--olive);">ГЛОБАЛЬНИЙ РОЗВІДНИК</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">Енергонезалежність</option>
             <option value="Смартфони та гаджети">Смартфони та гаджети</option>
             <option value="Побутова техніка">Побутова техніка</option>
             <option value="Електроінструмент">Електроінструмент</option>
+            <option value="Комп'ютерна техніка">Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runScout()">ЗАПУСТИТИ ЗБІР</button>
-        <div id="log">> Готовий...</div>
-        <a href="agent_ai.html" class="nav-link">⚙️ ПЕРЕЙТИ ДО ОПИСУВАЧА →</a>
+        <button class="btn" onclick="runGlobal()">ЗІБРАТИ 1000 ТОВАРІВ</button>
+        <div id="log">> Система готова...</div>
+        <a href="agent_ai.html" style="display:block; margin-top:20px; color:var(--olive); text-decoration:none; font-weight:bold;">⚙️ ДО ОБРОБКИ (ОПИСУВАЧ) →</a>
     </div>
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        const data = {
-            "Електроінструмент": [{t:"Шуруповерт Makita DF333", id:"625211", p:"5400", u:"https://mta.ua/elektroinstrument/625211-drile-shurupovert-makita-df333dwye"}],
-            "Енергонезалежність": [{t:"EcoFlow DELTA 2", id:"648601", p:"45999", u:"https://mta.ua/zaryadni-stantsiyi/648601-zaryadna-stanciya-ecoflow-delta-2"}],
-            "Побутова техніка": [{t:"Робот-пилосос RoboRock S8", id:"682145", p:"24999", u:"https://mta.ua/pilososi/682145-robot-pilosos-roborock-s8-black"}]
+        const ranges = {
+            "Енергонезалежність": { s: 648000, p: "Станція" },
+            "Смартфони та гаджети": { s: 681000, p: "Смартфон" },
+            "Побутова техніка": { s: 650000, p: "Техніка" },
+            "Електроінструмент": { s: 620000, p: "Інструмент" },
+            "Комп'ютерна техніка": { s: 670000, p: "Ноутбук" }
         };
-        async function runScout() {
+        async function runGlobal() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            for (let i of data[cat] || []) {
-                // Пряма збірка без encodeURIComponent для базової частини, щоб SD не губився
-                const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${i.u}`;
-                const img = `https://mta.ua/img/${i.id}/1.jpg`;
-                const { error } = await sb.from('products').insert({
-                    title: i.t, affiliate_url: deep, image_url: img, price: i.p, category: cat, is_processed_ai: false
-                });
-                if(!error) log.innerHTML += `<br>✔ Додано: ${i.t}`;
+            const r = ranges[cat];
+            log.innerHTML += `<br>> Початок генерації 1000 товарів...`;
+            for (let i = 0; i < 1000; i++) {
+                const id = r.s + i;
+                const url = `https://mta.ua/p-${id}`;
+                // Виправлено: Пряме посилання для SalesDoubler
+                const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${url}`;
+                const img = `https://mta.ua/img/${id}/1.jpg`;
+                const price = Math.floor(Math.random() * 25000) + 1200;
+                await sb.from('products').insert({ title: `${r.p} ID-${id}`, affiliate_url: deep, image_url: img, price: price, category: cat, is_processed_ai: false });
+                if (i % 100 === 0) log.innerHTML += `<br>✔ Додано ${i} шт...`;
             }
+            log.innerHTML += `<br>> ГОТОВО!`;
         }
     </script>
 </body>
