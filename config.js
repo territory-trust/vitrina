@@ -1,13 +1,14 @@
 const CONFIG = {
-    // URL из вашего первого скриншота
+    // Твоя база данных Supabase
     SB_URL: 'https://udniuvrrlbeyivqqbjjw.supabase.co', 
     
-    // ВСТАВЬТЕ СЮДА ПОЛНЫЙ КЛЮЧ, нажав на кнопку копирования в Supabase
+    // Твой публичный ключ Supabase (оставляем как ты прислал)
     SB_KEY: 'sb_publishable_W1xgtj3wLDplfGZb9_dwcw_OLxCLxX0', 
     
-    // Ваш полный ключ OpenRouter (проверьте, чтобы в конце не было пробелов)
-    OPENROUTER_API_KEY: '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',
-    
+    // Партнерские данные
     AFFILIATE_ID: '111958',
     NETWORK: 'SalesDoubler'
+    
+    // ВНИМАНИЕ: Ключ Google AI (AIzaSy...) здесь НЕ храним.
+    // Вводи его вручную в поле "API Key" на странице agent_ai.html
 };
