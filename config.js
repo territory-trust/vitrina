@@ -1,14 +1,11 @@
 const CONFIG = {
     // Твоя база данных Supabase
     SB_URL: 'https://udniuvrrlbeyivqqbjjw.supabase.co', 
-    
-    // Твой публичный ключ Supabase (оставляем как ты прислал)
     SB_KEY: 'sb_publishable_W1xgtj3wLDplfGZb9_dwcw_OLxCLxX0', 
     
-    // Партнерские данные
-    AFFILIATE_ID: '111958',
-    NETWORK: 'SalesDoubler'
+    // Партнерские данные SalesDoubler
+    AFFILIATE_ID: '111958', // Твой ID вебмастера (сверху справа на скрине)
+    OFFER_ID: '3463',       // ID оффера MTA (из желтого значка на скрине)
     
-    // ВНИМАНИЕ: Ключ Google AI (AIzaSy...) здесь НЕ храним.
-    // Вводи его вручную в поле "API Key" на странице agent_ai.html
+    // ВНИМАНИЕ: Ключ Google AI здесь НЕ храним (вводим вручную в agent_ai.html)
 };
