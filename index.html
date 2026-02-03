@@ -1,123 +1,122 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Market</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0a0c10; --panel: #14171c; --olive: #556b2f; --text: #e5e7eb; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 16px; padding-top: 140px; /* Відступ для фіксованої шапки */ }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 14px; padding-top: 110px; }
         
-        /* Фіксована шапка */
-        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.95); z-index: 1000; border-bottom: 2px solid var(--olive); backdrop-filter: blur(10px); padding-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* --- КОМПАКТНАЯ ШАПКА --- */
+        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.98); z-index: 1000; border-bottom: 1px solid var(--olive); backdrop-filter: blur(10px); padding-bottom: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .header-content { max-width: 100%; margin: 0 auto; text-align: center; padding: 10px; }
         
-        .header-content { max-width: 1400px; margin: 0 auto; text-align: center; padding: 15px; }
-        .logo { color: var(--olive); margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+        /* Логотип и поиск в одну строку для экономии места */
+        .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+        .logo { color: var(--olive); margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
+        .search-box { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-size: 14px; outline: none; }
         
-        .search-box { width: 90%; max-width: 600px; padding: 12px; border-radius: 10px; border: 1px solid #444; background: #000; color: #fff; font-size: 16px; outline: none; }
+        /* --- СКРОЛЛ КАТЕГОРИЙ --- */
+        .nav-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: 0 -10px; padding: 0 10px; }
+        .nav-scroll::-webkit-scrollbar { display: none; }
+        .nav { display: inline-flex; gap: 8px; }
         
-        .nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
-        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; white-space: nowrap; }
-        .cat-btn:hover { border-color: var(--olive); color: #fff; }
+        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; display: inline-block; }
         .cat-btn.active { background: var(--olive); color: #fff; border-color: #6b8c3a; }
+
+        /* --- СЕТКА ТОВАРОВ --- */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
+        @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
+
+        .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; position: relative; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
-        .card { background: var(--panel); border-radius: 16px; border: 1px solid #2a2e35; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
+        .img-wrap { width: 100%; height: 140px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
+        .card img { max-width: 100%; max-height: 100%; object-fit: contain; }
         
-        .img-wrap { width: 100%; height: 220px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; }
-        .card img { width: 100%; height: 100%; object-fit: contain; }
+        .title { font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 5px; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .price { color: #8fbc55; font-size: 16px; font-weight: bold; margin: 5px 0; }
         
-        .title { font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 10px; line-height: 1.3; min-height: 46px; }
-        .price { color: #8fbc55; font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .desc-box { position: relative; margin-bottom: 10px; }
+        .desc { font-size: 11px; color: #9ca3af; line-height: 1.4; display: none; }
+        .desc.expanded { display: block; }
+        .more-btn { color: #777; font-size: 11px; cursor: pointer; display: block; margin-top: 2px; text-align: right; }
         
-        /* Логіка згортання тексту */
-        .desc-box { position: relative; margin-bottom: 15px; }
-        .desc { font-size: 14px; color: #9ca3af; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; transition: 0.3s; }
-        .desc.expanded { -webkit-line-clamp: unset; }
-        .more-btn { color: var(--olive); font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 5px; display: inline-block; }
-        .more-btn:hover { text-decoration: underline; }
-        
-        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 0 #283315; margin-top: auto; display: block; }
-        .buy-btn:active { transform: translateY(4px); box-shadow: none; }
+        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; margin-top: auto; display: block; }
     </style>
 </head>
 <body>
 
 <div class="sticky-header">
     <div class="header-content">
-        <h1 class="logo">SMART MARKET</h1>
-        <input type="text" id="search" class="search-box" placeholder="🔎 Пошук товарів..." onkeyup="filter()">
-        <div class="nav">
-            <button class="cat-btn active" onclick="setCat('Все', this)">Всі</button>
-            <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">⚡ Енергія</button>
-            <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">📱 Гаджети</button>
-            <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
-            <button class="cat-btn" onclick="setCat('Електроінструмент', this)">🔨 Інструмент</button>
-            <button class="cat-btn" onclick="setCat('Комп\'ютерна техніка', this)">💻 Комп'ютери</button>
+        <div class="top-row">
+            <div class="logo">SMART</div>
+            <input type="text" id="search" class="search-box" placeholder="🔎 Пошук..." onkeyup="filter()">
+        </div>
+        <div class="nav-scroll">
+            <div class="nav">
+                <button class="cat-btn active" onclick="setCat('Все', this)">Все</button>
+                <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">⚡ Енергія</button>
+                <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">📱 Гаджети</button>
+                <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
+                <button class="cat-btn" onclick="setCat('Електроінструмент', this)">🔨 Інструмент</button>
+                <button class="cat-btn" onclick="setCat('Комп\'ютерна техніка', this)">💻 Ноутбуки</button>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="grid" id="grid">
-    <div style="text-align:center; width:100%; color:#555; margin-top: 50px;">Завантаження вітрини...</div>
+    <div style="text-align:center; width:100%; color:#555; grid-column: 1/-1; margin-top: 20px;">Завантаження...</div>
 </div>
 
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
 
-    // Правильні заглушки під кожну категорію
-    const placeholders = {
-        "Енергонезалежність": "https://content1.rozetka.com.ua/goods/images/big/370259838.jpg", // Зарядна станція
-        "Смартфони та гаджети": "https://content2.rozetka.com.ua/goods/images/big/467657989.jpg", // Смартфон
-        "Побутова техніка": "https://content1.rozetka.com.ua/goods/images/big/494632832.jpg", // Пральна машина/техніка
-        "Електроінструмент": "https://content1.rozetka.com.ua/goods/images/big/474668407.jpg", // Дриль
-        "Комп'ютерна техніка": "https://content2.rozetka.com.ua/goods/images/big/498875578.jpg", // Ноутбук
+    // Різні картинки для категорій
+    const imgMap = {
+        "Енергонезалежність": "https://content2.rozetka.com.ua/goods/images/big/370259838.jpg", 
+        "Смартфони та гаджети": "https://content1.rozetka.com.ua/goods/images/big/467657989.jpg",
+        "Побутова техніка": "https://content2.rozetka.com.ua/goods/images/big/494632832.jpg",
+        "Електроінструмент": "https://content2.rozetka.com.ua/goods/images/big/474668407.jpg", 
+        "Комп'ютерна техніка": "https://content1.rozetka.com.ua/goods/images/big/498875578.jpg",
         "default": "https://mta.ua/catalog/view/theme/mta/img/logo.svg"
     };
 
     async function load() {
+        // Завантажуємо
         const { data } = await sb.from('products').select('*, ai_content(fancy_description)').eq('is_processed_ai', true).order('id', { ascending: false });
         if (data && data.length > 0) { items = data; render(items); }
-        else { document.getElementById('grid').innerHTML = '<div style="padding:20px; text-align:center; color:#777; margin-top:50px;">Товарів немає. Запустіть Разведчик та AI Агент.</div>'; }
+        else { document.getElementById('grid').innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:20px; color:#666;">Товарів немає. <br> Зайдіть у Кабінет -> Розвідник.</div>'; }
     }
 
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
-        
         list.forEach(p => {
-            const d = p.ai_content?.[0]?.fancy_description || "Опис готується...";
-            // Вибираємо правильну картинку
-            let imgUrl = placeholders[p.category] || placeholders['default'];
+            const d = p.ai_content?.[0]?.fancy_description || "";
+            let imgUrl = imgMap[p.category] || imgMap['default'];
 
-            // Унікальний ID для кнопки
-            const btnId = `btn-${p.id}`;
             const txtId = `txt-${p.id}`;
-
             g.innerHTML += `
                 <div class="card">
-                    <div class="img-wrap">
-                        <img src="${imgUrl}">
-                    </div>
+                    <div class="img-wrap"><img src="${imgUrl}"></div>
                     <div class="title">${p.title}</div>
                     <div class="price">${p.price} грн</div>
-                    
                     <div class="desc-box">
+                        <span class="more-btn" onclick="toggle('${txtId}', this)">Деталі ⬇</span>
                         <div class="desc" id="${txtId}">${d}</div>
-                        <span class="more-btn" onclick="toggleDesc('${txtId}', this)">Читати далі ⬇</span>
                     </div>
-
-                    <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ ЗАРАЗ</a>
+                    <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ</a>
                 </div>`;
         });
     }
 
-    // Функція згортання/розгортання
-    window.toggleDesc = function(id, btn) {
+    window.toggle = function(id, btn) {
         const el = document.getElementById(id);
         el.classList.toggle('expanded');
-        btn.innerText = el.classList.contains('expanded') ? 'Згорнути ⬆' : 'Читати далі ⬇';
+        btn.innerText = el.classList.contains('expanded') ? 'Згорнути ⬆' : 'Деталі ⬇';
     }
 
     function filter() {
