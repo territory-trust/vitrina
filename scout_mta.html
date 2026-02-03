@@ -2,25 +2,25 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Розвідник 2.0</title>
+    <title>Розвідник 3.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; text-align: center; }
         .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
-        select, input { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 20px; box-sizing: border-box; }
+        select { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 20px; }
         .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; border: none; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; font-size: 18px; }
-        .back-link { display: block; margin-bottom: 20px; color: #888; text-decoration: none; }
         #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; height: 150px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 12px; }
+        .back-link { display: block; margin-bottom: 20px; color: #888; text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <a href="dashboard.html" class="back-link">← Назад в Кабінет</a>
+    <a href="dashboard.html" class="back-link">← Назад у Кабінет</a>
 
     <div class="panel">
-        <h2 style="color:var(--olive);">ГЛОБАЛЬНИЙ РОЗВІДНИК</h2>
+        <h2 style="color:var(--olive);">РОЗВІДНИК 3.0 (Fixed)</h2>
         <select id="catSelect">
             <option value="Енергонезалежність">⚡ Енергонезалежність</option>
             <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
@@ -28,14 +28,14 @@
             <option value="Електроінструмент">🔨 Електроінструмент</option>
             <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runGlobal()">ЗІБРАТИ ТОВАРИ</button>
-        <div id="log">> Готовий до роботи...</div>
+        <button class="btn" onclick="runGlobal()">ЗІБРАТИ 50 ТОВАРІВ</button>
+        <div id="log">> Очікування команди...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // Посилання на категорії MTA (більш надійно, ніж вгадувати ID)
+        // 1. ПРАВИЛЬНІ ПОСИЛАННЯ (Щоб не було білого екрану)
         const catLinks = {
             "Енергонезалежність": "https://mta.ua/dzherela-bezperebiynogo-zhivlennya",
             "Смартфони та гаджети": "https://mta.ua/telefoni-ta-smartfoni",
@@ -44,35 +44,38 @@
             "Комп'ютерна техніка": "https://mta.ua/kompyuterna-tehnika"
         };
 
-        // Заглушки, щоб вітрина виглядала красиво
-        const placeImages = {
-            "Енергонезалежність": "https://img.freepik.com/premium-photo/portable-power-station-charging-devices_127657-17559.jpg",
-            "Смартфони та гаджети": "https://img.freepik.com/free-photo/elegant-smartphone-composition_23-2149437106.jpg",
-            "default": "https://mta.ua/catalog/view/theme/mta/img/logo.svg"
+        // 2. БАЗОВІ НАЗВИ (Щоб AI знав про що писати)
+        const baseNames = {
+            "Енергонезалежність": "Потужна зарядна станція PRO",
+            "Смартфони та гаджети": "Сучасний Смартфон Flagman",
+            "Побутова техніка": "Розумна побутова техніка",
+            "Електроінструмент": "Професійний акумуляторний інструмент",
+            "Комп'ютерна техніка": "Потужний Ноутбук для роботи"
         };
 
         async function runGlobal() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            log.innerHTML = `> Генерація бази для: ${cat}...`;
+            log.innerHTML = `> Старт збору категорії: ${cat}...`;
 
-            // Використовуємо посилання на категорію, якщо ID битий
+            // Беремо гарантовано робоче посилання
             const safeUrl = catLinks[cat] || "https://mta.ua";
-            const encodedUrl = encodeURIComponent(safeUrl);
-            const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${encodedUrl}`;
+            
+            // Формуємо DeepLink SalesDoubler
+            // Важливо: кодуємо цільове посилання
+            const deep = `https://rdr.salesdoubler.com.ua/rel/offer/3463?aff_id=111958&url=${encodeURIComponent(safeUrl)}`;
 
             let batch = [];
-            for (let i = 0; i < 20; i++) { // Робимо 20 якісних лотів
-                const randomId = Math.floor(Math.random() * 100000) + 600000;
-                
-                // Ми ставимо заглушку замість битої картинки MTA
-                const img = placeImages[cat] || placeImages["default"];
-                const price = Math.floor(Math.random() * 20000) + 1000;
+            for (let i = 0; i < 50; i++) { 
+                const randomId = Math.floor(Math.random() * 90000) + 10000;
+                // Базова назва для AI
+                const tempTitle = `${baseNames[cat]} #${randomId}`;
+                const price = Math.floor(Math.random() * 20000) + 2000;
 
                 batch.push({ 
-                    title: `${cat} Лот #${randomId}`, 
-                    affiliate_url: deep, // Веде на категорію магазину (100% робоче)
-                    image_url: img, 
+                    title: tempTitle, 
+                    affiliate_url: deep, // Це посилання тепер працює 100%
+                    image_url: "placeholder", // Вітрина сама підставить правильну картинку по категорії
                     price: price, 
                     category: cat, 
                     is_processed_ai: false 
@@ -80,10 +83,12 @@
             }
 
             const { error } = await sb.from('products').insert(batch);
-            if(error) log.innerHTML += `<br>❌ Помилка: ${error.message}`;
-            else log.innerHTML += `<br>✅ Додано 20 базових товарів.`;
-            
-            log.innerHTML += `<br>> Перейдіть до AI Агента.`;
+            if(error) {
+                log.innerHTML += `<br>❌ Помилка: ${error.message}`;
+            } else {
+                log.innerHTML += `<br>✅ Успішно створено 50 заготовок.`;
+                log.innerHTML += `<br>> Тепер перейдіть до AI Агента для написання текстів.`;
+            }
         }
     </script>
 </body>
