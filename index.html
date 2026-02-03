@@ -7,93 +7,117 @@
     <script src="config.js"></script>
     <style>
         :root { --bg: #0a0c10; --panel: #14171c; --olive: #556b2f; --text: #e5e7eb; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 16px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 16px; padding-top: 140px; /* Відступ для фіксованої шапки */ }
         
-        .header { padding: 40px 20px; text-align: center; background: radial-gradient(circle at center, #1a1d23 0%, #0a0c10 100%); border-bottom: 2px solid var(--olive); }
-        .search-box { width: 90%; max-width: 600px; padding: 18px; border-radius: 12px; border: 1px solid #444; background: #000; color: #fff; font-size: 18px; margin-top: 20px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        /* Фіксована шапка */
+        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.95); z-index: 1000; border-bottom: 2px solid var(--olive); backdrop-filter: blur(10px); padding-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        .nav { display: flex; flex-wrap: wrap; gap: 10px; padding: 20px; justify-content: center; }
-        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .header-content { max-width: 1400px; margin: 0 auto; text-align: center; padding: 15px; }
+        .logo { color: var(--olive); margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+        
+        .search-box { width: 90%; max-width: 600px; padding: 12px; border-radius: 10px; border: 1px solid #444; background: #000; color: #fff; font-size: 16px; outline: none; }
+        
+        .nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; white-space: nowrap; }
         .cat-btn:hover { border-color: var(--olive); color: #fff; }
-        .cat-btn.active { background: var(--olive); color: #fff; border-color: #6b8c3a; box-shadow: 0 4px 10px rgba(85, 107, 47, 0.4); }
+        .cat-btn.active { background: var(--olive); color: #fff; border-color: #6b8c3a; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
-        .card { background: var(--panel); border-radius: 16px; border: 1px solid #2a2e35; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.2s; position: relative; }
-        .card:hover { transform: translateY(-5px); border-color: #444; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .card { background: var(--panel); border-radius: 16px; border: 1px solid #2a2e35; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
         
-        .img-wrap { width: 100%; height: 220px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; position: relative; }
-        .card img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .img-wrap { width: 100%; height: 220px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 15px; }
+        .card img { width: 100%; height: 100%; object-fit: contain; }
         
-        .title { font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 10px; line-height: 1.4; }
-        .price { color: #8fbc55; font-size: 26px; font-weight: bold; margin: 10px 0; }
-        .desc { font-size: 15px; color: #9ca3af; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
+        .title { font-weight: bold; font-size: 18px; color: #fff; margin-bottom: 10px; line-height: 1.3; min-height: 46px; }
+        .price { color: #8fbc55; font-size: 24px; font-weight: bold; margin: 10px 0; }
         
-        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 0 #283315; transition: 0.1s; display: block; }
+        /* Логіка згортання тексту */
+        .desc-box { position: relative; margin-bottom: 15px; }
+        .desc { font-size: 14px; color: #9ca3af; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; transition: 0.3s; }
+        .desc.expanded { -webkit-line-clamp: unset; }
+        .more-btn { color: var(--olive); font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 5px; display: inline-block; }
+        .more-btn:hover { text-decoration: underline; }
+        
+        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 0 #283315; margin-top: auto; display: block; }
         .buy-btn:active { transform: translateY(4px); box-shadow: none; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1 style="color:var(--olive); margin:0; font-size: 32px; letter-spacing: 2px;">SMART MARKET</h1>
-    <input type="text" id="search" class="search-box" placeholder="🔎 Пошук товарів..." onkeyup="filter()">
-</div>
-
-<div class="nav">
-    <button class="cat-btn active" onclick="setCat('Все', this)">Усе</button>
-    <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">⚡ Енергія</button>
-    <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">📱 Гаджети</button>
-    <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
-    <button class="cat-btn" onclick="setCat('Електроінструмент', this)">🔨 Інструмент</button>
-    <button class="cat-btn" onclick="setCat('Комп\'ютерна техніка', this)">💻 Комп'ютери</button>
+<div class="sticky-header">
+    <div class="header-content">
+        <h1 class="logo">SMART MARKET</h1>
+        <input type="text" id="search" class="search-box" placeholder="🔎 Пошук товарів..." onkeyup="filter()">
+        <div class="nav">
+            <button class="cat-btn active" onclick="setCat('Все', this)">Всі</button>
+            <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">⚡ Енергія</button>
+            <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">📱 Гаджети</button>
+            <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
+            <button class="cat-btn" onclick="setCat('Електроінструмент', this)">🔨 Інструмент</button>
+            <button class="cat-btn" onclick="setCat('Комп\'ютерна техніка', this)">💻 Комп'ютери</button>
+        </div>
+    </div>
 </div>
 
 <div class="grid" id="grid">
-    <div style="text-align:center; width:100%; color:#555; grid-column: 1/-1;">Завантаження вітрини...</div>
+    <div style="text-align:center; width:100%; color:#555; margin-top: 50px;">Завантаження вітрини...</div>
 </div>
 
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
 
-    // Якісні заглушки для категорій
+    // Правильні заглушки під кожну категорію
     const placeholders = {
-        "Енергонезалежність": "https://img.freepik.com/premium-photo/portable-power-station-charging-devices_127657-17559.jpg",
-        "Смартфони та гаджети": "https://img.freepik.com/free-photo/elegant-smartphone-composition_23-2149437106.jpg",
-        "Побутова техніка": "https://img.freepik.com/free-photo/home-appliances-group_1101-116.jpg",
-        "Електроінструмент": "https://img.freepik.com/free-photo/construction-tools-with-blueprints_23-2148123287.jpg",
-        "Комп'ютерна техніка": "https://img.freepik.com/free-photo/laptop-with-blank-black-screen-white-table_53876-97915.jpg",
+        "Енергонезалежність": "https://content1.rozetka.com.ua/goods/images/big/370259838.jpg", // Зарядна станція
+        "Смартфони та гаджети": "https://content2.rozetka.com.ua/goods/images/big/467657989.jpg", // Смартфон
+        "Побутова техніка": "https://content1.rozetka.com.ua/goods/images/big/494632832.jpg", // Пральна машина/техніка
+        "Електроінструмент": "https://content1.rozetka.com.ua/goods/images/big/474668407.jpg", // Дриль
+        "Комп'ютерна техніка": "https://content2.rozetka.com.ua/goods/images/big/498875578.jpg", // Ноутбук
         "default": "https://mta.ua/catalog/view/theme/mta/img/logo.svg"
     };
 
     async function load() {
-        // Завантажуємо тільки готові товари
-        const { data } = await sb.from('products').select('*, ai_content(fancy_description)').eq('is_processed_ai', true);
-        if (data) { items = data; render(items); }
-        else { document.getElementById('grid').innerHTML = '<div style="padding:20px; text-align:center; color:#777;">Товарів поки немає. Зайдіть в Кабінет Адміна -> Розвідник.</div>'; }
+        const { data } = await sb.from('products').select('*, ai_content(fancy_description)').eq('is_processed_ai', true).order('id', { ascending: false });
+        if (data && data.length > 0) { items = data; render(items); }
+        else { document.getElementById('grid').innerHTML = '<div style="padding:20px; text-align:center; color:#777; margin-top:50px;">Товарів немає. Запустіть Разведчик та AI Агент.</div>'; }
     }
 
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
-        if(list.length === 0) { g.innerHTML = '<div style="padding:20px; text-align:center; color:#777;">Нічого не знайдено.</div>'; return; }
-
+        
         list.forEach(p => {
-            const d = p.ai_content?.[0]?.fancy_description || "Опис товару...";
-            // Логіка: Якщо картинка з MTA (яка часто бита), ставимо красиву заглушку категорії
-            let imgUrl = p.image_url;
-            if(imgUrl.includes('mta.ua/img')) imgUrl = placeholders[p.category] || placeholders['default'];
+            const d = p.ai_content?.[0]?.fancy_description || "Опис готується...";
+            // Вибираємо правильну картинку
+            let imgUrl = placeholders[p.category] || placeholders['default'];
+
+            // Унікальний ID для кнопки
+            const btnId = `btn-${p.id}`;
+            const txtId = `txt-${p.id}`;
 
             g.innerHTML += `
                 <div class="card">
                     <div class="img-wrap">
-                        <img src="${imgUrl}" onerror="this.src='${placeholders['default']}'">
+                        <img src="${imgUrl}">
                     </div>
                     <div class="title">${p.title}</div>
                     <div class="price">${p.price} грн</div>
-                    <div class="desc">${d}</div>
+                    
+                    <div class="desc-box">
+                        <div class="desc" id="${txtId}">${d}</div>
+                        <span class="more-btn" onclick="toggleDesc('${txtId}', this)">Читати далі ⬇</span>
+                    </div>
+
                     <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ ЗАРАЗ</a>
                 </div>`;
         });
+    }
+
+    // Функція згортання/розгортання
+    window.toggleDesc = function(id, btn) {
+        const el = document.getElementById(id);
+        el.classList.toggle('expanded');
+        btn.innerText = el.classList.contains('expanded') ? 'Згорнути ⬆' : 'Читати далі ⬇';
     }
 
     function filter() {
