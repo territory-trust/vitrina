@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Final v9.0</title>
+    <title>AI Text Only (Safe Mode)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -12,7 +12,6 @@
         input { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #444; margin-bottom: 20px; box-sizing: border-box; }
         .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 10px; border:none; font-size: 16px; }
         #status { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
-        .thumb { width: 40px; height: 40px; border-radius: 4px; vertical-align: middle; margin-right: 10px; object-fit: cover; }
         .back-link { display: block; margin-bottom: 20px; color: #888; text-decoration: none; }
     </style>
 </head>
@@ -21,10 +20,10 @@
     <a href="dashboard.html" class="back-link">← Назад у Кабінет</a>
 
     <div class="panel">
-        <h2 style="color:var(--olive);">AI МАЙСТЕР (FINAL)</h2>
+        <h2 style="color:var(--olive);">AI КОПІРАЙТЕР (ТІЛЬКИ ТЕКСТ)</h2>
         <input type="password" id="key" placeholder="Вставте Google API Key...">
-        <button class="btn" onclick="start()">💎 ОБРОБИТИ БРЕНДИ</button>
-        <div id="status">> Готовий працювати з реальними товарами...</div>
+        <button class="btn" onclick="start()">📝 НАПИСАТИ ОПИСИ</button>
+        <div id="status">> Готовий писати...</div>
     </div>
 
     <script>
@@ -43,21 +42,18 @@
             }
 
             for (let p of products) {
-                status.innerHTML += `<br>⏳ ${p.title}...`;
+                status.innerHTML += `<br>⏳ Пишу про: ${p.title}...`;
                 
                 try {
-                    // ПРОМПТ ЗАМОРОЖЕНО (Стиль: Престиж + Факти)
-                    // Важливо: Ми кажемо AI НЕ змінювати назву, бо вона вже реальна
+                    // ТІЛЬКИ ОПИС (Престиж + Факти)
                     const prompt = `Role: Tech Expert.
                     Product: "${p.title}" (Category: ${p.category}).
                     
                     TASK:
-                    1. Keep the Product Name EXACTLY as input.
-                    2. Write 1 Prestige Sentence (Ukrainian) about quality/reliability.
-                    3. List 4 Technical Specs (Power, Battery, Screen, etc) relevant to this EXACT model.
+                    1. Write 1 Prestige Sentence (Ukrainian) about quality/reliability.
+                    2. List 4 Technical Specs (Power, Battery, Screen, etc) relevant to this EXACT model.
                     
                     FORMAT:
-                    [Original Name]
                     [Prestige Sentence] • [Spec 1] • [Spec 2] • [Spec 3]`;
                     
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
@@ -68,34 +64,17 @@
                     const data = await res.json();
                     if(data.candidates) {
                         let txt = data.candidates[0].content.parts[0].text.replace(/[*#\[\]"]/g, '').trim();
-                        let lines = txt.split('\n').filter(l => l.trim() !== '');
+                        // Беремо тільки опис, назву не чіпаємо!
                         
-                        let newTitle = lines[0].substring(0, 90).trim();
-                        // Якщо AI випадково змінив назву, повертаємо оригінал з бази
-                        if (newTitle.length < 5) newTitle = p.title;
-
-                        let desc = lines.slice(1).join(' ').trim();
-
-                        // --- ГЕНЕРАЦІЯ ТОЧНОГО ФОТО ---
-                        // Ми передаємо в генератор ПОВНУ назву моделі (наприклад "EcoFlow Delta 2")
-                        // Це змусить нейромережу намалювати саме цей пристрій
-                        const seed = Math.floor(Math.random() * 99999);
-                        const cleanPrompt = encodeURIComponent(`${p.title} product photo professional studio lighting dark elegant background`);
-                        
-                        // Використовуємо Pollinations (він краще розуміє моделі техніки)
-                        const imgUrl = `https://image.pollinations.ai/prompt/${cleanPrompt}?width=600&height=600&nologo=true&seed=${seed}`;
-
-                        await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
+                        await sb.from('ai_content').insert({ product_id: p.id, fancy_description: txt });
+                        // Оновлюємо статус, але КАРТИНКУ НЕ ЧІПАЄМО
                         await sb.from('products').update({ 
-                            title: newTitle, 
-                            image_url: imgUrl, 
                             is_processed_ai: true 
                         }).eq('id', p.id);
                         
-                        status.innerHTML += `<br><img src="${imgUrl}" class="thumb"> OK`;
-                        status.scrollTop = status.scrollHeight;
+                        status.innerHTML += `<br>✔ OK`;
                     }
-                    await new Promise(r => setTimeout(r, 1500));
+                    await new Promise(r => setTimeout(r, 1000));
                 } catch(e) {
                     status.innerHTML += `<br>❌ Error: ${e.message}`;
                 }
