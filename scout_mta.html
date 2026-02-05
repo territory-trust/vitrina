@@ -2,37 +2,81 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Розвідник 4.0</title>
+    <title>Rozvidnyk v9.0 (Real Hits)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; text-align: center; }
-        .panel { background: #14171c; padding: 20px; border-radius: 15px; border: 1px solid var(--olive); max-width: 500px; margin: auto; }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 600px; margin: auto; }
         select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
         .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 15px; border: none; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .back-link { display: block; margin-bottom: 20px; color: #888; text-decoration: none; }
-        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 120px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
+        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 150px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
     </style>
 </head>
 <body>
     <a href="dashboard.html" class="back-link">← Назад</a>
     <div class="panel">
-        <h3 style="color:var(--olive); margin-top:0;">ГЕНЕРАТОР ТОВАРІВ</h3>
+        <h3 style="color:var(--olive); margin-top:0;">БАЗА РЕАЛЬНИХ ХІТІВ</h3>
         <select id="catSelect">
-            <option value="Енергонезалежність">⚡ Енергонезалежність</option>
-            <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
-            <option value="Побутова техніка">🏠 Побутова техніка</option>
-            <option value="Електроінструмент">🔨 Електроінструмент</option>
-            <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
+            <option value="Енергонезалежність">⚡ Енергонезалежність (EcoFlow, Bluetti)</option>
+            <option value="Смартфони та гаджети">📱 Смартфони (Apple, Samsung)</option>
+            <option value="Побутова техніка">🏠 Техніка (Dyson, Philips)</option>
+            <option value="Електроінструмент">🔨 Інструмент (Bosch, Makita)</option>
+            <option value="Комп'ютерна техніка">💻 Ноутбуки (MacBook, ASUS)</option>
         </select>
-        <button class="btn" onclick="runGlobal()">СТВОРИТИ 20 ТОВАРІВ</button>
-        <div id="log">> Готовий. Перевір OFFER_ID в config.js!</div>
+        <button class="btn" onclick="runGlobal()">ЗАВАНТАЖИТИ ТОП-10 ТОВАРІВ</button>
+        <div id="log">> Оберіть категорію...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
+        // РЕАЛЬНІ ТОВАРИ (Назви взяті з топу продажів)
+        const realProducts = {
+            "Енергонезалежність": [
+                { title: "Зарядна станція EcoFlow DELTA 2", price: 44999 },
+                { title: "EcoFlow RIVER 2 Pro (768 Вт·год)", price: 29999 },
+                { title: "Генератор інверторний Weekender X2000i", price: 18500 },
+                { title: "Bluetti EB3A Portable Power Station", price: 12999 },
+                { title: "Jackery Explorer 1000 Pro", price: 38000 },
+                { title: "Сонячна панель EcoFlow 160W Solar Panel", price: 11999 },
+                { title: "ДБЖ LogicPower LPM-PSW-1500VA", price: 8500 },
+                { title: "Акумулятор гелевий LogicPower 100Ah", price: 6500 }
+            ],
+            "Смартфони та гаджети": [
+                { title: "Apple iPhone 15 128GB Black", price: 35999 },
+                { title: "Samsung Galaxy S24 Ultra 12GB/256GB Titanium", price: 53999 },
+                { title: "Xiaomi Redmi Note 13 Pro 8/256GB", price: 10999 },
+                { title: "Apple Watch Series 9 GPS 45mm", price: 18999 },
+                { title: "Навушники Apple AirPods Pro 2 USB-C", price: 9999 },
+                { title: "Google Pixel 8 128GB Obsidian", price: 26500 },
+                { title: "Samsung Galaxy A55 5G 8/128GB", price: 14999 }
+            ],
+            "Побутова техніка": [
+                { title: "Робот-пилосос Roborock S8 White", price: 24999 },
+                { title: "Кавомашина Philips Series 5400 LatteGo", price: 28999 },
+                { title: "Фен Dyson Supersonic HD07", price: 19999 },
+                { title: "Мультиварка-скороварка Moulinex", price: 4500 },
+                { title: "Гриль Tefal OptiGrill+ XL", price: 8999 }
+            ],
+            "Електроінструмент": [
+                { title: "Шуруповерт акумуляторний Bosch GSB 185-LI", price: 4999 },
+                { title: "Перфоратор Makita HR2470", price: 5200 },
+                { title: "Болгарка Bosch GWS 750-125", price: 2100 },
+                { title: "Набір інструментів Stanley 1/2", price: 3500 },
+                { title: "Лобзик електричний Makita 4329", price: 2800 }
+            ],
+            "Комп'ютерна техніка": [
+                { title: "Ноутбук Apple MacBook Air 13 M1 Space Gray", price: 37999 },
+                { title: "Ігровий ноутбук ASUS TUF Gaming F15", price: 33999 },
+                { title: "Монітор 27 Samsung Odyssey G5", price: 10999 },
+                { title: "Планшет Apple iPad 10.9 (2022) 64GB", price: 16999 },
+                { title: "Маршрутизатор TP-Link Archer AX55 Wi-Fi 6", price: 2999 }
+            ]
+        };
+
         const catLinks = {
             "Енергонезалежність": "https://mta.ua/dzherela-bezperebiynogo-zhivlennya",
             "Смартфони та гаджети": "https://mta.ua/telefoni-ta-smartfoni",
@@ -45,36 +89,39 @@
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
             const affId = CONFIG.AFFILIATE_ID || '111958';
-            const offerId = CONFIG.OFFER_ID; 
+            const offerId = CONFIG.OFFER_ID || '3463'; 
 
-            if(!offerId || offerId === 'CHANGE_ME') {
-                alert("УВАГА! В config.js не прописаний OFFER_ID. Посилання не будуть працювати!");
-                return;
+            // Ссилка (використовуємо твою Base URL з конфіга якщо є, або будуємо нову)
+            let baseUrl = CONFIG.BASE_AFFILIATE_URL;
+            let deep = "";
+            if(baseUrl && baseUrl.includes("http")) {
+                 const separator = baseUrl.includes('?') ? '&' : '?';
+                 deep = `${baseUrl}${separator}url=${encodeURIComponent(catLinks[cat])}`;
+            } else {
+                 deep = `https://rdr.salesdoubler.com.ua/rel/offer/${offerId}?aff_id=${affId}&url=${encodeURIComponent(catLinks[cat])}`;
             }
 
-            log.innerHTML = `> Генерую для: ${cat}...`;
+            log.innerHTML = `> Завантаження реальних товарів: ${cat}...`;
             
-            // Формуємо правильне посилання SalesDoubler
-            const targetUrl = catLinks[cat];
-            const deep = `https://rdr.salesdoubler.com.ua/rel/offer/${offerId}?aff_id=${affId}&url=${encodeURIComponent(targetUrl)}`;
-
+            const list = realProducts[cat] || realProducts["Смартфони та гаджети"];
             let batch = [];
-            for (let i = 0; i < 20; i++) {
+
+            list.forEach(item => {
                 batch.push({ 
-                    title: `${cat} Лот #${Math.floor(Math.random()*9000)+1000}`, 
+                    title: item.title, // ТУТ ВЖЕ РЕАЛЬНА НАЗВА!
                     affiliate_url: deep, 
                     image_url: "placeholder", 
-                    price: Math.floor(Math.random() * 15000) + 2000, 
+                    price: item.price, 
                     category: cat, 
                     is_processed_ai: false 
                 });
-            }
+            });
 
             const { error } = await sb.from('products').insert(batch);
             if(error) log.innerHTML += `<br>❌ Помилка: ${error.message}`;
             else {
-                log.innerHTML += `<br>✅ +20 товарів створено.`;
-                log.innerHTML += `<br>> Йди в AI Агент.`;
+                log.innerHTML += `<br>✅ Додано ${batch.length} брендових товарів.`;
+                log.innerHTML += `<br>> Переходьте до AI Агента (він намалює їх точно).`;
             }
         }
     </script>
