@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout v21 (EMERGENCY)</title>
+    <title>Scout v22 (FULL PACK)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -11,12 +11,12 @@
         .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 600px; margin: auto; }
         select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
         .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 15px; border: none; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 200px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
+        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 250px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
     </style>
 </head>
 <body>
     <div class="panel">
-        <h3 style="color:var(--olive);">КАТАЛОГ: АВАРІЙНИЙ РЕЖИМ</h3>
+        <h3 style="color:var(--olive);">КАТАЛОГ: ПОВНА ГОТОВНІСТЬ</h3>
         <select id="catSelect">
             <option value="Енергонезалежність">⚡ Енергонезалежність</option>
             <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
@@ -24,52 +24,81 @@
             <option value="Електроінструмент">🔨 Електроінструмент</option>
             <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runGlobal()">СТВОРИТИ (Без описів)</button>
-        <div id="log">> Чекаю...</div>
+        <button class="btn" onclick="runGlobal()">СТВОРИТИ (Товар + Опис + Фото)</button>
+        <div id="log">> Оберіть категорію...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // ВІЧНІ ПОСИЛАННЯ (Wiki/Static) - Вони не зникають
-        const IMG_ECOFLOW = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/EcoFlow_Delta_Pro.jpg/640px-EcoFlow_Delta_Pro.jpg"; 
-        const IMG_GENERATOR = "https://m.media-amazon.com/images/I/71N-d1z+CIL._AC_SL1500_.jpg"; 
-        const IMG_IPHONE = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/IPhone_15_Pro_Max_Blue_Titanium_vector.svg/438px-IPhone_15_Pro_Max_Blue_Titanium_vector.svg.png";
-        const IMG_MACBOOK = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/MacBook_Air_M2_Midnight_2022.png/640px-MacBook_Air_M2_Midnight_2022.png";
-        const IMG_DRILL = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Makita_6271D_power_drill.jpg/640px-Makita_6271D_power_drill.jpg";
-        const IMG_COFFEE = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Kaffeevollautomat.JPG/359px-Kaffeevollautomat.JPG"; 
-        const IMG_ROBOT = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Roomba_780.jpg/640px-Roomba_780.jpg";
+        // --- 1. КАРТИНКИ (ТОЧНІ) ---
+        const IMG_PHONE = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80";
+        const IMG_LAPTOP = "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80";
+        const IMG_DRILL = "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80";
+        const IMG_COFFEE = "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=800&q=80";
+        const IMG_ROBOT = "https://plus.unsplash.com/premium_photo-1681487814165-018814e29155?w=800&q=80";
+        const IMG_STATION = "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80";
+        const IMG_GENERATOR = "https://images.unsplash.com/photo-1605980413988-9ff24c537ce9?w=800&q=80";
 
+        // --- 2. ДАНІ З ГОТОВИМИ "ПРЕСТИЖНИМИ" ОПИСАМИ ---
         const productsMap = {
             "Енергонезалежність": [
-                { title: "Зарядна станція EcoFlow DELTA 2", price: 44999, img: IMG_ECOFLOW },
-                { title: "Портативна станція EcoFlow River", price: 29999, img: IMG_ECOFLOW },
-                { title: "Бензиновий Генератор 3kW", price: 18500, img: IMG_GENERATOR },
-                { title: "Інверторний Генератор Pro", price: 22000, img: IMG_GENERATOR }
+                { 
+                    title: "EcoFlow DELTA 2 Max", price: 44999, img: IMG_STATION,
+                    desc: "Лідер енергонезалежності для вашого дому. Потужність: 2400 Вт • Ємність: 2048 Вт·год • Тип: LiFePO4 • Швидка зарядка: 80% за 50 хв."
+                },
+                { 
+                    title: "Bluetti EB3A Station", price: 12999, img: IMG_STATION,
+                    desc: "Компактна енергія для будь-яких подорожей. Потужність: 600 Вт • Вага: 4.6 кг • Інвертор: Чиста синусоїда • Виходи: 220V / USB-C."
+                },
+                { 
+                    title: "Генератор Weekender X2000i", price: 18500, img: IMG_GENERATOR,
+                    desc: "Надійне джерело живлення інверторного типу. Макс. потужність: 2.0 кВт • Тип: Бензиновий • Запуск: Ручний • Витрата: Економна."
+                }
             ],
             "Смартфони та гаджети": [
-                { title: "Apple iPhone 15 Pro Titanium", price: 45999, img: IMG_IPHONE },
-                { title: "Смартфон iPhone 14 Plus", price: 39999, img: IMG_IPHONE }, 
-                { title: "Apple iPhone 13 128GB", price: 26500, img: IMG_IPHONE },
-                { title: "Apple iPhone SE 2023", price: 19999, img: IMG_IPHONE }
+                { 
+                    title: "Apple iPhone 15 Pro Titanium", price: 45999, img: IMG_PHONE,
+                    desc: "Титановий корпус та революційна потужність. Чіп: A17 Pro • Камера: 48 Мп • Екран: Super Retina XDR • Корпус: Аерокосмічний титан."
+                },
+                { 
+                    title: "Samsung Galaxy S24 Ultra", price: 53999, img: IMG_PHONE,
+                    desc: "Штучний інтелект у вашій кишені. Стилус: S Pen • Камера: 200 Мп • Процесор: Snapdragon 8 Gen 3 • Zoom: 100x Space Zoom."
+                },
+                { 
+                    title: "Google Pixel 8 Obsidian", price: 26500, img: IMG_PHONE,
+                    desc: "Найрозумніша камера на ринку Android. Екран: Actua Display • Чіп: Google Tensor G3 • VPN: Вбудований • Фото: AI обробка."
+                }
             ],
             "Побутова техніка": [
-                { title: "Кавомашина Philips Series", price: 28999, img: IMG_COFFEE },
-                { title: "Кавоварка Delonghi Auto", price: 15500, img: IMG_COFFEE },
-                { title: "Робот-пилосос iRobot Roomba", price: 24999, img: IMG_ROBOT },
-                { title: "Робот-пилосос миючий", price: 12999, img: IMG_ROBOT }
+                { 
+                    title: "Кавомашина Philips LatteGo", price: 28999, img: IMG_COFFEE,
+                    desc: "Ідеальна молочна пінка одним натисканням. Тиск: 15 бар • Система: LatteGo • Жорна: Керамічні • Напоїв: 12 видів кави."
+                },
+                { 
+                    title: "Робот-пилосос Roborock S8", price: 24999, img: IMG_ROBOT,
+                    desc: "Інтелектуальне прибирання без вашої участі. Сила всмоктування: 6000 Па • Навігація: LiDAR • Вологе прибирання: Sonic Mopping."
+                }
             ],
             "Електроінструмент": [
-                { title: "Шуруповерт Makita 18V", price: 5200, img: IMG_DRILL }, 
-                { title: "Дриль акумуляторний Pro", price: 4500, img: IMG_DRILL },
-                { title: "Шуруповерт професійний", price: 6999, img: IMG_DRILL },
-                { title: "Гайковерт ударний", price: 3500, img: IMG_DRILL }
+                { 
+                    title: "Шуруповерт DeWalt XR", price: 6500, img: IMG_DRILL,
+                    desc: "Легендарна надійність для професіоналів. Напруга: 18В • Крутний момент: 60 Нм • Двигун: Безщітковий • Акумулятор: 2x 2.0Ah."
+                },
+                { 
+                    title: "Шуруповерт Bosch Pro", price: 4999, img: IMG_DRILL,
+                    desc: "Німецька якість та довговічність. Патрон: Металевий • Швидкості: 2 • Підсвітка: LED • Кейс: L-Boxx в комплекті."
+                }
             ],
             "Комп'ютерна техніка": [
-                { title: "Apple MacBook Air M2", price: 49999, img: IMG_MACBOOK },
-                { title: "Ноутбук Apple MacBook Pro", price: 65000, img: IMG_MACBOOK },
-                { title: "Ультрабук MacBook 13", price: 31000, img: IMG_MACBOOK },
-                { title: "Лептоп Apple Space Gray", price: 42000, img: IMG_MACBOOK }
+                { 
+                    title: "Apple MacBook Air M1", price: 37999, img: IMG_LAPTOP,
+                    desc: "Найпопулярніший ультрабук у світі. Чіп: Apple M1 • Автономність: до 18 годин • Екран: Retina • Вага: 1.29 кг."
+                },
+                { 
+                    title: "ASUS ExpertBook", price: 25000, img: IMG_LAPTOP,
+                    desc: "Бізнес-клас для вашої роботи. Стандарт: Military Grade • Вага: 1.1 кг • Батарея: Весь робочий день • Безпека: TPM 2.0."
+                }
             ]
         };
 
@@ -81,20 +110,34 @@
             log.innerHTML = `> Старт: ${cat}...`;
             
             const list = productsMap[cat];
+            
+            if(!list) {
+                 log.innerHTML += `<br>⚠ Ця категорія ще в розробці...`;
+                 return;
+            }
 
             for (let item of list) {
-                // ПРОСТА ВСТАВКА - БЕЗ ОПИСІВ (ЩОБ НЕ БУЛО ПОМИЛОК)
-                const { error } = await sb.from('products').insert([{ 
+                // 1. Створюємо товар
+                const { data, error } = await sb.from('products').insert([{ 
                     title: item.title, 
                     affiliate_url: baseUrl, 
                     image_url: item.img, 
                     price: item.price, 
                     category: cat, 
-                    is_processed_ai: true // Блокуємо Агента
-                }]);
+                    is_processed_ai: true // Вже оброблено, бо ми маємо текст
+                }]).select();
 
-                if(error) log.innerHTML += `<br>❌ Err: ${error.message}`;
-                else log.innerHTML += `<br>✅ ${item.title}`;
+                if(error) {
+                    log.innerHTML += `<br>❌ Err: ${error.message}`;
+                } else if (data && data.length > 0) {
+                    // 2. Додаємо готовий опис
+                    const newId = data[0].id;
+                    await sb.from('ai_content').insert({
+                        product_id: newId,
+                        fancy_description: item.desc
+                    });
+                    log.innerHTML += `<br>✅ ${item.title}`;
+                }
             }
             log.innerHTML += `<br>--- ГОТОВО ---`;
         }
