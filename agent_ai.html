@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creator 2.0 (Fix)</title>
+    <title>AI Creator 3.0 (Smart Filter)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -21,7 +21,7 @@
     <a href="dashboard.html" class="back-link">← Назад у Кабінет</a>
 
     <div class="panel">
-        <h2 style="color:var(--olive);">AI ТВОРЕЦЬ (FIXED)</h2>
+        <h2 style="color:var(--olive);">AI ТВОРЕЦЬ (SMART FILTER)</h2>
         <input type="password" id="key" placeholder="Вставте Google API Key...">
         <button class="btn" onclick="start()">🎨 ЗАПУСТИТИ ГЕНЕРАЦІЮ</button>
         <div id="status">> Чекаю команду...</div>
@@ -46,20 +46,18 @@
                 status.innerHTML += `<br>⏳ ${p.title}...`;
                 
                 try {
-                    // ПРОМПТ З ЗАБОРОНАМИ
                     const prompt = `Роль: Креативний копірайтер.
                     Товар: "${p.title}" (Категорія: ${p.category}).
                     
                     ЗАВДАННЯ:
-                    1. Придумай УНІКАЛЬНУ комерційну назву українською (3-5 слів).
-                    2. ЗАБОРОНЕНО писати: "Назва товару", "Твій варіант", "Лот", "Продукт".
-                    3. Напиши опис (2 речення).
-                    4. Останнім рядком напиши 2 слова англійською що це за предмет (для фото).
+                    1. Придумай УНІКАЛЬНУ назву (бренд + модель) українською.
+                    2. Напиши опис (2 речення).
+                    3. Дай англійську назву предмета для фото (наприклад: Smartphone, Generator, Laptop).
                     
                     ФОРМАТ ВІДПОВІДІ:
-                    [Тут Нова Назва]
-                    [Тут Опис]
-                    ENGLISH: [Object Name]`;
+                    [Назва]
+                    [Опис]
+                    ENGLISH: [Object]`;
                     
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                         method: "POST", headers: {"Content-Type":"application/json"},
@@ -68,31 +66,34 @@
                     
                     const data = await res.json();
                     if(data.candidates) {
-                        let txt = data.candidates[0].content.parts[0].text;
-                        txt = txt.replace(/[*#\[\]"]/g, '').trim(); // Чистимо сміття
-
-                        let lines = txt.split('\n').filter(line => line.trim() !== '');
+                        let txt = data.candidates[0].content.parts[0].text.replace(/[*#\[\]"]/g, '').trim();
+                        let lines = txt.split('\n').filter(l => l.trim() !== '');
                         
-                        // Шукаємо англійську назву
-                        let engName = "technology product";
+                        // Витягуємо англійську назву
+                        let engName = "electronics";
                         const engIndex = lines.findIndex(l => l.includes('ENGLISH:'));
                         if(engIndex !== -1) {
                             engName = lines[engIndex].replace('ENGLISH:', '').trim();
                             lines.splice(engIndex, 1);
                         }
 
-                        // Беремо назву. Якщо AI зглупив і написав "Назва товару", ігноруємо
                         let newTitle = lines[0].substring(0, 90).trim();
-                        if (newTitle.toLowerCase().includes("назва товару")) newTitle = `Супер ${p.category} Pro`;
-
                         const desc = lines.slice(1).join('\n').trim();
 
-                        // ГЕНЕРАЦІЯ ФОТО (Спрощена)
-                        // Використовуємо seed, щоб картинки були різні
+                        // --- ФІЛЬТР "ГЛУПОСТІ" ---
+                        // Якщо AI написав щось дивне, ми це переписуємо примусово
+                        const badWords = ["назва товару", "твій варіант", "лот", "продукт", "варіант 1"];
+                        if (badWords.some(w => newTitle.toLowerCase().includes(w)) || newTitle.length < 5) {
+                            const brands = ["Ultra", "Pro", "Max", "Prime", "Neo"];
+                            const randomBrand = brands[Math.floor(Math.random() * brands.length)];
+                            newTitle = `${p.category} ${randomBrand} Edition`; // Примусова назва
+                        }
+
+                        // --- ГЕНЕРАЦІЯ ФОТО (Тільки техніка) ---
                         const seed = Math.floor(Math.random() * 9999);
-                        const cleanEng = encodeURIComponent(engName);
-                        // Додаємо 'dark style', щоб пасувало до дизайну
-                        const imgUrl = `https://image.pollinations.ai/prompt/${cleanEng}%20dark%20elegant%20product%20photo?width=600&height=600&nologo=true&seed=${seed}`;
+                        // Додаємо слова "electronic device product", щоб не малювало людей
+                        const cleanEng = encodeURIComponent(engName + " electronic device product minimal");
+                        const imgUrl = `https://image.pollinations.ai/prompt/${cleanEng}?width=600&height=600&nologo=true&seed=${seed}`;
 
                         await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
                         await sb.from('products').update({ 
@@ -109,7 +110,7 @@
                     status.innerHTML += `<br>❌ Error: ${e.message}`;
                 }
             }
-            start(); // Наступна пачка
+            start();
         }
     </script>
 </body>
