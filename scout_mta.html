@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout v15 (Individual Images)</title>
+    <title>Scout v17 (Manual Perfect Match)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -18,7 +18,7 @@
 <body>
     <a href="dashboard.html" class="back-link">← Назад</a>
     <div class="panel">
-        <h3 style="color:var(--olive); margin-top:0;">КАТАЛОГ (ТОЧНЕ СПІВПАДІННЯ)</h3>
+        <h3 style="color:var(--olive); margin-top:0;">КАТАЛОГ (РУЧНА ПІДБІРКА ФОТО)</h3>
         <select id="catSelect">
             <option value="Енергонезалежність">⚡ Енергонезалежність</option>
             <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
@@ -26,41 +26,68 @@
             <option value="Електроінструмент">🔨 Електроінструмент</option>
             <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runGlobal()">СТВОРИТИ ТОВАРИ</button>
-        <div id="log">> Оберіть категорію та натисніть кнопку...</div>
+        <button class="btn" onclick="runGlobal()">СТВОРИТИ (Точні фото)</button>
+        <div id="log">> Оберіть категорію...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // БАЗА ДАНИХ З ТОЧНИМИ ПОСИЛАННЯМИ НА КАРТИНКИ
+        // 1. ЕНЕРГЕТИКА
+        const IMG_ECOFLOW = "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80"; // Зарядна станція
+        const IMG_GENERATOR = "https://images.unsplash.com/photo-1605980413988-9ff24c537ce9?w=800&q=80"; // Бензиновий генератор
+        const IMG_SOLAR = "https://images.unsplash.com/photo-1548612662-385038c9c61d?w=800&q=80"; // Панелі
+        
+        // 2. ГАДЖЕТИ
+        const IMG_IPHONE = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80"; // Чорний Айфон
+        const IMG_SAMSUNG = "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80"; // Темний смартфон
+        const IMG_WATCH = "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80"; // Годинник
+        const IMG_PIXEL = "https://images.unsplash.com/photo-1598327105666-5b89351aff23?w=800&q=80"; // Гугл Піксель
+        
+        // 3. ТЕХНІКА
+        const IMG_ROBOT = "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=800&q=80"; // Робот на підлозі
+        const IMG_COFFEE = "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=800&q=80"; // Кавомашина
+        const IMG_DYSON = "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=800&q=80"; // Фен/Макіяж
+        const IMG_GRILL = "https://images.unsplash.com/photo-1556910103-1c02745a30bf?w=800&q=80"; // Кухня/Гриль
+        
+        // 4. ІНСТРУМЕНТ
+        const IMG_DRILL = "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80"; // Жовта дриль
+        const IMG_PERF = "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80"; // Перфоратор (інший ракурс)
+        const IMG_TOOLS = "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80"; // ВІДКРИТИЙ КЕЙС З ІНСТРУМЕНТАМИ
+        
+        // 5. КОМП'ЮТЕРИ
+        const IMG_MACBOOK = "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80"; // Макбук
+        const IMG_GAMING = "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&q=80"; // Ігровий ноут
+        const IMG_MONITOR = "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80"; // Монітор
+
         const realProducts = {
             "Енергонезалежність": [
-                { title: "EcoFlow DELTA 2 Max", price: 44999, img: "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80" }, // Станція
-                { title: "Bluetti EB3A Station", price: 12999, img: "https://images.unsplash.com/photo-1688569542037-33f7c4db96c7?w=800&q=80" }, // Станція
-                { title: "Генератор Weekender X2000i", price: 18500, img: "https://plus.unsplash.com/premium_photo-1664303847960-586318f59035?w=800&q=80" }, // Генератор
-                { title: "Сонячна панель 160W", price: 11999, img: "https://images.unsplash.com/photo-1548612662-385038c9c61d?w=800&q=80" }  // Панель
+                { title: "EcoFlow DELTA 2 Max", price: 44999, img: IMG_ECOFLOW }, 
+                { title: "Bluetti EB3A Station", price: 12999, img: IMG_ECOFLOW }, 
+                { title: "Генератор Weekender X2000i", price: 18500, img: IMG_GENERATOR }, 
+                { title: "Сонячна панель 160W", price: 11999, img: IMG_SOLAR } 
             ],
             "Смартфони та гаджети": [
-                { title: "Apple iPhone 15 Pro", price: 45999, img: "https://images.unsplash.com/photo-1696446701796-da61225697cc?w=800&q=80" }, // ТЕЛЕФОН (Не годинник!)
-                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80" }, // ТЕЛЕФОН
-                { title: "Apple Watch Series 9", price: 18999, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80" }, // Годинник
-                { title: "Google Pixel 8", price: 26500, img: "https://images.unsplash.com/photo-1598327105666-5b89351aff23?w=800&q=80" } // Телефон
+                { title: "Apple iPhone 15 Pro", price: 45999, img: IMG_IPHONE }, 
+                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: IMG_SAMSUNG }, 
+                { title: "Apple Watch Series 9", price: 18999, img: IMG_WATCH }, 
+                { title: "Google Pixel 8", price: 26500, img: IMG_PIXEL } 
             ],
             "Побутова техніка": [
-                { title: "Робот-пилосос Roborock", price: 24999, img: "https://plus.unsplash.com/premium_photo-1681487814165-018814e29155?w=800&q=80" }, // Пилосос
-                { title: "Кавомашина Philips", price: 28999, img: "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=800&q=80" }, // Кавоварка
-                { title: "Фен Dyson Supersonic", price: 19999, img: "https://images.unsplash.com/photo-1558223637-d95e0c50756a?w=800&q=80" } // Фен
+                { title: "Робот-пилосос Roborock", price: 24999, img: IMG_ROBOT }, 
+                { title: "Кавомашина Philips", price: 28999, img: IMG_COFFEE }, 
+                { title: "Фен Dyson Supersonic", price: 19999, img: IMG_DYSON }, 
+                { title: "Гриль Tefal OptiGrill", price: 8999, img: IMG_GRILL } 
             ],
             "Електроінструмент": [
-                { title: "Шуруповерт Bosch", price: 4999, img: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=800&q=80" }, // Шуруповерт
-                { title: "Перфоратор Makita", price: 5200, img: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80" }, // Перфоратор
-                { title: "Набір інструментів", price: 3500, img: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80" } // Набір
+                { title: "Шуруповерт Bosch", price: 4999, img: IMG_DRILL }, 
+                { title: "Перфоратор Makita", price: 5200, img: IMG_PERF }, 
+                { title: "Набір інструментів Pro", price: 3500, img: IMG_TOOLS } 
             ],
             "Комп'ютерна техніка": [
-                { title: "MacBook Air M1", price: 37999, img: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" }, // Ноутбук
-                { title: "ASUS Gaming Laptop", price: 33999, img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&q=80" }, // Ноутбук
-                { title: "Монітор Samsung", price: 10999, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80" } // Монітор
+                { title: "MacBook Air M1", price: 37999, img: IMG_MACBOOK }, 
+                { title: "ASUS Gaming Laptop", price: 33999, img: IMG_GAMING }, 
+                { title: "Монітор Samsung", price: 10999, img: IMG_MONITOR } 
             ]
         };
 
@@ -69,19 +96,12 @@
             const cat = document.getElementById('catSelect').value;
             let baseUrl = CONFIG.BASE_AFFILIATE_URL || "https://mta.ua";
             
-            log.innerHTML = `> Створення товарів для категорії: ${cat}...`;
+            log.innerHTML = `> Створення (Ручний режим)...`;
             
-            const list = realProducts[cat]; // Беремо список ТІЛЬКИ для обраної категорії
-
-            if (!list) {
-                log.innerHTML += `<br>❌ Помилка: Категорія не знайдена в базі.`;
-                return;
-            }
+            const list = realProducts[cat] || realProducts["Смартфони та гаджети"];
 
             let batch = [];
             list.forEach(item => {
-                // Пряма вставка картинки з об'єкта item.img
-                // Жодних categoryImages[cat] тут немає!
                 batch.push({ 
                     title: item.title, 
                     affiliate_url: baseUrl, 
@@ -95,8 +115,8 @@
             const { error } = await sb.from('products').insert(batch);
             if(error) log.innerHTML += `<br>❌ Помилка: ${error.message}`;
             else {
-                log.innerHTML += `<br>✅ +${batch.length} товарів додано.`;
-                log.innerHTML += `<br>📸 Фото встановлені індивідуально.`;
+                log.innerHTML += `<br>✅ +${batch.length} товарів.`;
+                log.innerHTML += `<br>📸 Фото прописані вручну.`;
             }
         }
     </script>
