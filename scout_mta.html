@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout v12 (100% Works)</title>
+    <title>Scout Final (Correct Images)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -18,7 +18,7 @@
 <body>
     <a href="dashboard.html" class="back-link">← Назад</a>
     <div class="panel">
-        <h3 style="color:var(--olive); margin-top:0;">КАТАЛОГ (ПЕРЕВІРЕНІ ФОТО)</h3>
+        <h3 style="color:var(--olive); margin-top:0;">КАТАЛОГ (ВИПРАВЛЕНИЙ)</h3>
         <select id="catSelect">
             <option value="Енергонезалежність">⚡ Енергонезалежність</option>
             <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
@@ -26,25 +26,20 @@
             <option value="Електроінструмент">🔨 Електроінструмент</option>
             <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runGlobal()">СТВОРИТИ (Без пропусків)</button>
+        <button class="btn" onclick="runGlobal()">СТВОРИТИ ПРАВИЛЬНІ ТОВАРИ</button>
         <div id="log">> Оберіть категорію...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // ТІЛЬКИ ТІ ФОТО, ЯКІ МИ БАЧИЛИ НА СКРІНАХ ЩО ВОНИ ПРАЦЮЮТЬ
-        const safeImages = {
-            // Картинка макбука працювала ідеально, ставимо її на техніку
-            "Комп'ютерна техніка": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80",
-            // Ця картинка з ноутбуком завантажилась в категорії "Генератор Weekender", візьмемо її поки що, бо вона надійна
-            "Енергонезалежність": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80", 
-            // Годинник працював
-            "Смартфони та гаджети": "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80",
-            // Кава працювала
-            "Побутова техніка": "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=600&q=80",
-            // Дриль працювала
-            "Електроінструмент": "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80"
+        // ПРАВИЛЬНІ КАРТИНКИ ДЛЯ КОЖНОЇ КАТЕГОРІЇ
+        const correctImages = {
+            "Енергонезалежність": "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80", // Зарядна станція
+            "Смартфони та гаджети": "https://images.unsplash.com/photo-1598327105666-5b89351aff23?w=800&q=80", // Смартфон
+            "Побутова техніка": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&q=80", // Кухня
+            "Електроінструмент": "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80", // Інструменти
+            "Комп'ютерна техніка": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80" // Ноутбук
         };
 
         const realProducts = {
@@ -57,8 +52,8 @@
             "Смартфони та гаджети": [
                 { title: "Apple iPhone 15 Pro", price: 45999 },
                 { title: "Samsung Galaxy S24 Ultra", price: 53999 },
-                { title: "Apple Watch Series 9", price: 18999 },
-                { title: "Google Pixel 8", price: 26500 }
+                { title: "Google Pixel 8", price: 26500 },
+                { title: "Xiaomi Redmi Note 13", price: 10999 }
             ],
             "Побутова техніка": [
                 { title: "Робот-пилосос Roborock", price: 24999 },
@@ -83,18 +78,18 @@
             const cat = document.getElementById('catSelect').value;
             let baseUrl = CONFIG.BASE_AFFILIATE_URL || "https://mta.ua";
             
-            log.innerHTML = `> Завантаження...`;
+            log.innerHTML = `> Створення...`;
             
             const list = realProducts[cat] || realProducts["Смартфони та гаджети"];
-            // Беремо гарантовано робочу картинку для всієї категорії
-            const reliableImg = safeImages[cat] || safeImages["Комп'ютерна техніка"];
+            // Беремо ПРАВИЛЬНУ картинку
+            const reliableImg = correctImages[cat] || correctImages["Смартфони та гаджети"];
 
             let batch = [];
             list.forEach(item => {
                 batch.push({ 
                     title: item.title, 
                     affiliate_url: baseUrl, 
-                    image_url: reliableImg, // ЄДИНА КАРТИНКА ДЛЯ ВСІХ (Щоб не було дірок)
+                    image_url: reliableImg, 
                     price: item.price, 
                     category: cat, 
                     is_processed_ai: false 
@@ -104,7 +99,7 @@
             const { error } = await sb.from('products').insert(batch);
             if(error) log.innerHTML += `<br>❌ Помилка: ${error.message}`;
             else {
-                log.innerHTML += `<br>✅ +${batch.length} товарів (ФОТО OK).`;
+                log.innerHTML += `<br>✅ +${batch.length} товарів (ФОТО ВІРНІ).`;
             }
         }
     </script>
