@@ -22,7 +22,7 @@
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
         .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; }
         .img-wrap { width: 100%; height: 160px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
-        .card img { width: 100%; height: 100%; object-fit: contain; transition: 0.3s; }
+        .card img { width: 100%; height: 100%; object-fit: contain; transition: 0.3s; padding: 5px; box-sizing: border-box; }
         .title { font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 5px; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .price { color: var(--olive); font-size: 16px; font-weight: bold; margin: 5px 0; }
         .desc-box { position: relative; margin-bottom: 10px; background: #1f2329; padding: 8px; border-radius: 6px; border: 1px solid #333; }
@@ -63,8 +63,7 @@
     let items = [];
 
     async function load() {
-        // Завантажуємо ТІЛЬКИ товари, без джойнів, щоб не було помилок
-        const { data } = await sb.from('products').select('*').order('id', { ascending: false });
+        const { data } = await sb.from('products').select('*, ai_content(fancy_description)').order('id', { ascending: false });
         if (data && data.length > 0) { items = data; render(items); }
         else { document.getElementById('grid').innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:20px; color:#666;">Товарів немає. <br> Зайдіть у Кабінет -> Розвідник.</div>'; }
     }
@@ -72,22 +71,19 @@
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
         list.forEach(p => {
-            // АВТОМАТИЧНИЙ ОПИС (Заплатка)
-            // Якщо бази описів немає, виводимо цей текст:
-            const d = "В наявності. Офіційна гарантія від виробника. Швидка доставка по Україні (1-2 дні). Можлива оплата при отриманні.";
-            
+            const d = p.ai_content?.[0]?.fancy_description || "Характеристики уточнюються...";
             let cleanTitle = p.title.replace(/[\[\]]/g, ''); 
             const txtId = `txt-${p.id}`;
             
             g.innerHTML += `
                 <div class="card">
                     <div class="img-wrap">
-                        <img src="${p.image_url}" onerror="this.style.display='none'">
+                        <img src="${p.image_url}">
                     </div>
                     <div class="title">${cleanTitle}</div>
                     <div class="price">${p.price} грн</div>
                     <div class="desc-box">
-                        <span class="more-btn" onclick="toggle('${txtId}', this)">ОПИС ⬇</span>
+                        <span class="more-btn" onclick="toggle('${txtId}', this)">ХАРАКТЕРИСТИКИ ⬇</span>
                         <div class="desc" id="${txtId}">${d}</div>
                     </div>
                     <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ</a>
@@ -98,7 +94,7 @@
     window.toggle = function(id, btn) {
         const el = document.getElementById(id);
         el.classList.toggle('expanded');
-        btn.innerText = el.classList.contains('expanded') ? 'ЗГОРНУТИ ⬆' : 'ОПИС ⬇';
+        btn.innerText = el.classList.contains('expanded') ? 'ЗГОРНУТИ ⬆' : 'ХАРАКТЕРИСТИКИ ⬇';
     }
 
     function filter() {
