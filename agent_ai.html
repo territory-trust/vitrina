@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creator 3.0 (Smart Filter)</title>
+    <title>AI Tech Specs (No Fluff)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -21,10 +21,10 @@
     <a href="dashboard.html" class="back-link">← Назад у Кабінет</a>
 
     <div class="panel">
-        <h2 style="color:var(--olive);">AI ТВОРЕЦЬ (SMART FILTER)</h2>
+        <h2 style="color:var(--olive);">AI ТЕХНАР (Специфікації)</h2>
         <input type="password" id="key" placeholder="Вставте Google API Key...">
-        <button class="btn" onclick="start()">🎨 ЗАПУСТИТИ ГЕНЕРАЦІЮ</button>
-        <div id="status">> Чекаю команду...</div>
+        <button class="btn" onclick="start()">⚙️ ЗГЕНЕРУВАТИ ХАРАКТЕРИСТИКИ</button>
+        <div id="status">> Готовий до роботи...</div>
     </div>
 
     <script>
@@ -38,7 +38,7 @@
             const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(10);
             
             if(!products || products.length === 0) { 
-                status.innerHTML += "<br>> ✅ Всі товари готові!"; 
+                status.innerHTML += "<br>> ✅ Всі товари оброблені!"; 
                 return; 
             }
 
@@ -46,18 +46,25 @@
                 status.innerHTML += `<br>⏳ ${p.title}...`;
                 
                 try {
-                    const prompt = `Роль: Креативний копірайтер.
-                    Товар: "${p.title}" (Категорія: ${p.category}).
+                    // ТЕХНІЧНИЙ ПРОМПТ
+                    const prompt = `Role: Technical Database Output.
+                    Input Category: "${p.category}".
                     
-                    ЗАВДАННЯ:
-                    1. Придумай УНІКАЛЬНУ назву (бренд + модель) українською.
-                    2. Напиши опис (2 речення).
-                    3. Дай англійську назву предмета для фото (наприклад: Smartphone, Generator, Laptop).
+                    STRICT RULES:
+                    1. Language: Ukrainian.
+                    2. NO marketing words (No "amazing", "buy", "best", "offer").
+                    3. NO intro words (No "Here is", "Option").
+                    4. Output format: Bullet points with technical specs.
                     
-                    ФОРМАТ ВІДПОВІДІ:
-                    [Назва]
-                    [Опис]
-                    ENGLISH: [Object]`;
+                    Structure:
+                    Line 1: Specific Model Name (Invent a realistic model name like "EcoFlow River 2" or "Bosch GSB 18V").
+                    Line 2: Tech Specs (4-5 parameters: Power, Weight, Size, Battery, Material). separated by " • ".
+                    Line 3: ENGLISH keyword for image generation.
+                    
+                    Example Output:
+                    EcoFlow Delta Max 2000
+                    Ємність: 2016 Вт·год • Потужність: 2400 Вт • Тип: LiFePO4 • Вага: 22 кг • Виходи: 4xAC 220В
+                    ENGLISH: Portable Power Station`;
                     
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                         method: "POST", headers: {"Content-Type":"application/json"},
@@ -69,30 +76,32 @@
                         let txt = data.candidates[0].content.parts[0].text.replace(/[*#\[\]"]/g, '').trim();
                         let lines = txt.split('\n').filter(l => l.trim() !== '');
                         
-                        // Витягуємо англійську назву
-                        let engName = "electronics";
-                        const engIndex = lines.findIndex(l => l.includes('ENGLISH:'));
+                        // 1. Витягуємо англійську
+                        let engName = "tech device";
+                        const engIndex = lines.findIndex(l => l.includes('ENGLISH'));
                         if(engIndex !== -1) {
-                            engName = lines[engIndex].replace('ENGLISH:', '').trim();
+                            let rawEng = lines[engIndex].replace('ENGLISH', '').replace(':', '').trim();
+                            if(rawEng.length > 2) engName = rawEng;
                             lines.splice(engIndex, 1);
                         }
 
+                        // 2. Назва
                         let newTitle = lines[0].substring(0, 90).trim();
-                        const desc = lines.slice(1).join('\n').trim();
-
-                        // --- ФІЛЬТР "ГЛУПОСТІ" ---
-                        // Якщо AI написав щось дивне, ми це переписуємо примусово
-                        const badWords = ["назва товару", "твій варіант", "лот", "продукт", "варіант 1"];
-                        if (badWords.some(w => newTitle.toLowerCase().includes(w)) || newTitle.length < 5) {
-                            const brands = ["Ultra", "Pro", "Max", "Prime", "Neo"];
-                            const randomBrand = brands[Math.floor(Math.random() * brands.length)];
-                            newTitle = `${p.category} ${randomBrand} Edition`; // Примусова назва
+                        
+                        // Якщо AI знову почав базікати ("Ось..."), генеруємо самі
+                        const badStarts = ["ось", "опис", "товар", "варіант", "пропонуємо"];
+                        if (badStarts.some(b => newTitle.toLowerCase().startsWith(b))) {
+                            newTitle = `${p.category} Professional ${Math.floor(Math.random()*1000)}`;
                         }
 
-                        // --- ГЕНЕРАЦІЯ ФОТО (Тільки техніка) ---
+                        // 3. Опис (Характеристики)
+                        // Беремо все, що залишилось після назви
+                        let desc = lines.slice(1).join(' ').trim();
+                        if(desc.length < 5) desc = "Потужність: 1000Вт • Гарантія: 12 міс • Професійна серія";
+
+                        // 4. Фото (Строгий стиль)
                         const seed = Math.floor(Math.random() * 9999);
-                        // Додаємо слова "electronic device product", щоб не малювало людей
-                        const cleanEng = encodeURIComponent(engName + " electronic device product minimal");
+                        const cleanEng = encodeURIComponent(engName + " product photography isolated black background high detail");
                         const imgUrl = `https://image.pollinations.ai/prompt/${cleanEng}?width=600&height=600&nologo=true&seed=${seed}`;
 
                         await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
@@ -105,7 +114,7 @@
                         status.innerHTML += `<br><img src="${imgUrl}" class="thumb"> OK: ${newTitle}`;
                         status.scrollTop = status.scrollHeight;
                     }
-                    await new Promise(r => setTimeout(r, 2000));
+                    await new Promise(r => setTimeout(r, 1500));
                 } catch(e) {
                     status.innerHTML += `<br>❌ Error: ${e.message}`;
                 }
