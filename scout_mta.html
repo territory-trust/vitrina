@@ -33,35 +33,35 @@
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // ТУТ Я ПРОПИСАЛ КАРТИНКУ ПОД КАЖДЫЙ ТОВАР ИНДИВИДУАЛЬНО
+        // ТУТ Я ПРОПИСАВ ОКРЕМУ КАРТИНКУ ПІД КОЖЕН ТОВАР
         const realProducts = {
             "Енергонезалежність": [
-                { title: "EcoFlow DELTA 2 Max", price: 44999, img: "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80" }, // Станция
-                { title: "Bluetti EB3A Station", price: 12999, img: "https://images.unsplash.com/photo-1688569542037-33f7c4db96c7?w=800&q=80" }, // Станция
-                { title: "Генератор Weekender X2000i", price: 18500, img: "https://plus.unsplash.com/premium_photo-1664303847960-586318f59035?w=800&q=80" }, // Генератор (мотор)
-                { title: "Сонячна панель 160W", price: 11999, img: "https://images.unsplash.com/photo-1548612662-385038c9c61d?w=800&q=80" } // Панель
+                { title: "EcoFlow DELTA 2 Max", price: 44999, img: "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80" }, 
+                { title: "Bluetti EB3A Station", price: 12999, img: "https://images.unsplash.com/photo-1688569542037-33f7c4db96c7?w=800&q=80" }, 
+                { title: "Генератор Weekender X2000i", price: 18500, img: "https://plus.unsplash.com/premium_photo-1664303847960-586318f59035?w=800&q=80" }, 
+                { title: "Сонячна панель 160W", price: 11999, img: "https://images.unsplash.com/photo-1548612662-385038c9c61d?w=800&q=80" } 
             ],
             "Смартфони та гаджети": [
-                { title: "Apple iPhone 15 Pro", price: 45999, img: "https://images.unsplash.com/photo-1696446701796-da61225697cc?w=800&q=80" }, // Айфон Титан
-                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80" }, // Самсунг
-                { title: "Apple Watch Series 9", price: 18999, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80" }, // Часы
-                { title: "AirPods Pro 2", price: 9999, img: "https://images.unsplash.com/photo-1603351154351-5cf13519a907?w=800&q=80" } // Наушники
+                { title: "Apple iPhone 15 Pro", price: 45999, img: "https://images.unsplash.com/photo-1696446701796-da61225697cc?w=800&q=80" }, 
+                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=800&q=80" }, 
+                { title: "Apple Watch Series 9", price: 18999, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=800&q=80" }, 
+                { title: "AirPods Pro 2", price: 9999, img: "https://images.unsplash.com/photo-1603351154351-5cf13519a907?w=800&q=80" } 
             ],
             "Побутова техніка": [
-                { title: "Робот-пилосос Roborock", price: 24999, img: "https://images.unsplash.com/photo-1588854337421-48f8d521c8b6?w=800&q=80" }, // Пылесос
-                { title: "Кавомашина Philips", price: 28999, img: "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=800&q=80" }, // Кофемашина
-                { title: "Фен Dyson Supersonic", price: 19999, img: "https://images.unsplash.com/photo-1558223637-d95e0c50756a?w=800&q=80" }, // Фен
-                { title: "Гриль Tefal OptiGrill", price: 8999, img: "https://images.unsplash.com/photo-1556910103-1c02745a30bf?w=800&q=80" } // Гриль
+                { title: "Робот-пилосос Roborock", price: 24999, img: "https://plus.unsplash.com/premium_photo-1681487814165-018814e29155?w=800&q=80" }, 
+                { title: "Кавомашина Philips", price: 28999, img: "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=800&q=80" }, 
+                { title: "Фен Dyson Supersonic", price: 19999, img: "https://images.unsplash.com/photo-1558223637-d95e0c50756a?w=800&q=80" }, 
+                { title: "Гриль Tefal OptiGrill", price: 8999, img: "https://images.unsplash.com/photo-1556910103-1c02745a30bf?w=800&q=80" } 
             ],
             "Електроінструмент": [
-                { title: "Шуруповерт Bosch", price: 4999, img: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=800&q=80" }, // Шуруповерт
-                { title: "Перфоратор Makita", price: 5200, img: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80" }, // Дрель
-                { title: "Набір інструментів", price: 3500, img: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80" } // Набор
+                { title: "Шуруповерт Bosch", price: 4999, img: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=800&q=80" }, 
+                { title: "Перфоратор Makita", price: 5200, img: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=800&q=80" }, 
+                { title: "Набір інструментів", price: 3500, img: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80" } 
             ],
             "Комп'ютерна техніка": [
-                { title: "MacBook Air M1", price: 37999, img: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" }, // Макбук
-                { title: "ASUS Gaming Laptop", price: 33999, img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&q=80" }, // Геймерский ноут
-                { title: "Монітор Samsung", price: 10999, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80" } // Монитор
+                { title: "MacBook Air M1", price: 37999, img: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80" }, 
+                { title: "ASUS Gaming Laptop", price: 33999, img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&q=80" }, 
+                { title: "Монітор Samsung", price: 10999, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=800&q=80" } 
             ]
         };
 
@@ -79,7 +79,7 @@
                 batch.push({ 
                     title: item.title, 
                     affiliate_url: baseUrl, 
-                    image_url: item.img, // БЕРЕМ ЛИЧНУЮ КАРТИНКУ ТОВАРА
+                    image_url: item.img, // БЕРЕМО ОСОБИСТУ КАРТИНКУ ТОВАРУ
                     price: item.price, 
                     category: cat, 
                     is_processed_ai: false 
