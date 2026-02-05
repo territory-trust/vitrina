@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout v19 (DB FIX + IMAGES)</title>
+    <title>Scout v20 (FINAL FIX)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -11,13 +11,12 @@
         .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 600px; margin: auto; }
         select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
         .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 15px; border: none; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 150px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
+        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 200px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
     </style>
 </head>
 <body>
-    <a href="dashboard.html" style="color:#888; text-decoration:none; display:block; margin-bottom:20px;">← Назад</a>
     <div class="panel">
-        <h3 style="color:var(--olive);">КАТАЛОГ: ФІНАЛ</h3>
+        <h3 style="color:var(--olive);">КАТАЛОГ: РУЧНА ЗБІРКА</h3>
         <select id="catSelect">
             <option value="Енергонезалежність">⚡ Енергонезалежність</option>
             <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
@@ -26,13 +25,13 @@
             <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
         <button class="btn" onclick="runGlobal()">СТВОРИТИ (Без помилок)</button>
-        <div id="log">> Оберіть категорію...</div>
+        <div id="log">> Чекаю...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // --- ПЕРЕВІРЕНІ КАРТИНКИ (ТОЧНІ) ---
+        // 100% РОБОЧІ КАРТИНКИ (Взяті з Unsplash Source)
         const IMG_PHONE = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80"; // Чорний Айфон
         const IMG_LAPTOP = "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&q=80"; // Макбук
         const IMG_DRILL = "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80"; // Жовта дриль
@@ -41,7 +40,6 @@
         const IMG_STATION = "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=800&q=80"; // Станція
         const IMG_GENERATOR = "https://images.unsplash.com/photo-1605980413988-9ff24c537ce9?w=800&q=80"; // Генератор
 
-        // --- БАЗА ТОВАРІВ ---
         const productsMap = {
             "Енергонезалежність": [
                 { title: "EcoFlow DELTA 2 Max", price: 44999, img: IMG_STATION },
@@ -51,7 +49,7 @@
             ],
             "Смартфони та гаджети": [
                 { title: "Apple iPhone 15 Pro Black", price: 45999, img: IMG_PHONE },
-                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: IMG_PHONE }, // Хай буде телефон, щоб не було годинника
+                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: IMG_PHONE }, 
                 { title: "Google Pixel 8 Obsidian", price: 26500, img: IMG_PHONE },
                 { title: "Xiaomi Redmi Note 13", price: 10999, img: IMG_PHONE }
             ],
@@ -80,34 +78,39 @@
             const cat = document.getElementById('catSelect').value;
             let baseUrl = CONFIG.BASE_AFFILIATE_URL || "https://mta.ua";
             
-            log.innerHTML = `> Початок: ${cat}...`;
+            log.innerHTML = `> Старт: ${cat}...`;
             
             const list = productsMap[cat];
 
             for (let item of list) {
-                // 1. Вставляємо ТІЛЬКИ дані товару (без ai_content)
+                // КРОК 1: Створюємо сам товар
                 const { data, error } = await sb.from('products').insert([{ 
                     title: item.title, 
                     affiliate_url: baseUrl, 
-                    image_url: item.image_url || item.img, 
+                    image_url: item.img, 
                     price: item.price, 
                     category: cat, 
-                    is_processed_ai: true 
+                    is_processed_ai: true // ВАЖЛИВО: Ставимо TRUE, щоб Агент не чіпав
                 }]).select();
 
                 if(error) {
-                    log.innerHTML += `<br>❌ Err: ${error.message}`;
+                    log.innerHTML += `<br>❌ Помилка БД: ${error.message}`;
                 } else if (data && data.length > 0) {
-                    // 2. Якщо товар створився, додаємо опис окремо
+                    // КРОК 2: Беремо ID нового товару
                     const newId = data[0].id;
-                    await sb.from('ai_content').insert({
+                    
+                    // КРОК 3: Окремим запитом додаємо опис
+                    const { error: err2 } = await sb.from('ai_content').insert({
                         product_id: newId,
-                        fancy_description: "Товар в наявності. Офіційна гарантія. Швидка доставка по Україні. Надійний вибір."
+                        fancy_description: "В наявності. Офіційна гарантія. Топ продажів. Найкращий вибір у своїй категорії."
                     });
-                    log.innerHTML += `<br>✅ ${item.title} OK`;
+                    
+                    if(err2) log.innerHTML += `<br>⚠️ Опис не додався: ${err2.message}`;
+                    else log.innerHTML += `<br>✅ ${item.title} - ГОТОВО`;
                 }
             }
-            log.innerHTML += `<br>--- ГОТОВО ---`;
+            log.innerHTML += `<br>--- КАТЕГОРІЯ ЗАВЕРШЕНА ---`;
+            log.scrollTop = log.scrollHeight;
         }
     </script>
 </body>
