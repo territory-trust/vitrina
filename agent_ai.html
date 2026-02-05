@@ -2,17 +2,20 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Generator</title>
+    <title>AI Creator (Text + Image)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; text-align: center; }
-        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid var(--olive); max-width: 600px; margin: auto; }
-        input { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #444; margin-bottom: 20px; }
-        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 10px; border:none; }
+        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 600px; margin: auto; }
+        input { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #444; margin-bottom: 20px; box-sizing: border-box; }
+        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 10px; border:none; font-size: 16px; }
         #status { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
         .back-link { display: block; margin-bottom: 20px; color: #888; text-decoration: none; }
+        
+        /* Превью картинки в логе */
+        .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; vertical-align: middle; margin-right: 10px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -20,10 +23,11 @@
     <a href="dashboard.html" class="back-link">← Назад у Кабінет</a>
 
     <div class="panel">
-        <h2 style="color:var(--olive);">AI ОПИСУВАЧ (UKR)</h2>
+        <h2 style="color:var(--olive);">AI ТВОРЕЦЬ (Текст + Фото)</h2>
+        <p style="color:#777; font-size:13px;">Генерує описи через Gemini та фото через Neural Art</p>
         <input type="password" id="key" placeholder="Вставте Google API Key...">
-        <button class="btn" onclick="start()">🚀 ЗАПУСТИТИ ОБРОБКУ</button>
-        <div id="status">> Чекаю ключ...</div>
+        <button class="btn" onclick="start()">🎨 ЗАПУСТИТИ ТВОРЧІСТЬ</button>
+        <div id="status">> Готовий малювати...</div>
     </div>
 
     <script>
@@ -34,29 +38,29 @@
             const status = document.getElementById('status');
             if(!key) return alert("Потрібен ключ!");
 
-            const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(20);
+            const { data: products } = await sb.from('products').select('*').eq('is_processed_ai', false).limit(10);
             
             if(!products || products.length === 0) { 
-                status.innerHTML += "<br>> ✅ Всі товари оброблені!"; 
+                status.innerHTML += "<br>> ✅ Всі товари готові!"; 
                 return; 
             }
 
             for (let p of products) {
-                status.innerHTML += `<br>> Обробка: ${p.title}...`;
+                status.innerHTML += `<br>⏳ Обробка: ${p.title}...`;
                 
                 try {
-                    // Жорсткий промпт на українську мову
-                    const prompt = `Ти копірайтер інтернет-магазину.
-                    Товар: "${p.title}" (Категорія: ${p.category}).
+                    // 1. ГЕНЕРАЦІЯ ТЕКСТУ (Gemini)
+                    const prompt = `Роль: Копірайтер. Товар: "${p.title}" (Категорія: ${p.category}).
+                    Вимоги:
+                    1. Мова: УКРАЇНСЬКА.
+                    2. Назва: коротка, комерційна, без дужок.
+                    3. Опис: 2 речення.
+                    4. Переклад назви англійською (для генерації фото) в останньому рядку окремо.
                     
-                    ЗАВДАННЯ:
-                    1. Придумай коротку, привабливу назву товару українською (без слів "лот", "номер", "акція").
-                    2. Напиши опис українською мовою (3-4 речення) + 5 технічних характеристик.
-                    
-                    ФОРМАТ ВІДПОВІДІ (ТІЛЬКИ ТЕКСТ):
-                    [Нова Назва Товару]
-                    [Опис товару...]
-                    `;
+                    Формат:
+                    Назва товару
+                    Опис...
+                    ENGLISH_TITLE: Product Name`;
                     
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                         method: "POST", headers: {"Content-Type":"application/json"},
@@ -65,24 +69,47 @@
                     
                     const data = await res.json();
                     if(data.candidates) {
-                        const txt = data.candidates[0].content.parts[0].text.replace(/\*/g, '').trim();
-                        const lines = txt.split('\n');
-                        const newTitle = lines[0].substring(0, 90); // Перший рядок - назва
-                        const desc = lines.slice(1).join('\n').trim(); // Решта - опис
+                        let txt = data.candidates[0].content.parts[0].text.replace(/[*#\[\]"]/g, '').trim();
+                        let lines = txt.split('\n');
 
+                        // Шукаємо англійську назву для картинки
+                        let engTitle = p.category; // Запасний варіант
+                        const engLineIndex = lines.findIndex(l => l.includes('ENGLISH_TITLE:'));
+                        if (engLineIndex !== -1) {
+                            engTitle = lines[engLineIndex].replace('ENGLISH_TITLE:', '').trim();
+                            lines.splice(engLineIndex, 1); // Видаляємо цей рядок з опису
+                        }
+
+                        const newTitle = lines[0].substring(0, 90).trim(); 
+                        const desc = lines.slice(1).join('\n').trim();
+
+                        // 2. ГЕНЕРАЦІЯ КАРТИНКИ (Pollinations AI)
+                        // Створюємо унікальний URL картинки
+                        const seed = Math.floor(Math.random() * 1000);
+                        const imgPrompt = `professional product photo of ${engTitle}, high tech, studio lighting, dark elegance background, 8k resolution, minimalist`;
+                        const encodedPrompt = encodeURIComponent(imgPrompt);
+                        const generatedImgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=800&nologo=true&seed=${seed}`;
+
+                        // 3. ЗБЕРЕЖЕННЯ В БАЗУ
                         await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-                        await sb.from('products').update({ title: newTitle, is_processed_ai: true }).eq('id', p.id);
                         
-                        status.innerHTML += `<br>✔ OK: ${newTitle}`;
+                        // Оновлюємо і назву, і статус, і КАРТИНКУ
+                        await sb.from('products').update({ 
+                            title: newTitle, 
+                            image_url: generatedImgUrl,
+                            is_processed_ai: true 
+                        }).eq('id', p.id);
+                        
+                        status.innerHTML += `<br><img src="${generatedImgUrl}" class="thumb"> OK: ${newTitle}`;
+                        status.scrollTop = status.scrollHeight;
                     }
-                    // Пауза, щоб не банили
-                    await new Promise(r => setTimeout(r, 1000));
+                    // Пауза 2 сек (щоб встигла згенеруватись картинка)
+                    await new Promise(r => setTimeout(r, 2000));
                 } catch(e) {
                     status.innerHTML += `<br>❌ Error: ${e.message}`;
                 }
             }
-            // Рестарт для наступної пачки
-            start();
+            start(); // Рекурсія
         }
     </script>
 </body>
