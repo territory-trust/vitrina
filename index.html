@@ -9,7 +9,6 @@
         :root { --bg: #0a0c10; --panel: #14171c; --olive: #8fbc55; --text: #e5e7eb; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 14px; padding-top: 110px; }
         
-        /* Компактная шапка */
         .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.98); z-index: 1000; border-bottom: 1px solid #333; backdrop-filter: blur(10px); padding-bottom: 5px; }
         .header-content { max-width: 100%; margin: 0 auto; text-align: center; padding: 10px; }
         
@@ -29,8 +28,9 @@
 
         .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; }
         
-        .img-wrap { width: 100%; height: 160px; background: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
-        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        /* Фон картинки белый, чтобы было видно товар, если он на белом фоне */
+        .img-wrap { width: 100%; height: 160px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
+        .card img { width: 100%; height: 100%; object-fit: contain; transition: 0.3s; }
         
         .title { font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 5px; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .price { color: var(--olive); font-size: 16px; font-weight: bold; margin: 5px 0; }
@@ -39,7 +39,6 @@
         .desc { font-size: 12px; color: #bbb; line-height: 1.4; display: none; margin-top: 5px; }
         .desc.expanded { display: block; }
         
-        /* КНОПКА ДЕТАЛІ - ЯРКАЯ */
         .more-btn { color: #8fbc55; font-size: 12px; font-weight: 800; cursor: pointer; display: block; margin-top: 2px; text-align: right; text-transform: uppercase; letter-spacing: 0.5px; padding: 5px; }
         
         .buy-btn { background: linear-gradient(180deg, #556b2f 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; margin-top: auto; display: block; box-shadow: 0 4px 0 #283315; }
@@ -75,7 +74,7 @@
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
 
-    // Запасні картинки (якщо AI ще не намалював)
+    // ГАРАНТИРОВАННО РАБОЧИЕ КАРТИНКИ
     const imgMap = {
         "Енергонезалежність": "https://content2.rozetka.com.ua/goods/images/big/370259838.jpg", 
         "Смартфони та гаджети": "https://content1.rozetka.com.ua/goods/images/big/467657989.jpg",
@@ -95,21 +94,23 @@
         const g = document.getElementById('grid'); g.innerHTML = '';
         list.forEach(p => {
             const d = p.ai_content?.[0]?.fancy_description || "";
-            // Видаляємо дужки
             let cleanTitle = p.title.replace(/[\[\]]/g, ''); 
             
-            // ЛОГІКА КАРТИНОК:
-            // 1. Якщо є посилання від AI (pollinations) - беремо його
-            // 2. Якщо немає або там "placeholder" - беремо заглушку категорії
-            let imgUrl = p.image_url;
-            if (!imgUrl || imgUrl === 'placeholder') {
-                imgUrl = imgMap[p.category] || imgMap['default'];
+            // Логика 6.1: Определяем ЗАПАСНУЮ картинку заранее
+            const fallbackImg = imgMap[p.category] || imgMap['default'];
+            
+            // Если в базе нет картинки, ставим запасную сразу
+            let mainImg = p.image_url;
+            if (!mainImg || mainImg === 'placeholder' || mainImg.length < 10) {
+                mainImg = fallbackImg;
             }
 
             const txtId = `txt-${p.id}`;
             g.innerHTML += `
                 <div class="card">
-                    <div class="img-wrap"><img src="${imgUrl}" onerror="this.src='${imgMap['default']}'"></div>
+                    <div class="img-wrap">
+                        <img src="${mainImg}" onerror="this.onerror=null; this.src='${fallbackImg}'">
+                    </div>
                     <div class="title">${cleanTitle}</div>
                     <div class="price">${p.price} грн</div>
                     <div class="desc-box">
