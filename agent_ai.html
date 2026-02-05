@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creator (Text + Image)</title>
+    <title>AI Creator 2.0 (Fix)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -12,10 +12,8 @@
         input { width: 100%; padding: 15px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #444; margin-bottom: 20px; box-sizing: border-box; }
         .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 20px; width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 10px; border:none; font-size: 16px; }
         #status { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #00ff41; text-align: left; height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+        .thumb { width: 40px; height: 40px; border-radius: 4px; vertical-align: middle; margin-right: 10px; }
         .back-link { display: block; margin-bottom: 20px; color: #888; text-decoration: none; }
-        
-        /* Превью картинки в логе */
-        .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; vertical-align: middle; margin-right: 10px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -23,11 +21,10 @@
     <a href="dashboard.html" class="back-link">← Назад у Кабінет</a>
 
     <div class="panel">
-        <h2 style="color:var(--olive);">AI ТВОРЕЦЬ (Текст + Фото)</h2>
-        <p style="color:#777; font-size:13px;">Генерує описи через Gemini та фото через Neural Art</p>
+        <h2 style="color:var(--olive);">AI ТВОРЕЦЬ (FIXED)</h2>
         <input type="password" id="key" placeholder="Вставте Google API Key...">
-        <button class="btn" onclick="start()">🎨 ЗАПУСТИТИ ТВОРЧІСТЬ</button>
-        <div id="status">> Готовий малювати...</div>
+        <button class="btn" onclick="start()">🎨 ЗАПУСТИТИ ГЕНЕРАЦІЮ</button>
+        <div id="status">> Чекаю команду...</div>
     </div>
 
     <script>
@@ -46,21 +43,23 @@
             }
 
             for (let p of products) {
-                status.innerHTML += `<br>⏳ Обробка: ${p.title}...`;
+                status.innerHTML += `<br>⏳ ${p.title}...`;
                 
                 try {
-                    // 1. ГЕНЕРАЦІЯ ТЕКСТУ (Gemini)
-                    const prompt = `Роль: Копірайтер. Товар: "${p.title}" (Категорія: ${p.category}).
-                    Вимоги:
-                    1. Мова: УКРАЇНСЬКА.
-                    2. Назва: коротка, комерційна, без дужок.
-                    3. Опис: 2 речення.
-                    4. Переклад назви англійською (для генерації фото) в останньому рядку окремо.
+                    // ПРОМПТ З ЗАБОРОНАМИ
+                    const prompt = `Роль: Креативний копірайтер.
+                    Товар: "${p.title}" (Категорія: ${p.category}).
                     
-                    Формат:
-                    Назва товару
-                    Опис...
-                    ENGLISH_TITLE: Product Name`;
+                    ЗАВДАННЯ:
+                    1. Придумай УНІКАЛЬНУ комерційну назву українською (3-5 слів).
+                    2. ЗАБОРОНЕНО писати: "Назва товару", "Твій варіант", "Лот", "Продукт".
+                    3. Напиши опис (2 речення).
+                    4. Останнім рядком напиши 2 слова англійською що це за предмет (для фото).
+                    
+                    ФОРМАТ ВІДПОВІДІ:
+                    [Тут Нова Назва]
+                    [Тут Опис]
+                    ENGLISH: [Object Name]`;
                     
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                         method: "POST", headers: {"Content-Type":"application/json"},
@@ -69,47 +68,48 @@
                     
                     const data = await res.json();
                     if(data.candidates) {
-                        let txt = data.candidates[0].content.parts[0].text.replace(/[*#\[\]"]/g, '').trim();
-                        let lines = txt.split('\n');
+                        let txt = data.candidates[0].content.parts[0].text;
+                        txt = txt.replace(/[*#\[\]"]/g, '').trim(); // Чистимо сміття
 
-                        // Шукаємо англійську назву для картинки
-                        let engTitle = p.category; // Запасний варіант
-                        const engLineIndex = lines.findIndex(l => l.includes('ENGLISH_TITLE:'));
-                        if (engLineIndex !== -1) {
-                            engTitle = lines[engLineIndex].replace('ENGLISH_TITLE:', '').trim();
-                            lines.splice(engLineIndex, 1); // Видаляємо цей рядок з опису
+                        let lines = txt.split('\n').filter(line => line.trim() !== '');
+                        
+                        // Шукаємо англійську назву
+                        let engName = "technology product";
+                        const engIndex = lines.findIndex(l => l.includes('ENGLISH:'));
+                        if(engIndex !== -1) {
+                            engName = lines[engIndex].replace('ENGLISH:', '').trim();
+                            lines.splice(engIndex, 1);
                         }
 
-                        const newTitle = lines[0].substring(0, 90).trim(); 
+                        // Беремо назву. Якщо AI зглупив і написав "Назва товару", ігноруємо
+                        let newTitle = lines[0].substring(0, 90).trim();
+                        if (newTitle.toLowerCase().includes("назва товару")) newTitle = `Супер ${p.category} Pro`;
+
                         const desc = lines.slice(1).join('\n').trim();
 
-                        // 2. ГЕНЕРАЦІЯ КАРТИНКИ (Pollinations AI)
-                        // Створюємо унікальний URL картинки
-                        const seed = Math.floor(Math.random() * 1000);
-                        const imgPrompt = `professional product photo of ${engTitle}, high tech, studio lighting, dark elegance background, 8k resolution, minimalist`;
-                        const encodedPrompt = encodeURIComponent(imgPrompt);
-                        const generatedImgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=800&nologo=true&seed=${seed}`;
+                        // ГЕНЕРАЦІЯ ФОТО (Спрощена)
+                        // Використовуємо seed, щоб картинки були різні
+                        const seed = Math.floor(Math.random() * 9999);
+                        const cleanEng = encodeURIComponent(engName);
+                        // Додаємо 'dark style', щоб пасувало до дизайну
+                        const imgUrl = `https://image.pollinations.ai/prompt/${cleanEng}%20dark%20elegant%20product%20photo?width=600&height=600&nologo=true&seed=${seed}`;
 
-                        // 3. ЗБЕРЕЖЕННЯ В БАЗУ
                         await sb.from('ai_content').insert({ product_id: p.id, fancy_description: desc });
-                        
-                        // Оновлюємо і назву, і статус, і КАРТИНКУ
                         await sb.from('products').update({ 
                             title: newTitle, 
-                            image_url: generatedImgUrl,
+                            image_url: imgUrl,
                             is_processed_ai: true 
                         }).eq('id', p.id);
                         
-                        status.innerHTML += `<br><img src="${generatedImgUrl}" class="thumb"> OK: ${newTitle}`;
+                        status.innerHTML += `<br><img src="${imgUrl}" class="thumb"> OK: ${newTitle}`;
                         status.scrollTop = status.scrollHeight;
                     }
-                    // Пауза 2 сек (щоб встигла згенеруватись картинка)
                     await new Promise(r => setTimeout(r, 2000));
                 } catch(e) {
                     status.innerHTML += `<br>❌ Error: ${e.message}`;
                 }
             }
-            start(); // Рекурсія
+            start(); // Наступна пачка
         }
     </script>
 </body>
