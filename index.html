@@ -22,15 +22,18 @@
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
         .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; }
         .img-wrap { width: 100%; height: 160px; background: #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
-        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; opacity: 0; animation: fadeIn 0.5s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
         
         .title { font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 5px; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .price { color: var(--olive); font-size: 16px; font-weight: bold; margin: 5px 0; }
         
-        /* СТИЛЬ ДЛЯ ХАРАКТЕРИСТИК */
-        .desc-box { position: relative; margin-bottom: 10px; background: #1a1d23; padding: 8px; border-radius: 6px; border: 1px solid #333; }
-        .desc { font-size: 11px; color: #ccc; line-height: 1.5; display: none; margin-top: 5px; font-family: monospace; }
+        /* СТИЛЬ ОПИСУ */
+        .desc-box { position: relative; margin-bottom: 10px; background: #1f2329; padding: 8px; border-radius: 6px; border: 1px solid #333; }
+        .desc { font-size: 11px; color: #bbb; line-height: 1.4; display: none; margin-top: 5px; }
         .desc.expanded { display: block; }
+        
+        /* Яскрава кнопка деталей */
         .more-btn { color: #8fbc55; font-size: 10px; font-weight: bold; cursor: pointer; display: block; text-align: right; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .buy-btn { background: linear-gradient(180deg, #556b2f 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; margin-top: auto; display: block; box-shadow: 0 4px 0 #283315; }
@@ -66,18 +69,12 @@
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
 
-    const backupImages = {
-        "Енергонезалежність": [ "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=500&q=80", "https://images.unsplash.com/photo-1544724569-5f546fd6dd2d?w=500&q=80" ],
-        "Смартфони та гаджети": [ "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=80", "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500&q=80" ],
-        "Побутова техніка": [ "https://images.unsplash.com/photo-1588854337421-48f8d521c8b6?w=500&q=80", "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&q=80" ],
-        "Електроінструмент": [ "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=500&q=80", "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=500&q=80" ],
-        "Комп'ютерна техніка": [ "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&q=80", "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=500&q=80" ]
+    // Запасні посилання (100% робочі)
+    const safeBackups = {
+        "Енергонезалежність": "https://images.unsplash.com/photo-1605980413988-9ff24c537ce9?w=500&q=80",
+        "Смартфони та гаджети": "https://images.unsplash.com/photo-1598327105666-5b89351aff23?w=500&q=80",
+        "default": "https://mta.ua/catalog/view/theme/mta/img/logo.svg"
     };
-
-    function getRandomBackup(cat) {
-        const arr = backupImages[cat] || backupImages["Смартфони та гаджети"];
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
 
     async function load() {
         const { data } = await sb.from('products').select('*, ai_content(fancy_description)').eq('is_processed_ai', true).order('id', { ascending: false });
@@ -91,22 +88,24 @@
             const d = p.ai_content?.[0]?.fancy_description || "";
             let cleanTitle = p.title.replace(/[\[\]]/g, ''); 
             
+            // Якщо AI не дав картинку, беремо запасну
             let imgSrc = p.image_url;
-            const backup = getRandomBackup(p.category);
-            
-            if (!imgSrc || imgSrc.length < 15) imgSrc = backup;
+            if (!imgSrc || imgSrc.length < 10) imgSrc = safeBackups[p.category] || safeBackups['default'];
 
             const txtId = `txt-${p.id}`;
             
+            // ФОКУС: Якщо картинка з Unsplash (generated) не грузиться, on error підставить safeBackups
+            const backupUrl = safeBackups[p.category] || safeBackups['default'];
+
             g.innerHTML += `
                 <div class="card">
                     <div class="img-wrap">
-                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${backup}'">
+                        <img src="${imgSrc}" onerror="this.onerror=null; this.src='${backupUrl}'">
                     </div>
                     <div class="title">${cleanTitle}</div>
                     <div class="price">${p.price} грн</div>
                     <div class="desc-box">
-                        <span class="more-btn" onclick="toggle('${txtId}', this)">ХАРАКТЕРИСТИКИ ⬇</span>
+                        <span class="more-btn" onclick="toggle('${txtId}', this)">ОГЛЯД ⬇</span>
                         <div class="desc" id="${txtId}">${d}</div>
                     </div>
                     <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ</a>
@@ -117,7 +116,7 @@
     window.toggle = function(id, btn) {
         const el = document.getElementById(id);
         el.classList.toggle('expanded');
-        btn.innerText = el.classList.contains('expanded') ? 'ЗГОРНУТИ ⬆' : 'ХАРАКТЕРИСТИКИ ⬇';
+        btn.innerText = el.classList.contains('expanded') ? 'ЗГОРНУТИ ⬆' : 'ОГЛЯД ⬇';
     }
 
     function filter() {
