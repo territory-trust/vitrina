@@ -6,44 +6,44 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0a0c10; --panel: #14171c; --olive: #556b2f; --text: #e5e7eb; }
+        :root { --bg: #0a0c10; --panel: #14171c; --olive: #8fbc55; --text: #e5e7eb; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 14px; padding-top: 110px; }
         
-        /* --- КОМПАКТНАЯ ШАПКА --- */
-        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.98); z-index: 1000; border-bottom: 1px solid var(--olive); backdrop-filter: blur(10px); padding-bottom: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        /* Компактная шапка */
+        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.98); z-index: 1000; border-bottom: 1px solid #333; backdrop-filter: blur(10px); padding-bottom: 5px; }
         .header-content { max-width: 100%; margin: 0 auto; text-align: center; padding: 10px; }
         
-        /* Логотип и поиск в одну строку для экономии места */
         .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
         .logo { color: var(--olive); margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
         .search-box { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-size: 14px; outline: none; }
         
-        /* --- СКРОЛЛ КАТЕГОРИЙ --- */
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: 0 -10px; padding: 0 10px; }
         .nav-scroll::-webkit-scrollbar { display: none; }
         .nav { display: inline-flex; gap: 8px; }
         
-        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; display: inline-block; }
-        .cat-btn.active { background: var(--olive); color: #fff; border-color: #6b8c3a; }
+        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .cat-btn.active { background: var(--olive); color: #000; font-weight: bold; border-color: var(--olive); }
 
-        /* --- СЕТКА ТОВАРОВ --- */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
 
-        .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; position: relative; }
+        .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; }
         
-        .img-wrap { width: 100%; height: 140px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
-        .card img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .img-wrap { width: 100%; height: 160px; background: #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
+        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         
         .title { font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 5px; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .price { color: #8fbc55; font-size: 16px; font-weight: bold; margin: 5px 0; }
+        .price { color: var(--olive); font-size: 16px; font-weight: bold; margin: 5px 0; }
         
         .desc-box { position: relative; margin-bottom: 10px; }
-        .desc { font-size: 11px; color: #9ca3af; line-height: 1.4; display: none; }
+        .desc { font-size: 12px; color: #bbb; line-height: 1.4; display: none; margin-top: 5px; }
         .desc.expanded { display: block; }
-        .more-btn { color: #777; font-size: 11px; cursor: pointer; display: block; margin-top: 2px; text-align: right; }
         
-        .buy-btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; margin-top: auto; display: block; }
+        /* КНОПКА ДЕТАЛІ - ЯРКАЯ */
+        .more-btn { color: #8fbc55; font-size: 12px; font-weight: 800; cursor: pointer; display: block; margin-top: 2px; text-align: right; text-transform: uppercase; letter-spacing: 0.5px; padding: 5px; }
+        
+        .buy-btn { background: linear-gradient(180deg, #556b2f 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; margin-top: auto; display: block; box-shadow: 0 4px 0 #283315; }
+        .buy-btn:active { transform: translateY(2px); box-shadow: none; }
     </style>
 </head>
 <body>
@@ -56,7 +56,7 @@
         </div>
         <div class="nav-scroll">
             <div class="nav">
-                <button class="cat-btn active" onclick="setCat('Все', this)">Все</button>
+                <button class="cat-btn active" onclick="setCat('Все', this)">Всі</button>
                 <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">⚡ Енергія</button>
                 <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">📱 Гаджети</button>
                 <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
@@ -75,7 +75,7 @@
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
 
-    // Різні картинки для категорій
+    // Запасні картинки (якщо AI ще не намалював)
     const imgMap = {
         "Енергонезалежність": "https://content2.rozetka.com.ua/goods/images/big/370259838.jpg", 
         "Смартфони та гаджети": "https://content1.rozetka.com.ua/goods/images/big/467657989.jpg",
@@ -86,7 +86,6 @@
     };
 
     async function load() {
-        // Завантажуємо
         const { data } = await sb.from('products').select('*, ai_content(fancy_description)').eq('is_processed_ai', true).order('id', { ascending: false });
         if (data && data.length > 0) { items = data; render(items); }
         else { document.getElementById('grid').innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:20px; color:#666;">Товарів немає. <br> Зайдіть у Кабінет -> Розвідник.</div>'; }
@@ -96,13 +95,22 @@
         const g = document.getElementById('grid'); g.innerHTML = '';
         list.forEach(p => {
             const d = p.ai_content?.[0]?.fancy_description || "";
-            let imgUrl = imgMap[p.category] || imgMap['default'];
+            // Видаляємо дужки
+            let cleanTitle = p.title.replace(/[\[\]]/g, ''); 
+            
+            // ЛОГІКА КАРТИНОК:
+            // 1. Якщо є посилання від AI (pollinations) - беремо його
+            // 2. Якщо немає або там "placeholder" - беремо заглушку категорії
+            let imgUrl = p.image_url;
+            if (!imgUrl || imgUrl === 'placeholder') {
+                imgUrl = imgMap[p.category] || imgMap['default'];
+            }
 
             const txtId = `txt-${p.id}`;
             g.innerHTML += `
                 <div class="card">
-                    <div class="img-wrap"><img src="${imgUrl}"></div>
-                    <div class="title">${p.title}</div>
+                    <div class="img-wrap"><img src="${imgUrl}" onerror="this.src='${imgMap['default']}'"></div>
+                    <div class="title">${cleanTitle}</div>
                     <div class="price">${p.price} грн</div>
                     <div class="desc-box">
                         <span class="more-btn" onclick="toggle('${txtId}', this)">Деталі ⬇</span>
@@ -116,7 +124,7 @@
     window.toggle = function(id, btn) {
         const el = document.getElementById(id);
         el.classList.toggle('expanded');
-        btn.innerText = el.classList.contains('expanded') ? 'Згорнути ⬆' : 'Деталі ⬇';
+        btn.innerText = el.classList.contains('expanded') ? 'ЗГОРНУТИ ⬆' : 'ДЕТАЛІ ⬇';
     }
 
     function filter() {
