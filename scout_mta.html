@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rozvidnyk v9.0 (Real Hits)</title>
+    <title>Scout v10 (Fixed Images)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -18,62 +18,52 @@
 <body>
     <a href="dashboard.html" class="back-link">← Назад</a>
     <div class="panel">
-        <h3 style="color:var(--olive); margin-top:0;">БАЗА РЕАЛЬНИХ ХІТІВ</h3>
+        <h3 style="color:var(--olive); margin-top:0;">КАТАЛОГ (ВШИТІ ФОТО)</h3>
         <select id="catSelect">
-            <option value="Енергонезалежність">⚡ Енергонезалежність (EcoFlow, Bluetti)</option>
-            <option value="Смартфони та гаджети">📱 Смартфони (Apple, Samsung)</option>
-            <option value="Побутова техніка">🏠 Техніка (Dyson, Philips)</option>
-            <option value="Електроінструмент">🔨 Інструмент (Bosch, Makita)</option>
-            <option value="Комп'ютерна техніка">💻 Ноутбуки (MacBook, ASUS)</option>
+            <option value="Енергонезалежність">⚡ Енергонезалежність</option>
+            <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
+            <option value="Побутова техніка">🏠 Побутова техніка</option>
+            <option value="Електроінструмент">🔨 Електроінструмент</option>
+            <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runGlobal()">ЗАВАНТАЖИТИ ТОП-10 ТОВАРІВ</button>
+        <button class="btn" onclick="runGlobal()">СТВОРИТИ ТОВАРИ</button>
         <div id="log">> Оберіть категорію...</div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // РЕАЛЬНІ ТОВАРИ (Назви взяті з топу продажів)
+        // ТОВАРИ З ГОТОВИМИ КАРТИНКАМИ (Unsplash IDs)
         const realProducts = {
             "Енергонезалежність": [
-                { title: "Зарядна станція EcoFlow DELTA 2", price: 44999 },
-                { title: "EcoFlow RIVER 2 Pro (768 Вт·год)", price: 29999 },
-                { title: "Генератор інверторний Weekender X2000i", price: 18500 },
-                { title: "Bluetti EB3A Portable Power Station", price: 12999 },
-                { title: "Jackery Explorer 1000 Pro", price: 38000 },
-                { title: "Сонячна панель EcoFlow 160W Solar Panel", price: 11999 },
-                { title: "ДБЖ LogicPower LPM-PSW-1500VA", price: 8500 },
-                { title: "Акумулятор гелевий LogicPower 100Ah", price: 6500 }
+                { title: "EcoFlow DELTA 2 Max", price: 44999, img: "https://images.unsplash.com/photo-1624516590263-99b3b9b47e28?w=600&q=80" },
+                { title: "EcoFlow RIVER 2 Pro", price: 29999, img: "https://images.unsplash.com/photo-1688569542037-33f7c4db96c7?w=600&q=80" },
+                { title: "Bluetti EB3A Station", price: 12999, img: "https://images.unsplash.com/photo-1662058327931-1e967b57904d?w=600&q=80" },
+                { title: "Сонячна панель EcoFlow 160W", price: 11999, img: "https://images.unsplash.com/photo-1548612662-385038c9c61d?w=600&q=80" },
+                { title: "Генератор Weekender X2000i", price: 18500, img: "https://images.unsplash.com/photo-1596464525890-8e1248043695?w=600&q=80" }
             ],
             "Смартфони та гаджети": [
-                { title: "Apple iPhone 15 128GB Black", price: 35999 },
-                { title: "Samsung Galaxy S24 Ultra 12GB/256GB Titanium", price: 53999 },
-                { title: "Xiaomi Redmi Note 13 Pro 8/256GB", price: 10999 },
-                { title: "Apple Watch Series 9 GPS 45mm", price: 18999 },
-                { title: "Навушники Apple AirPods Pro 2 USB-C", price: 9999 },
-                { title: "Google Pixel 8 128GB Obsidian", price: 26500 },
-                { title: "Samsung Galaxy A55 5G 8/128GB", price: 14999 }
+                { title: "Apple iPhone 15 Black", price: 35999, img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80" },
+                { title: "Samsung Galaxy S24 Ultra", price: 53999, img: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&q=80" },
+                { title: "Apple Watch Series 9", price: 18999, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&q=80" },
+                { title: "AirPods Pro 2 USB-C", price: 9999, img: "https://images.unsplash.com/photo-1603351154351-5cf13519a907?w=600&q=80" },
+                { title: "Google Pixel 8 Obsidian", price: 26500, img: "https://images.unsplash.com/photo-1598327105666-5b89351aff23?w=600&q=80" }
             ],
             "Побутова техніка": [
-                { title: "Робот-пилосос Roborock S8 White", price: 24999 },
-                { title: "Кавомашина Philips Series 5400 LatteGo", price: 28999 },
-                { title: "Фен Dyson Supersonic HD07", price: 19999 },
-                { title: "Мультиварка-скороварка Moulinex", price: 4500 },
-                { title: "Гриль Tefal OptiGrill+ XL", price: 8999 }
+                { title: "Робот-пилосос Roborock S8", price: 24999, img: "https://images.unsplash.com/photo-1588854337421-48f8d521c8b6?w=600&q=80" },
+                { title: "Кавомашина Philips LatteGo", price: 28999, img: "https://images.unsplash.com/photo-1585860408542-a0e28c460d01?w=600&q=80" },
+                { title: "Фен Dyson Supersonic", price: 19999, img: "https://images.unsplash.com/photo-1558223637-d95e0c50756a?w=600&q=80" },
+                { title: "Гриль Tefal OptiGrill", price: 8999, img: "https://images.unsplash.com/photo-1556910103-1c02745a30bf?w=600&q=80" }
             ],
             "Електроінструмент": [
-                { title: "Шуруповерт акумуляторний Bosch GSB 185-LI", price: 4999 },
-                { title: "Перфоратор Makita HR2470", price: 5200 },
-                { title: "Болгарка Bosch GWS 750-125", price: 2100 },
-                { title: "Набір інструментів Stanley 1/2", price: 3500 },
-                { title: "Лобзик електричний Makita 4329", price: 2800 }
+                { title: "Шуруповерт Bosch GSB 185", price: 4999, img: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=600&q=80" },
+                { title: "Перфоратор Makita HR2470", price: 5200, img: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&q=80" },
+                { title: "Набір інструментів Pro", price: 3500, img: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=600&q=80" }
             ],
             "Комп'ютерна техніка": [
-                { title: "Ноутбук Apple MacBook Air 13 M1 Space Gray", price: 37999 },
-                { title: "Ігровий ноутбук ASUS TUF Gaming F15", price: 33999 },
-                { title: "Монітор 27 Samsung Odyssey G5", price: 10999 },
-                { title: "Планшет Apple iPad 10.9 (2022) 64GB", price: 16999 },
-                { title: "Маршрутизатор TP-Link Archer AX55 Wi-Fi 6", price: 2999 }
+                { title: "MacBook Air M1 Space Gray", price: 37999, img: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&q=80" },
+                { title: "ASUS TUF Gaming F15", price: 33999, img: "https://images.unsplash.com/photo-1593642632823-8f78536788c6?w=600&q=80" },
+                { title: "Монітор Samsung Odyssey", price: 10999, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80" }
             ]
         };
 
@@ -88,29 +78,27 @@
         async function runGlobal() {
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
-            const affId = CONFIG.AFFILIATE_ID || '111958';
-            const offerId = CONFIG.OFFER_ID || '3463'; 
-
-            // Ссилка (використовуємо твою Base URL з конфіга якщо є, або будуємо нову)
+            
+            // Ссилка
             let baseUrl = CONFIG.BASE_AFFILIATE_URL;
             let deep = "";
             if(baseUrl && baseUrl.includes("http")) {
                  const separator = baseUrl.includes('?') ? '&' : '?';
                  deep = `${baseUrl}${separator}url=${encodeURIComponent(catLinks[cat])}`;
             } else {
-                 deep = `https://rdr.salesdoubler.com.ua/rel/offer/${offerId}?aff_id=${affId}&url=${encodeURIComponent(catLinks[cat])}`;
+                 deep = `https://mta.ua`; // Заглушка, якщо немає апрува
             }
 
-            log.innerHTML = `> Завантаження реальних товарів: ${cat}...`;
+            log.innerHTML = `> Завантаження товарів...`;
             
             const list = realProducts[cat] || realProducts["Смартфони та гаджети"];
             let batch = [];
 
             list.forEach(item => {
                 batch.push({ 
-                    title: item.title, // ТУТ ВЖЕ РЕАЛЬНА НАЗВА!
+                    title: item.title, 
                     affiliate_url: deep, 
-                    image_url: "placeholder", 
+                    image_url: item.img, // ВСТАВЛЯЄМО ГАРАНТОВАНУ КАРТИНКУ
                     price: item.price, 
                     category: cat, 
                     is_processed_ai: false 
@@ -120,8 +108,8 @@
             const { error } = await sb.from('products').insert(batch);
             if(error) log.innerHTML += `<br>❌ Помилка: ${error.message}`;
             else {
-                log.innerHTML += `<br>✅ Додано ${batch.length} брендових товарів.`;
-                log.innerHTML += `<br>> Переходьте до AI Агента (він намалює їх точно).`;
+                log.innerHTML += `<br>✅ Додано ${batch.length} товарів з ФОТО.`;
+                log.innerHTML += `<br>> Ідіть в Agent AI (тільки текст).`;
             }
         }
     </script>
