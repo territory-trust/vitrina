@@ -19,14 +19,12 @@
         .search-box { width: 100%; padding: 12px 15px; border-radius: 10px; border: 1px solid #333; background: #000; color: #fff; font-size: 16px; outline: none; }
         .search-box:focus { border-color: var(--olive); }
         
-        /* СКРОЛ-МЕНЮ КАТЕГОРІЙ ТА АГЕНТІВ */
+        /* СКРОЛ-МЕНЮ КАТЕГОРІЙ */
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .nav-scroll::-webkit-scrollbar { display: none; }
         .nav { display: inline-flex; gap: 10px; align-items: center; }
         .cat-btn { background: var(--panel); color: #ccc; border: 1px solid #333; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-size: 15px; transition: 0.2s; text-decoration: none; display: inline-block; }
         .cat-btn.active { background: var(--olive); color: #fff; font-weight: bold; border-color: var(--olive); box-shadow: 0 0 12px rgba(107, 135, 59, 0.3); }
-        .agent-link { border-color: #555; color: #aaa; font-size: 14px; background: transparent; }
-        .divider { width: 2px; height: 20px; background: #333; margin: 0 5px; }
 
         /* СІТКА ТОВАРІВ */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; max-width: 800px; margin: 0 auto; }
@@ -80,11 +78,6 @@
                 <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
                 <button class="cat-btn" onclick="setCat('Електроінструмент', this)">🔨 Інструмент</button>
                 <button class="cat-btn" onclick="setCat('Комп\'ютерна техніка', this)">💻 Ноутбуки</button>
-                
-                <div class="divider"></div>
-                <a href="agent_ai.html" class="cat-btn agent-link">⚙️ Агент ШІ</a>
-                <a href="scout_mta.html" class="cat-btn agent-link">🕵️ Скаут</a>
-                <a href="cleaner.html" class="cat-btn agent-link">🗑 Клінер</a>
             </div>
         </div>
     </div>
