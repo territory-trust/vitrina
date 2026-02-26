@@ -1,22 +1,119 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scout v30 (RICH CONTENT)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scout | Smart Market</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0d0f12; --olive: #556b2f; --text: #d1d5db; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; text-align: center; }
-        .panel { background: #14171c; padding: 25px; border-radius: 20px; border: 1px solid var(--olive); max-width: 600px; margin: auto; }
-        select { width: 100%; padding: 12px; border-radius: 8px; background: #000; color: #fff; border: 1px solid #333; margin-bottom: 15px; }
-        .btn { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); color: white; padding: 15px; border: none; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #log { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; color: #00ff41; height: 300px; overflow-y: auto; text-align: left; font-family: monospace; font-size: 11px; }
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ */
+        :root { 
+            --bg-dark: #0a0c10; 
+            --panel-bg: #14171c; 
+            --panel-border: #2a2e35;
+            --olive: #6b873b; 
+            --olive-dark: #465926; 
+            --text-main: #e5e7eb; 
+            --text-muted: #8b949e;
+        }
+        
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; 
+            padding: 0 15px 40px 15px; /* Прибрали верхній відступ, бо там тепер розпірка */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .panel { 
+            background: var(--panel-bg); 
+            padding: 25px; 
+            border-radius: 16px; 
+            border: 1px solid var(--panel-border); 
+            width: 100%;
+            max-width: 600px; 
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        h3 {
+            color: var(--olive);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        select { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 10px; 
+            background: #000; 
+            color: #fff; 
+            border: 1.5px solid #444; 
+            margin-bottom: 20px; 
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        select:focus { border-color: var(--olive); }
+        
+        .btn { 
+            background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); 
+            color: white; 
+            padding: 16px; 
+            border: none; 
+            width: 100%; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 15px;
+            cursor: pointer; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 #2c3818;
+            transition: 0.1s;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        #log { 
+            margin-top: 20px; 
+            background: #000; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 1px solid #222;
+            color: #6b873b; 
+            height: 300px; 
+            overflow-y: auto; 
+            text-align: left; 
+            font-family: monospace; 
+            font-size: 13px; 
+            line-height: 1.5;
+        }
+        
+        /* Скролбар для логів */
+        #log::-webkit-scrollbar { width: 6px; }
+        #log::-webkit-scrollbar-track { background: #000; }
+        #log::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
     </style>
 </head>
 <body>
+
+    <div style="position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid #2a2e35; padding: 12px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; z-index: 9999;">
+        <span style="color: #6b873b; font-weight: 800; font-size: 15px; letter-spacing: 1px;">СКАУТ (ПАРСЕР)</span>
+        <a href="dashboard.html" style="text-decoration: none; color: #ddd; border: 1.5px solid #444; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; background: #14171c; transition: 0.2s;" onmousedown="this.style.borderColor='#6b873b'; this.style.color='#fff'; this.style.transform='translateY(2px)';">
+            🔑 В Кабінет
+        </a>
+    </div>
+    <div style="height: 80px; width: 100%; flex-shrink: 0;"></div>
     <div class="panel">
-        <h3 style="color:var(--olive);">КАТАЛОГ: SEO КОНТЕНТ</h3>
+        <h3>КАТАЛОГ: ДЕМО КОНТЕНТ</h3>
         <select id="catSelect">
             <option value="Енергонезалежність">⚡ Енергонезалежність</option>
             <option value="Смартфони та гаджети">📱 Смартфони та гаджети</option>
@@ -24,7 +121,7 @@
             <option value="Електроінструмент">🔨 Електроінструмент</option>
             <option value="Комп'ютерна техніка">💻 Комп'ютерна техніка</option>
         </select>
-        <button class="btn" onclick="runGlobal()">СТВОРИТИ (З гарним описом)</button>
+        <button class="btn" onclick="runGlobal()">Завантажити в базу</button>
         <div id="log">> Чекаю команду...</div>
     </div>
 
@@ -32,7 +129,6 @@
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let baseUrl = CONFIG.BASE_AFFILIATE_URL || "https://mta.ua";
 
-        // ТУТ ТЕПЕР ДОВГІ ОПИСИ, ЯКІ ПРОДАЮТЬ
         const productsMap = {
             "Енергонезалежність": [
                 { title: "EcoFlow DELTA 2 Max", price: 44999, img: "eco1.jpg", 
@@ -90,13 +186,12 @@
             const log = document.getElementById('log');
             const cat = document.getElementById('catSelect').value;
             
-            log.innerHTML = `> Створення товарів для категорії: ${cat}...`;
+            log.innerHTML = `> Завантаження товарів: ${cat}...\n`;
             
             const list = productsMap[cat];
             if(!list) return;
 
             for (let item of list) {
-                // Створюємо товар
                 const { data, error } = await sb.from('products').insert([{ 
                     title: item.title, 
                     affiliate_url: baseUrl, 
@@ -107,18 +202,17 @@
                 }]).select();
 
                 if(error) {
-                    log.innerHTML += `<br>❌ Err: ${error.message}`;
+                    log.innerHTML += `❌ Err: ${error.message}\n`;
                 } else if (data && data.length > 0) {
-                    // Додаємо РОЗШИРЕНИЙ опис
                     const newId = data[0].id;
                     await sb.from('ai_content').insert({
                         product_id: newId,
                         fancy_description: item.desc
                     });
-                    log.innerHTML += `<br>✅ ${item.title}`;
+                    log.innerHTML += `✅ ${item.title}\n`;
                 }
             }
-            log.innerHTML += `<br>--- ГОТОВО ---`;
+            log.innerHTML += `\n--- ГОТОВО ---`;
         }
     </script>
 </body>
