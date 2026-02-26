@@ -6,31 +6,57 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
+        /* БАЗОВИЙ БАГАТИЙ СТИЛЬ */
         :root { --bg: #0a0c10; --panel: #14171c; --olive: #8fbc55; --text: #e5e7eb; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 14px; padding-top: 110px; }
-        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.98); z-index: 1000; border-bottom: 1px solid #333; backdrop-filter: blur(10px); padding-bottom: 5px; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 15px; padding-top: 110px; }
+        
+        /* ШАПКА ТА НАВІГАЦІЯ */
+        .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(10, 12, 16, 0.98); z-index: 1000; border-bottom: 1px solid #2a2e35; backdrop-filter: blur(10px); padding-bottom: 5px; }
         .header-content { max-width: 100%; margin: 0 auto; text-align: center; padding: 10px; }
         .top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
         .logo { color: var(--olive); margin: 0; font-size: 18px; font-weight: 800; letter-spacing: 1px; white-space: nowrap; }
-        .search-box { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-size: 14px; outline: none; }
+        .search-box { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-size: 15px; outline: none; }
+        .search-box:focus { border-color: var(--olive); }
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: 0 -10px; padding: 0 10px; }
         .nav-scroll::-webkit-scrollbar { display: none; }
         .nav { display: inline-flex; gap: 8px; }
-        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: 0.2s; }
-        .cat-btn.active { background: var(--olive); color: #000; font-weight: bold; border-color: var(--olive); }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; max-width: 800px; margin: 0 auto; }
+        .cat-btn { background: var(--panel); color: #aaa; border: 1px solid #333; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .cat-btn.active { background: var(--olive); color: #000; font-weight: bold; border-color: var(--olive); box-shadow: 0 0 10px rgba(143, 188, 85, 0.2); }
+        
+        /* СІТКА ТОВАРІВ */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; max-width: 800px; margin: 0 auto; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
-        .card { background: var(--panel); border-radius: 12px; border: 1px solid #2a2e35; padding: 10px; display: flex; flex-direction: column; }
-        .img-wrap { width: 100%; height: 160px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px; position: relative; }
-        .card img { width: 100%; height: 100%; object-fit: contain; transition: 0.3s; padding: 5px; box-sizing: border-box; }
-        .title { font-weight: 600; font-size: 13px; color: #fff; margin-bottom: 5px; line-height: 1.3; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .price { color: var(--olive); font-size: 16px; font-weight: bold; margin: 5px 0; }
-        .desc-box { position: relative; margin-bottom: 10px; background: #1f2329; padding: 8px; border-radius: 6px; border: 1px solid #333; }
-        .desc { font-size: 11px; color: #bbb; line-height: 1.4; display: none; margin-top: 5px; }
-        .desc.expanded { display: block; }
-        .more-btn { color: #8fbc55; font-size: 10px; font-weight: bold; cursor: pointer; display: block; text-align: right; text-transform: uppercase; letter-spacing: 0.5px; }
-        .buy-btn { background: linear-gradient(180deg, #556b2f 0%, #3e4e22 100%); color: #fff; text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 13px; margin-top: auto; display: block; box-shadow: 0 4px 0 #283315; }
-        .buy-btn:active { transform: translateY(2px); box-shadow: none; }
+        
+        /* КАРТКА ТОВАРУ */
+        .card { background: var(--panel); border-radius: 14px; border: 1px solid #2a2e35; padding: 12px; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .img-wrap { width: 100%; height: 160px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; position: relative; }
+        .card img { width: 100%; height: 100%; object-fit: contain; padding: 5px; box-sizing: border-box; }
+        .title { font-weight: 600; font-size: 14px; color: #fff; margin-bottom: 6px; line-height: 1.3; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .price { color: var(--olive); font-size: 18px; font-weight: bold; margin-bottom: 12px; }
+        
+        /* КНОПКИ (3D ЕФЕКТ) */
+        .action-row { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: auto; }
+        .btn-outline { background: transparent; color: #bbb; border: 1px solid #444; text-align: center; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.1s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-outline:active { background: #222; transform: translateY(2px); }
+        
+        .btn-3d { background: linear-gradient(180deg, #6b873b 0%, #465926 100%); color: #fff; text-decoration: none; text-align: center; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; display: block; box-shadow: 0 4px 0 #2c3818; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: transform 0.1s, box-shadow 0.1s; }
+        .btn-3d:active { transform: translateY(4px); box-shadow: none; }
+
+        /* МОДАЛЬНЕ ВІКНО */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 2000; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: var(--panel); border: 1px solid var(--olive); border-radius: 16px; width: 100%; max-width: 450px; max-height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.7); transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #2a2e35; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .modal-title { font-size: 18px; font-weight: bold; color: #fff; margin: 0; line-height: 1.3; }
+        .close-btn { background: #2a2e35; border: none; color: #aaa; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
+        .close-btn:active { background: #444; color: #fff; transform: scale(0.9); }
+        
+        .modal-body { padding: 20px; overflow-y: auto; color: #ccc; font-size: 15px; line-height: 1.6; }
+        .modal-price-tag { display: inline-block; background: rgba(143, 188, 85, 0.1); color: var(--olive); padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 20px; margin-bottom: 15px; border: 1px solid rgba(143, 188, 85, 0.3); }
+        
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #2a2e35; background: #0f1115; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
     </style>
 </head>
 <body>
@@ -39,11 +65,11 @@
     <div class="header-content">
         <div class="top-row">
             <div class="logo">SMART</div>
-            <input type="text" id="search" class="search-box" placeholder="🔎 Пошук..." onkeyup="filter()">
+            <input type="text" id="search" class="search-box" placeholder="🔎 Пошук техніки..." onkeyup="filter()">
         </div>
         <div class="nav-scroll">
             <div class="nav">
-                <button class="cat-btn active" onclick="setCat('Все', this)">Всі</button>
+                <button class="cat-btn active" onclick="setCat('Все', this)">Всі товари</button>
                 <button class="cat-btn" onclick="setCat('Енергонезалежність', this)">⚡ Енергія</button>
                 <button class="cat-btn" onclick="setCat('Смартфони та гаджети', this)">📱 Гаджети</button>
                 <button class="cat-btn" onclick="setCat('Побутова техніка', this)">🏠 Техніка</button>
@@ -55,7 +81,23 @@
 </div>
 
 <div class="grid" id="grid">
-    <div style="text-align:center; width:100%; color:#555; grid-column: 1/-1; margin-top: 20px;">Завантаження...</div>
+    <div style="text-align:center; width:100%; color:#555; grid-column: 1/-1; margin-top: 30px; font-size: 16px;">Завантаження вітрини...</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Назва товару</h3>
+            <button class="close-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-price-tag" id="modalPrice">0 грн</div>
+            <div id="modalDesc">Опис завантажується...</div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" target="_blank" class="btn-3d" id="modalBuyBtn">ПЕРЕЙТИ В МАГАЗИН</a>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -64,37 +106,68 @@
 
     async function load() {
         const { data } = await sb.from('products').select('*, ai_content(fancy_description)').order('id', { ascending: false });
-        if (data && data.length > 0) { items = data; render(items); }
-        else { document.getElementById('grid').innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:20px; color:#666;">Товарів немає. <br> Зайдіть у Кабінет -> Розвідник.</div>'; }
+        if (data && data.length > 0) { 
+            items = data; 
+            render(items); 
+        } else { 
+            document.getElementById('grid').innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:30px; color:#666;">Товарів немає. <br> Запустіть розвідника.</div>'; 
+        }
     }
 
     function render(list) {
-        const g = document.getElementById('grid'); g.innerHTML = '';
+        const g = document.getElementById('grid'); 
+        g.innerHTML = '';
         list.forEach(p => {
-            const d = p.ai_content?.[0]?.fancy_description || "Характеристики уточнюються...";
             let cleanTitle = p.title.replace(/[\[\]]/g, ''); 
-            const txtId = `txt-${p.id}`;
             
             g.innerHTML += `
                 <div class="card">
                     <div class="img-wrap">
-                        <img src="${p.image_url}">
+                        <img src="${p.image_url}" onerror="this.style.display='none'" alt="${cleanTitle}">
                     </div>
                     <div class="title">${cleanTitle}</div>
                     <div class="price">${p.price} грн</div>
-                    <div class="desc-box">
-                        <span class="more-btn" onclick="toggle('${txtId}', this)">ХАРАКТЕРИСТИКИ ⬇</span>
-                        <div class="desc" id="${txtId}">${d}</div>
+                    <div class="action-row">
+                        <button class="btn-outline" onclick="openModal(${p.id})">ОПИС</button>
+                        <a href="${p.affiliate_url}" target="_blank" class="btn-3d">КУПИТИ</a>
                     </div>
-                    <a href="${p.affiliate_url}" target="_blank" class="buy-btn">КУПИТИ</a>
                 </div>`;
         });
     }
 
-    window.toggle = function(id, btn) {
-        const el = document.getElementById(id);
-        el.classList.toggle('expanded');
-        btn.innerText = el.classList.contains('expanded') ? 'ЗГОРНУТИ ⬆' : 'ХАРАКТЕРИСТИКИ ⬇';
+    // ЛОГІКА МОДАЛЬНОГО ВІКНА
+    function openModal(id) {
+        const item = items.find(i => i.id === id);
+        if(!item) return;
+
+        const desc = item.ai_content?.[0]?.fancy_description || "Детальний опис товару відсутній, але товар в наявності. Перейдіть до магазину для перегляду повних характеристик.";
+        let cleanTitle = item.title.replace(/[\[\]]/g, '');
+
+        // Заповнюємо дані
+        document.getElementById('modalTitle').innerText = cleanTitle;
+        document.getElementById('modalPrice').innerText = item.price + " грн";
+        
+        // Форматуємо опис (розбиваємо крапки з пробілом на абзаци для кращої читабельності)
+        const formattedDesc = desc.split('•').join('<br>•');
+        document.getElementById('modalDesc').innerHTML = formattedDesc;
+        
+        document.getElementById('modalBuyBtn').href = item.affiliate_url;
+
+        // Показуємо модалку і блокуємо скрол фону
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Закриття по кліку на темний фон
+    function closeModalOutside(event) {
+        if (event.target === document.getElementById('modalOverlay')) {
+            closeModal();
+        }
     }
 
     function filter() {
@@ -102,11 +175,12 @@
         render(items.filter(i => i.title.toLowerCase().includes(v)));
     }
 
-    function setCat(c, b) {
-        document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-        b.classList.add('active');
+    function setCat(c, btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         render(c === 'Все' ? items : items.filter(i => i.category === c));
     }
+    
     load();
 </script>
 </body>
