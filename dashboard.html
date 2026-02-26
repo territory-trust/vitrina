@@ -1,52 +1,255 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кабинет Администратора</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Market | Dashboard</title>
     <style>
-        :root { --bg: #050505; --panel: #14171c; --olive: #556b2f; --text: #e5e7eb; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ ДЛЯ АДМІНКИ */
+        :root { 
+            --bg-dark: #0a0c10; 
+            --panel-bg: #14171c; 
+            --panel-border: #2a2e35;
+            --olive: #6b873b; 
+            --olive-dark: #465926; 
+            --text-main: #e5e7eb; 
+            --text-muted: #8b949e;
+        }
         
-        h1 { color: var(--olive); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; 
+            padding: 20px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            box-sizing: border-box;
+        }
         
-        .grid-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 800px; }
-        
-        .card { background: var(--panel); border: 1px solid #333; padding: 30px; border-radius: 20px; text-align: center; transition: 0.3s; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .card:hover { transform: translateY(-5px); border-color: var(--olive); box-shadow: 0 15px 40px rgba(85, 107, 47, 0.2); }
-        
-        .icon { font-size: 50px; margin-bottom: 15px; }
-        .title { font-size: 20px; font-weight: bold; margin-bottom: 10px; color: var(--olive); }
-        .desc { font-size: 14px; color: #888; }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
 
-        .btn-view { background: linear-gradient(180deg, var(--olive) 0%, #3e4e22 100%); width: 100%; padding: 15px; border-radius: 12px; margin-top: 40px; text-align: center; text-decoration: none; color: #fff; font-weight: bold; font-size: 18px; max-width: 800px; box-shadow: 0 4px 0 #2b3815; }
-        .btn-view:active { transform: translateY(4px); box-shadow: none; }
+        /* ШАПКА КАБІНЕТУ */
+        .dash-header {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--olive);
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+        
+        .brand p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            background: rgba(107, 135, 59, 0.1);
+            border: 1px solid rgba(107, 135, 59, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--olive);
+            font-weight: bold;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--olive);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--olive);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(107, 135, 59, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(107, 135, 59, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(107, 135, 59, 0); }
+        }
+
+        /* ЗАГОЛОВКИ БЛОКІВ */
+        .section-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 10px 5px;
+            font-weight: 600;
+        }
+
+        /* СІТКА АГЕНТІВ */
+        .agents-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+        }
+        
+        .agent-card { 
+            background: var(--panel-bg); 
+            border: 1px solid var(--panel-border); 
+            padding: 20px; 
+            border-radius: 16px; 
+            text-decoration: none; 
+            color: var(--text-main); 
+            display: flex; 
+            align-items: center; 
+            gap: 20px;
+            transition: 0.2s; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+        }
+        
+        .agent-card:active { 
+            transform: scale(0.98); 
+            border-color: var(--olive); 
+            background: #1a2027;
+        }
+        
+        .icon-box { 
+            width: 54px; 
+            height: 54px; 
+            background: #000; 
+            border: 1px solid #333;
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 26px; 
+            flex-shrink: 0;
+        }
+
+        .agent-info {
+            flex-grow: 1;
+        }
+        
+        .agent-title { 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-bottom: 4px; 
+            color: #fff;
+        }
+        
+        .agent-desc { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            line-height: 1.4;
+        }
+
+        .chevron {
+            color: #444;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* КНОПКА ВІТРИНИ */
+        .btn-view { 
+            background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 14px; 
+            text-align: center; 
+            text-decoration: none; 
+            color: #fff; 
+            font-weight: bold; 
+            font-size: 16px; 
+            box-shadow: 0 4px 0 #2c3818; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.1s;
+        }
+        
+        .btn-view:active { 
+            transform: translateY(4px); 
+            box-shadow: none; 
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Управление Проектом</h1>
+    <div class="container">
+        <header class="dash-header">
+            <div class="brand">
+                <h1>SMART MARKET</h1>
+                <p>Панель управління</p>
+            </div>
+            <div class="status-badge">
+                <span class="dot"></span> Online
+            </div>
+        </header>
 
-    <div class="grid-menu">
-        <a href="scout_mta.html" class="card">
-            <div class="icon">🕵️</div>
-            <div class="title">РАЗВЕДЧИК</div>
-            <div class="desc">Поиск товаров и создание базы</div>
-        </a>
+        <div>
+            <div class="section-title">Робочі агенти</div>
+            <div class="agents-grid">
+                
+                <a href="scout_mta.html" class="agent-card">
+                    <div class="icon-box">🕵️</div>
+                    <div class="agent-info">
+                        <div class="agent-title">Скаут (Парсер)</div>
+                        <div class="agent-desc">Пошук нових товарів та заповнення бази даних</div>
+                    </div>
+                    <div class="chevron">›</div>
+                </a>
 
-        <a href="agent_ai.html" class="card">
-            <div class="icon">🤖</div>
-            <div class="title">AI АГЕНТ</div>
-            <div class="desc">Генерация описаний (Gemini)</div>
-        </a>
+                <a href="agent_ai.html" class="agent-card">
+                    <div class="icon-box">⚙️</div>
+                    <div class="agent-info">
+                        <div class="agent-title">ШІ Агент</div>
+                        <div class="agent-desc">Генерація SEO-описів через нейромережу Gemini</div>
+                    </div>
+                    <div class="chevron">›</div>
+                </a>
 
-        <a href="cleaner.html" class="card">
-            <div class="icon">🗑️</div>
-            <div class="title">ОЧИСТКА</div>
-            <div class="desc">Удаление товаров из базы</div>
-        </a>
+                <a href="cleaner.html" class="agent-card">
+                    <div class="icon-box">🗑️</div>
+                    <div class="agent-info">
+                        <div class="agent-title">Клінер бази</div>
+                        <div class="agent-desc">Видалення неактуальних товарів або очищення системи</div>
+                    </div>
+                    <div class="chevron">›</div>
+                </a>
+
+            </div>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <div class="section-title">Перегляд</div>
+            <a href="index.html" class="btn-view" target="_blank">
+                👁️ Відкрити вітрину
+            </a>
+        </div>
     </div>
-
-    <a href="index.html" class="btn-view" target="_blank">👁️ ОТКРЫТЬ ВИТРИНУ (ДЛЯ КЛИЕНТА)</a>
 
 </body>
 </html>
