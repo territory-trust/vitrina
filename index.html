@@ -55,7 +55,7 @@
         .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; text-decoration: none; text-align: center; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 15px; display: block; box-shadow: 0 4px 0 #2c3818; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.1s; }
         .btn-3d:active { transform: translateY(4px); box-shadow: none; }
 
-        /* МОДАЛЬНЕ ВІКНО */
+        /* МОДАЛЬНІ ВІКНА (ОПИС ТА ДЕМО) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 2000; backdrop-filter: blur(5px); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; opacity: 0; transition: opacity 0.2s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-content { background: var(--panel); border: 1px solid var(--olive); border-radius: 16px; width: 100%; max-width: 500px; max-height: 85vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.8); }
@@ -73,10 +73,8 @@
         /* ГАЛЕРЕЯ КАРТИНОК */
         .gallery-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 3000; backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 0.3s ease; }
         .gallery-overlay.active { display: flex; opacity: 1; }
-        
         .gallery-content { position: relative; max-width: 100%; max-height: 100%; display: flex; align-items: center; justify-content: center; }
         .gallery-img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); background: #fff; padding: 10px; box-sizing: border-box; }
-        
         .gallery-close-btn { position: absolute; top: -15px; right: -15px; background: rgba(42, 46, 53, 0.9); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #555; }
         .gallery-close-btn:active { background: #444; transform: scale(0.9); }
     </style>
@@ -117,8 +115,20 @@
             <div id="modalDesc">Опис завантажується...</div>
         </div>
         <div class="modal-footer">
-            <a href="#" target="_blank" class="btn-3d" id="modalBuyBtn">КУПИТИ</a>
+            <button class="btn-3d" style="width: 100%;" id="modalBuyBtn" onclick="showDemoMessage(event)">КУПИТИ</button>
         </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="demoOverlay" onclick="closeDemoOutside(event)">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 30px;">
+        <div style="font-size: 45px; margin-bottom: 15px;">🤝</div>
+        <h3 style="color: var(--olive); margin-top: 0; font-size: 20px;">Демонстраційний режим</h3>
+        <p style="color: #ccc; font-size: 15px; line-height: 1.6; margin-bottom: 25px;">
+            Вітаємо! Це демонстраційна вітрина <b>Smart Market</b>.<br><br>
+            Після підтвердження партнерства (апруву), ця кнопка буде автоматично генерувати партнерське посилання на сторінку покупки саме у <b>вашому магазині</b>.
+        </p>
+        <button class="btn-3d" style="width: 100%;" onclick="closeDemo()">ЗРОЗУМІЛО</button>
     </div>
 </div>
 
@@ -149,6 +159,7 @@
         list.forEach(p => {
             let cleanTitle = p.title ? p.title.replace(/[\[\]]/g, '').trim() : 'Без назви'; 
             
+            // Замінено пряме посилання href на onclick="showDemoMessage(event)"
             g.innerHTML += `
                 <div class="card">
                     <div class="img-wrap">
@@ -158,12 +169,31 @@
                     <div class="price">${p.price} грн</div>
                     <div class="action-row">
                         <button class="btn-outline" onclick="openModal('${p.id}')">📄 Читати опис</button>
-                        <a href="${p.affiliate_url}" target="_blank" class="btn-3d">КУПИТИ</a>
+                        <button class="btn-3d" onclick="showDemoMessage(event)">КУПИТИ</button>
                     </div>
                 </div>`;
         });
     }
 
+    // ЛОГІКА ДЕМО-ВІКНА ПАРТНЕРА
+    function showDemoMessage(event) {
+        event.preventDefault(); // Зупиняємо будь-які переходи за посиланнями
+        document.getElementById('demoOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDemo() {
+        document.getElementById('demoOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function closeDemoOutside(event) {
+        if (event.target === document.getElementById('demoOverlay')) {
+            closeDemo();
+        }
+    }
+
+    // ЛОГІКА ЗВИЧАЙНОГО ОПИСУ
     function openModal(id) {
         const item = items.find(i => String(i.id) === String(id));
         if(!item) return;
@@ -184,7 +214,7 @@
         const formattedDesc = desc.split('. ').join('.<br><br>');
         document.getElementById('modalDesc').innerHTML = formattedDesc;
         
-        document.getElementById('modalBuyBtn').href = item.affiliate_url || "#";
+        // Кнопка всередині модалки теж заблокована демо-режимом (через HTML розмітку)
 
         document.getElementById('modalOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -201,13 +231,12 @@
         }
     }
 
+    // ГАЛЕРЕЯ
     function openGallery(imgUrl, title) {
         const overlay = document.getElementById('galleryOverlay');
         const img = document.getElementById('galleryImg');
-        
         img.src = imgUrl;
         img.alt = `Увеличенное изображение: ${title}`;
-        
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden'; 
     }
@@ -223,6 +252,7 @@
         }
     }
 
+    // ПОШУК І ФІЛЬТРИ
     function filter() {
         const v = document.getElementById('search').value.toLowerCase();
         render(items.filter(i => i.title && i.title.toLowerCase().includes(v)));
