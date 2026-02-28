@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Comfy Скаут | Smart Market</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ */
+        :root { 
+            --bg: #0d0f12; 
+            --panel: #14171c; 
+            --olive: #556b2f; 
+            --olive-dark: #3b4a20; 
+            --accent: #ff8c00;
+            --text: #e5e7eb; 
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            padding: 0; 
+            margin: 0; 
+            text-align: center; 
+            font-size: 16px; 
+            padding-bottom: 40px;
+        }
+        
+        /* НАВІГАЦІЯ */
+        .system-nav { 
+            background: rgba(13, 15, 18, 0.95); 
+            padding: 15px 10px; 
+            display: flex; 
+            flex-wrap: wrap;
+            justify-content: center; 
+            gap: 10px; 
+            border-bottom: 1px solid #2a2e35; 
+            margin-bottom: 30px; 
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .sys-btn { 
+            text-decoration: none; 
+            color: #aaa; 
+            font-size: 15px; 
+            font-weight: 600;
+            padding: 10px 16px; 
+            border-radius: 12px; 
+            border: 1.5px solid #333; 
+            background: var(--panel);
+            transition: 0.2s; 
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .sys-btn:hover { border-color: #555; color: #fff; }
+        .sys-btn.dashboard { border-color: var(--olive); color: #fff; }
+        .sys-btn.active { background: #2a2e35; color: #fff; border-color: var(--accent); box-shadow: 0 0 10px rgba(255, 140, 0, 0.2); }
+
+        /* ГОЛОВНА ПАНЕЛЬ */
+        .panel { 
+            background: var(--panel); 
+            padding: 30px 20px; 
+            border-radius: 20px; 
+            border: 1px solid #2a2e35; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+            box-sizing: border-box;
+        }
+        
+        .title-icon { font-size: 40px; margin-bottom: 10px; }
+        .panel h2 { color: var(--accent); margin-top: 0; font-size: 24px; letter-spacing: 1px; }
+        .panel p { color: #888; margin-bottom: 30px; font-size: 16px; line-height: 1.5; }
+        
+        /* ОБ'ЄМНІ КНОПКИ */
+        .btn { 
+            padding: 16px; 
+            border: none; 
+            width: 100%; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-bottom: 15px; 
+            font-size: 16px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            color: #fff; 
+            transition: 0.1s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-action { 
+            background: linear-gradient(180deg, #ff8c00 0%, #cc7000 100%); 
+            box-shadow: 0 5px 0 #804600; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .btn-action:active { transform: translateY(5px); box-shadow: none; }
+
+        /* ТЕРМІНАЛ / ЛОГ */
+        #log { 
+            margin-top: 25px; 
+            background: #080a0c; 
+            padding: 18px; 
+            border-radius: 12px; 
+            color: #ccc; 
+            text-align: left; 
+            height: 250px; 
+            font-family: 'Courier New', Courier, monospace; 
+            overflow-y: auto; 
+            font-size: 14px; 
+            border: 1px solid #2a2e35; 
+            line-height: 1.6;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .log-success { color: #556b2f; font-weight: bold; }
+        .log-info { color: #888; }
+        .log-accent { color: var(--accent); }
+        .log-error { color: #d9534f; }
+    </style>
+</head>
+<body>
+
+    <div class="system-nav">
+        <a href="dashboard.html" class="sys-btn dashboard">🔑 В Кабінет</a>
+        <a href="index.html" class="sys-btn">🛍️ Вітрина</a>
+        <a href="scout_comfy.html" class="sys-btn active">🛒 Comfy Скаут</a>
+        <a href="agent_ai.html" class="sys-btn">🤖 AI Агент</a>
+        <a href="cleaner.html" class="sys-btn">🗑️ Очисник</a>
+    </div>
+
+    <div class="panel">
+        <div class="title-icon">🛒</div>
+        <h2>СПЕЦ-СКАУТ: COMFY</h2>
+        <p>Інжектор реальних товарів для створення тестової промо-сторінки. Завантажує 20 позицій по 5 категоріям.</p>
+        
+        <button class="btn btn-action" onclick="injectComfyData()" id="injectBtn">🚀 ЗАВАНТАЖИТИ В БАЗУ (20 ТОВАРІВ)</button>
+        
+        <div id="log"><span class="log-info">> Модуль ін'єкції підключено...</span><br><span class="log-info">> Очікування команди. База готова прийняти дані.</span></div>
+    </div>
+
+    <script>
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        const log = document.getElementById('log');
+
+        function addLog(message, type = 'info') {
+            const time = new Date().toLocaleTimeString('uk-UA');
+            let colorClass = 'log-info';
+            if (type === 'success') colorClass = 'log-success';
+            if (type === 'accent') colorClass = 'log-accent';
+            if (type === 'error') colorClass = 'log-error';
+            
+            log.innerHTML += `<br><span class="${colorClass}">[${time}] ${message}</span>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // БАЗА ДАНИХ (20 ТОВАРІВ, 5 КАТЕГОРІЙ)
+        const comfyProducts = [
+            // 1. ЕНЕРГОНЕЗАЛЕЖНІСТЬ (4 товари)
+            { title: "Зарядна станція EcoFlow DELTA 2 (1024 Вт·год)", price: "42 999", category: "Енергонезалежність", image_url: "https://cdn.comfy.ua/media/catalog/product/e/c/ecoflow_delta_2_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Зарядна станція Bluetti AC200MAX (2048 Вт·год)", price: "64 999", category: "Енергонезалежність", image_url: "https://cdn.comfy.ua/media/catalog/product/a/c/ac200max_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Зарядна станція Anker 757 PowerHouse (1229 Вт·год)", price: "45 999", category: "Енергонезалежність", image_url: "https://cdn.comfy.ua/media/catalog/product/a/n/anker_757_powerhouse_1_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Зарядна станція Jackery Explorer 1000 Pro", price: "39 999", category: "Енергонезалежність", image_url: "https://cdn.comfy.ua/media/catalog/product/j/a/jackery_explorer_1000_pro_2.jpg", url: "https://comfy.ua/ua/" },
+
+            // 2. СМАРТФОНИ ТА ГАДЖЕТИ (4 товари)
+            { title: "Apple iPhone 15 Pro Max 256GB Natural Titanium", price: "54 999", category: "Смартфони та гаджети", image_url: "https://cdn.comfy.ua/media/catalog/product/i/p/iphone_15_pro_max_natural_titanium_pdp_image_position-1__en-us_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Samsung Galaxy S24 Ultra 12/256GB Titanium Gray", price: "57 999", category: "Смартфони та гаджети", image_url: "https://cdn.comfy.ua/media/catalog/product/s/m/sm-s928_galaxys24ultra_titaniumgray_front_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Xiaomi 14 12/512GB Black", price: "39 999", category: "Смартфони та гаджети", image_url: "https://cdn.comfy.ua/media/catalog/product/x/i/xiaomi_14_black_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Motorola Edge 50 Pro 12/512GB Black Beauty", price: "22 999", category: "Смартфони та гаджети", image_url: "https://cdn.comfy.ua/media/catalog/product/m/o/motorola_edge_50_pro_12_512gb_black_beauty_1.jpg", url: "https://comfy.ua/ua/" },
+
+            // 3. ПОБУТОВА ТЕХНІКА (4 товари)
+            { title: "Холодильник з нижньою морозильною камерою Bosch KGN39VI306", price: "27 999", category: "Побутова техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/b/o/bosch_kgn39vi306_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Пральна машина прально-сушильна LG F2V5GG9T", price: "29 999", category: "Побутова техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/l/g/lg_f2v5gg9t_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Кавомашина DeLonghi ECAM 350.50 B", price: "19 999", category: "Побутова техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/d/e/delonghi_ecam_350.50_b_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Мікрохвильова піч Samsung ME88SUG/BW", price: "4 599", category: "Побутова техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/s/a/samsung_me88sug_bw_1__1.jpg", url: "https://comfy.ua/ua/" },
+
+            // 4. ЕЛЕКТРОІНСТРУМЕНТ (4 товари)
+            { title: "Акумуляторний дриль-шурупокрут Makita DDF482Z", price: "3 499", category: "Електроінструмент", image_url: "https://cdn.comfy.ua/media/catalog/product/m/a/makita_ddf482z.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Перфоратор Bosch GBH 240", price: "4 799", category: "Електроінструмент", image_url: "https://cdn.comfy.ua/media/catalog/product/b/o/bosch_gbh_240_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Кутова шліфувальна машина DeWalt DWE4151", price: "2 899", category: "Електроінструмент", image_url: "https://cdn.comfy.ua/media/catalog/product/d/w/dwe4151.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Набір інструментів Metabo Basic Set (685053000)", price: "5 199", category: "Електроінструмент", image_url: "https://cdn.comfy.ua/media/catalog/product/m/e/metabo_basic_set_1.jpg", url: "https://comfy.ua/ua/" },
+
+            // 5. КОМП'ЮТЕРНА ТЕХНІКА (4 товари)
+            { title: "Ноутбук Apple MacBook Air 15 M3 8/256GB Midnight", price: "59 499", category: "Комп'ютерна техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/m/a/macbook_air_15_in_m3_midnight_pdp_image_position-1__en-us_2.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Ноутбук ігровий ASUS ROG Strix G16 G614JVR", price: "74 999", category: "Комп'ютерна техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/r/o/rog_strix_g16_g614_2024_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Ноутбук ігровий Lenovo Legion Slim 5 16IRH8", price: "55 999", category: "Комп'ютерна техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/l/e/lenovo_legion_slim_5_16irh8_storm_grey_1.jpg", url: "https://comfy.ua/ua/" },
+            { title: "Ноутбук Acer Swift Go 14 SFG14-71", price: "32 999", category: "Комп'ютерна техніка", image_url: "https://cdn.comfy.ua/media/catalog/product/a/c/acer_swift_go_14_sfg14-71_nx.kf7eu.002_pure_silver_1.jpg", url: "https://comfy.ua/ua/" }
+        ];
+
+        async function injectComfyData() {
+            const btn = document.getElementById('injectBtn');
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            
+            addLog("Починаю безпечну ін'єкцію даних...", "accent");
+
+            let successCount = 0;
+
+            for (let i = 0; i < comfyProducts.length; i++) {
+                const item = comfyProducts[i];
+                
+                // Зберігаємо в базу Supabase (таблиця products)
+                const { data, error } = await sb.from('products').insert([
+                    { 
+                        title: item.title, 
+                        price: item.price, 
+                        category: item.category,
+                        image_url: item.image_url,
+                        product_url: item.url, // ЦЕЙ МАРКЕР ПРИХОВАЄ ЇХ ВІД ОРИГІНАЛЬНОЇ ВІТРИНИ
+                        is_processed_ai: false
+                    }
+                ]);
+
+                if (error) {
+                    addLog(`Помилка: ${item.title.substring(0, 20)}... - ${error.message}`, "error");
+                } else {
+                    addLog(`Додано: ${item.title.substring(0, 35)}...`, "success");
+                    successCount++;
+                }
+            }
+
+            addLog(`=========================`, "accent");
+            addLog(`✅ ІН'ЄКЦІЮ ЗАВЕРШЕНО! Успішно: ${successCount}/${comfyProducts.length}`, "success");
+            addLog(`1. Перейдіть до AI Агента.`, "accent");
+            addLog(`2. Згенеруйте описи для нових 20 товарів.`, "accent");
+            
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    </script>
+</body>
+</html>
