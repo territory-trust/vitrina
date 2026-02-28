@@ -1,82 +1,206 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Системний Очисник</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Системний Очисник | Smart Market</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0d0f12; --olive: #556b2f; --danger: #8b0000; --text: #d1d5db; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 0; margin: 0; text-align: center; font-size: 16px; }
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ */
+        :root { 
+            --bg: #0d0f12; 
+            --panel: #14171c; 
+            --olive: #6b873b; 
+            --olive-dark: #465926; 
+            --danger: #992828; 
+            --danger-dark: #661818; 
+            --text: #e5e7eb; 
+        }
         
-        .system-nav { background: #000; padding: 10px; display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid #333; margin-bottom: 20px; }
-        .sys-btn { text-decoration: none; color: #888; font-size: 14px; padding: 8px 15px; border-radius: 6px; border: 1px solid #333; }
-        .sys-btn:hover { color: #fff; border-color: var(--olive); }
-        .sys-btn.active { background: var(--danger); color: #fff; border-color: red; }
-
-        .panel { background: #14171c; padding: 30px; border-radius: 20px; border: 1px solid #333; max-width: 500px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            padding: 0; 
+            margin: 0; 
+            text-align: center; 
+            font-size: 16px; 
+            padding-bottom: 40px;
+        }
         
-        .btn { padding: 20px; border: none; width: 100%; border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; color: #fff; transition: 0.2s; }
-        .btn-nuke { background: linear-gradient(180deg, #8b0000 0%, #580000 100%); box-shadow: 0 4px 0 #3d0000; }
-        .btn-nuke:active { transform: translateY(4px); box-shadow: none; }
-        .btn-soft { background: #2a2e35; border: 1px solid #444; box-shadow: 0 4px 0 #1a1c20; }
+        /* НАВІГАЦІЯ */
+        .system-nav { 
+            background: rgba(13, 15, 18, 0.95); 
+            padding: 15px 10px; 
+            display: flex; 
+            flex-wrap: wrap;
+            justify-content: center; 
+            gap: 10px; 
+            border-bottom: 1px solid #2a2e35; 
+            margin-bottom: 30px; 
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .sys-btn { 
+            text-decoration: none; 
+            color: #aaa; 
+            font-size: 15px; 
+            font-weight: 600;
+            padding: 10px 16px; 
+            border-radius: 12px; 
+            border: 1.5px solid #333; 
+            background: var(--panel);
+            transition: 0.2s; 
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .sys-btn:hover { border-color: #555; color: #fff; }
+        .sys-btn.active { background: var(--danger-dark); color: #fff; border-color: var(--danger); box-shadow: 0 0 10px rgba(153, 40, 40, 0.3); }
+        .sys-btn.dashboard { border-color: var(--olive); color: #fff; }
+        .sys-btn.dashboard:active { background: rgba(107, 135, 59, 0.1); }
 
-        #log { margin-top: 20px; background: #000; padding: 15px; border-radius: 12px; color: #ff4141; text-align: left; height: 200px; font-family: monospace; overflow-y: auto; font-size: 13px; border: 1px solid #333; }
+        /* ГОЛОВНА ПАНЕЛЬ */
+        .panel { 
+            background: var(--panel); 
+            padding: 30px 20px; 
+            border-radius: 20px; 
+            border: 1px solid #2a2e35; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+            box-sizing: border-box;
+        }
+        
+        .title-icon { font-size: 40px; margin-bottom: 10px; }
+        .panel h2 { color: #d9534f; margin-top: 0; font-size: 24px; letter-spacing: 1px; }
+        .panel p { color: #888; margin-bottom: 30px; font-size: 16px; line-height: 1.5; }
+        
+        /* ОБ'ЄМНІ КНОПКИ */
+        .btn { 
+            padding: 16px; 
+            border: none; 
+            width: 100%; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-bottom: 15px; 
+            font-size: 16px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            color: #fff; 
+            transition: 0.1s; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-nuke { 
+            background: linear-gradient(180deg, var(--danger) 0%, var(--danger-dark) 100%); 
+            box-shadow: 0 5px 0 #4a1010; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .btn-nuke:active { transform: translateY(5px); box-shadow: none; }
+        
+        .btn-soft { 
+            background: linear-gradient(180deg, #3a3f48 0%, #2a2e35 100%); 
+            border: 1px solid #444; 
+            box-shadow: 0 4px 0 #1a1c20; 
+            color: #ccc;
+        }
+        .btn-soft:active { transform: translateY(4px); box-shadow: none; }
+
+        /* ТЕРМІНАЛ / ЛОГ */
+        #log { 
+            margin-top: 25px; 
+            background: #080a0c; 
+            padding: 18px; 
+            border-radius: 12px; 
+            color: #d9534f; 
+            text-align: left; 
+            height: 220px; 
+            font-family: 'Courier New', Courier, monospace; 
+            overflow-y: auto; 
+            font-size: 15px; /* Комфортний середній розмір для читання */
+            border: 1px solid #2a2e35; 
+            line-height: 1.6;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .log-success { color: var(--olive); font-weight: bold; }
+        .log-info { color: #aaa; }
     </style>
 </head>
 <body>
 
     <div class="system-nav">
-        <a href="index.html" class="sys-btn">🏠 ВІТРИНА</a>
-        <a href="scout_mta.html" class="sys-btn">🕵️ РОЗВІДНИК</a>
-        <a href="agent_ai.html" class="sys-btn">🤖 AI АГЕНТ</a>
-        <a href="cleaner.html" class="sys-btn active">🗑️ ОЧИСНИК</a>
+        <a href="dashboard.html" class="sys-btn dashboard">🔑 В Кабінет</a>
+        <a href="index.html" class="sys-btn">🛍️ Вітрина</a>
+        <a href="scout_mta.html" class="sys-btn">🕵️ Розвідник</a>
+        <a href="agent_ai.html" class="sys-btn">🤖 AI Агент</a>
+        <a href="cleaner.html" class="sys-btn active">🗑️ Очисник</a>
     </div>
 
     <div class="panel">
-        <h2 style="color:var(--danger); margin-top:0;">СИСТЕМНИЙ ОЧИСНИК</h2>
-        <p style="color:#777; margin-bottom:20px;">Очищення бази даних Supabase</p>
+        <div class="title-icon">☢️</div>
+        <h2>СИСТЕМНИЙ ОЧИСНИК</h2>
+        <p>Керування базою даних Supabase. Будьте обережні, ці дії неможливо скасувати.</p>
         
-        <button class="btn btn-nuke" onclick="nukeAll()">☢️ ВИДАЛИТИ ВСІ ТОВАРИ (RESET)</button>
-        <button class="btn btn-soft" onclick="cleanUnprocessed()">🧹 Видалити тільки необроблені</button>
+        <button class="btn btn-nuke" onclick="nukeAll()">ВИТЕРТИ ВСІ ТОВАРИ ТА ОПИСИ</button>
+        <button class="btn btn-soft" onclick="cleanUnprocessed()">🧹 Видалити тільки необроблені (без ШІ)</button>
         
-        <div id="log">> Система готова...</div>
+        <div id="log"><span class="log-info">> Система підключена та готова до роботи...</span></div>
     </div>
 
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         const log = document.getElementById('log');
 
-        async function nukeAll() {
-            if(!confirm("ОЧИСТИТИ ВСЮ БАЗУ? Це видалить усі товари та їх описи.")) return;
-            log.innerHTML += `<br>> Початок повної зачистки...`;
-
-            // Спочатку видаляємо всі записи з таблиці описів
-            const { error: err1 } = await sb.from('ai_content').delete().neq('fancy_description', 'FORCED_DELETE_ALL');
+        function addLog(message, type = 'error') {
+            const time = new Date().toLocaleTimeString('uk-UA');
+            let colorClass = '';
+            if (type === 'success') colorClass = 'log-success';
+            if (type === 'info') colorClass = 'log-info';
             
-            // Видаляємо всі записи з таблиці товарів (фільтр по назві, яка точно не дорівнює пустоті)
-            const { error: err2 } = await sb.from('products').delete().neq('title', 'FORCED_DELETE_ALL');
-            
-            if(err1 || err2) {
-                log.innerHTML += `<br>❌ Помилка: ${err2?.message || err1?.message}`;
-            } else {
-                log.innerHTML += `<br>✅ БАЗА ПОВНІСТЮ ОЧИЩЕНА.`;
-            }
+            log.innerHTML += `<br><span class="${colorClass}">[${time}] ${message}</span>`;
             log.scrollTop = log.scrollHeight;
         }
 
+        async function nukeAll() {
+            if(!confirm("⚠️ УВАГА: ОЧИСТИТИ ВСЮ БАЗУ?\n\nЦе безповоротно видалить усі товари та згенеровані ШІ описи з вітрини. Продовжити?")) return;
+            
+            addLog("> Початок повної зачистки бази даних...", "info");
+
+            // Видаляємо всі записи з таблиці описів
+            const { error: err1 } = await sb.from('ai_content').delete().neq('fancy_description', 'FORCED_DELETE_ALL');
+            
+            // Видаляємо всі записи з таблиці товарів
+            const { error: err2 } = await sb.from('products').delete().neq('title', 'FORCED_DELETE_ALL');
+            
+            if(err1 || err2) {
+                addLog(`❌ Помилка видалення: ${err2?.message || err1?.message}`, "error");
+            } else {
+                addLog("✅ БАЗА ПОВНІСТЮ ОЧИЩЕНА. Всі дані видалено.", "success");
+            }
+        }
+
         async function cleanUnprocessed() {
-            if(!confirm("Видалити товари без AI описів?")) return;
-            log.innerHTML += `<br>> Видалення необроблених товарів...`;
+            if(!confirm("Видалити з бази всі товари, для яких ще не створено ШІ-опис?")) return;
+            
+            addLog("> Шукаю та видаляю необроблені товари...", "info");
             
             const { error } = await sb.from('products').delete().eq('is_processed_ai', false);
             
             if(error) {
-                log.innerHTML += `<br>❌ Помилка: ${error.message}`;
+                addLog(`❌ Помилка: ${error.message}`, "error");
             } else {
-                log.innerHTML += `<br>✅ Необроблені товари видалені.`;
+                addLog("✅ Необроблені товари успішно видалені з бази.", "success");
             }
-            log.scrollTop = log.scrollHeight;
         }
     </script>
 </body>
