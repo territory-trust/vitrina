@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI-Pilot | Кабінет Продавця</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ + СЕРЕДНІЙ ШРИФТ */
+        :root { 
+            --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; 
+            --olive-dark: #465926; --text: #e5e7eb; --border: #2a2e35;
+        }
+        body { 
+            background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; font-size: 18px; padding-top: 70px; padding-bottom: 80px;
+        }
+
+        .header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: rgba(13, 15, 18, 0.95); border-bottom: 1px solid var(--border);
+            z-index: 1000; backdrop-filter: blur(10px); padding: 15px 20px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .shop-title { color: var(--olive); font-size: 22px; font-weight: bold; margin: 0; }
+        .header-links a { color: #ccc; text-decoration: none; font-size: 16px; border: 1px solid #555; padding: 5px 10px; border-radius: 6px; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-top: 0; color: #fff; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; color: #ccc; font-weight: 500; font-size: 16px; }
+        input[type="text"], input[type="password"], input[type="number"], select {
+            width: 100%; padding: 14px; background: #000; border: 1px solid #555;
+            color: #fff; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box;
+        }
+        input:focus { border-color: var(--olive); }
+
+        .btn-3d {
+            background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%);
+            color: #fff; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 16px;
+            border: none; cursor: pointer; box-shadow: 0 4px 0 #2c3818; width: 100%;
+            display: block; text-align: center; transition: 0.1s;
+        }
+        .btn-3d:active { transform: translateY(4px); box-shadow: none; }
+        .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ФОТО КНОПКИ З ТВОГО АГЕНТА */
+        .flex-btns { display: flex; gap: 10px; margin-bottom: 15px; }
+        .file-label { 
+            flex: 1; background: #000; border: 1px solid var(--olive); padding: 12px 5px; 
+            text-align: center; border-radius: 8px; color: var(--olive); cursor: pointer; 
+            font-weight: bold; font-size: 14px; margin: 0; transition: 0.3s; 
+            display: flex; justify-content: center; align-items: center;
+        }
+        input[type="file"] { display: none; }
+
+        #status { margin-top: 20px; padding: 15px; border-radius: 8px; background: #000; font-size: 16px; border-left: 4px solid var(--olive); white-space: pre-wrap; display: none; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--panel); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000;
+        }
+        .nav-item {
+            background: transparent; border: none; color: #888; font-size: 14px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 20%;
+        }
+        .nav-item.active { color: var(--olive); font-weight: bold; }
+        .nav-icon { font-size: 22px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="shop-title">AI-Магазин</div>
+        <div class="header-links"><a href="shop.html" target="_blank">🏪 Вітрина</a></div>
+    </div>
+
+    <div class="container">
+        <div id="tab-inventory" class="section">
+            <h2>📦 Склад</h2>
+            <div class="input-group"><input type="text" placeholder="🔎 Пошук по складу..."></div>
+            <p style="text-align:center; color:#666;">Товари завантажуються...</p>
+        </div>
+
+        <div id="tab-agents" class="section active">
+            <h2>🤖 AI-Аналізатор (Новий товар)</h2>
+            <div class="input-group">
+                <label>Google API Key (зберігається локально):</label>
+                <input type="password" id="apiKey" placeholder="Вставте ключ...">
+            </div>
+            
+            <div class="input-group">
+                <label>Ціна продажу (грн): <br><small style="color:#666">Залиште порожнім, щоб ІІ оцінив сам</small></label>
+                <input type="number" id="price" placeholder="Наприклад: 1500">
+            </div>
+
+            <label>1. Головне фото (Загальний вигляд):</label>
+            <div class="flex-btns">
+                <label class="file-label" id="l1_cam"><input type="file" id="p1_cam" accept="image/*" capture="environment" onchange="updLbl('l1_cam', 'l1_gal', 'p1_cam', 1)">📷 Камера</label>
+                <label class="file-label" id="l1_gal"><input type="file" id="p1_gal" accept="image/*" onchange="updLbl('l1_cam', 'l1_gal', 'p1_gal', 1)">🖼 Галерея</label>
+            </div>
+
+            <label>2. Фото деталей (Логотип/Особливості):</label>
+            <div class="flex-btns">
+                <label class="file-label" id="l2_cam"><input type="file" id="p2_cam" accept="image/*" capture="environment" onchange="updLbl('l2_cam', 'l2_gal', 'p2_cam', 2)">📷 Камера</label>
+                <label class="file-label" id="l2_gal"><input type="file" id="p2_gal" accept="image/*" onchange="updLbl('l2_cam', 'l2_gal', 'p2_gal', 2)">🖼 Галерея</label>
+            </div>
+
+            <label>3. Фото маркування (Бірка/Розмір/Модель):</label>
+            <div class="flex-btns">
+                <label class="file-label" id="l3_cam"><input type="file" id="p3_cam" accept="image/*" capture="environment" onchange="updLbl('l3_cam', 'l3_gal', 'p3_cam', 3)">📷 Камера</label>
+                <label class="file-label" id="l3_gal"><input type="file" id="p3_gal" accept="image/*" onchange="updLbl('l3_cam', 'l3_gal', 'p3_gal', 3)">🖼 Галерея</label>
+            </div>
+
+            <button class="btn-3d" id="mainBtn" onclick="startAI()" style="margin-top: 30px;">АНАЛІЗ ТА ПУБЛІКАЦІЯ</button>
+            <div id="status"></div>
+        </div>
+
+        <div id="tab-orders" class="section">
+            <h2>📑 Замовлення</h2>
+            <p style="text-align:center; color:#666;">Тут будуть вхідні заявки від клієнтів.</p>
+        </div>
+
+        <div id="tab-stats" class="section">
+            <h2>📊 Статистика</h2>
+            <p style="text-align:center; color:#666;">Трафік та переходи на SmartMarket.</p>
+        </div>
+
+        <div id="tab-settings" class="section">
+            <h2>⚙️ Налаштування</h2>
+            <div class="input-group">
+                <label>Тема оформлення:</label>
+                <select><option>Богата Оксамитова (Темна)</option><option>Світла Креативна</option></select>
+            </div>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 25px;">
+                <input type="checkbox" checked style="width: 24px; height: 24px;">
+                <span style="color: #fff; font-weight: bold;">Генерувати QR-коди для товарів</span>
+            </label>
+            <button class="btn-3d">ЗБЕРЕГТИ НАЛАШТУВАННЯ</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item" onclick="switchTab('tab-inventory', this)"><span class="nav-icon">📦</span>Склад</button>
+        <button class="nav-item active" onclick="switchTab('tab-agents', this)"><span class="nav-icon">🤖</span>Агенти</button>
+        <button class="nav-item" onclick="switchTab('tab-orders', this)"><span class="nav-icon">📑</span>Замовлення</button>
+        <button class="nav-item" onclick="switchTab('tab-stats', this)"><span class="nav-icon">📊</span>Статист.</button>
+        <button class="nav-item" onclick="switchTab('tab-settings', this)"><span class="nav-icon">⚙️</span>Налашт.</button>
+    </div>
+
+    <script>
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        let selectedFiles = [null, null, null];
+
+        window.onload = () => {
+            const savedKey = localStorage.getItem('gemini_key');
+            if(savedKey) document.getElementById('apiKey').value = savedKey;
+        };
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            btnElement.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function updLbl(camId, galId, inputId, index) { 
+            const file = document.getElementById(inputId).files[0];
+            if(file) {
+                selectedFiles[index - 1] = file;
+                document.getElementById(camId).style.background = '#000';
+                document.getElementById(galId).style.background = '#000';
+                document.getElementById(camId).innerHTML = '📷 Камера';
+                document.getElementById(galId).innerHTML = '🖼 Галерея';
+                
+                const active = document.getElementById(inputId.includes('cam') ? camId : galId);
+                active.style.background = '#1a2e1a';
+                active.innerHTML = '✅ Є фото';
+            }
+        }
+
+        function log(msg, isErr = false) {
+            const s = document.getElementById('status');
+            s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : '#6b873b';
+            s.innerText += msg + '\n';
+            s.scrollTop = s.scrollHeight;
+        }
+
+        // Твоя геніальна функція стиснення (без змін)
+        async function compressImg(file) {
+            if(!file) return null;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; 
+                        let width = img.width; let height = img.height;
+                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                        else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            const newFile = new File([blob], file.name, { type: 'image/jpeg' });
+                            const reader2 = new FileReader();
+                            reader2.readAsDataURL(blob);
+                            reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] });
+                        }, 'image/jpeg', 0.7); 
+                    };
+                };
+            });
+        }
+
+        async function startAI() {
+            const btn = document.getElementById('mainBtn');
+            const k = document.getElementById('apiKey').value;
+            let pr = document.getElementById('price').value;
+            
+            if(!k || !selectedFiles[0]) return alert("Введіть ключ та хоча б Головне фото (1)!");
+            
+            localStorage.setItem('gemini_key', k);
+            btn.disabled = true; document.getElementById('status').innerText = '';
+            
+            try {
+                log("⏳ Стиснення фотографій...");
+                const c1 = await compressImg(selectedFiles[0]);
+                const c2 = await compressImg(selectedFiles[1]);
+                const c3 = await compressImg(selectedFiles[2]);
+
+                log("☁️ Завантаження у сховище Supabase...");
+                const up = async (cObj, tag) => {
+                    if(!cObj) return null;
+                    const n = `${Date.now()}_${tag}.jpg`;
+                    const { error } = await sb.storage.from('tyres').upload(n, cObj.file); // Використовуємо твій бакет
+                    if (error) throw error;
+                    return sb.storage.from('tyres').getPublicUrl(n).data.publicUrl;
+                };
+
+                const u1 = await up(c1, 'main');
+                const u2 = await up(c2, 'detail');
+                const u3 = await up(c3, 'label');
+                const imagesArray = [u1, u2, u3].filter(url => url !== null); // Збираємо тільки завантажені фото
+
+                log("🧠 Аналіз ІІ (Генерація продаючого контенту)...");
+                
+                // УНІВЕРСАЛЬНИЙ ПРОМПТ ДЛЯ SAAS
+                const promptText = `Ти досвідчений експерт з продажу та геніальний маркетолог. Проаналізуй фото будь-якого товару та поверни JSON: 
+                {"title": "Коротка, чітка комерційна назва (Бренд, Модель, Тип)", 
+                "category": "Визнач категорію (наприклад: Електроніка, Взуття, Побутова техніка, Автотовари тощо)",
+                "description": "Напиши об'ємний, соковитий та продаючий опис. Розкажи про переваги, якість або стан. Використовуй емодзі та HTML-теги <br><br> для розділення на абзаци. Зроби текст переконливим.", 
+                "rec_price": "Оціночна ринкова ціна у гривнях (тільки цифра)"}. 
+                Мова: українська. Суворо правильний JSON без markdown-форматування.`;
+
+                const parts = [{ text: promptText }];
+                if(c1) parts.push({ inline_data: { mime_type: "image/jpeg", data: c1.b64 } });
+                if(c2) parts.push({ inline_data: { mime_type: "image/jpeg", data: c2.b64 } });
+                if(c3) parts.push({ inline_data: { mime_type: "image/jpeg", data: c3.b64 } });
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`, {
+                    method: "POST", headers: {"Content-Type":"application/json"},
+                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                });
+
+                const d = await res.json();
+                if (d.error) throw new Error(d.error.message);
+                
+                const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/gi, '').trim();
+                const ai = JSON.parse(raw);
+                
+                if(!pr) {
+                    const conf = confirm(`🤖 ІІ розпізнав товар: ${ai.title}\nРекомендована ціна: ${ai.rec_price} грн.\nЗберегти цю ціну?`);
+                    pr = conf ? ai.rec_price : prompt("Введіть свою ціну (грн):", ai.rec_price);
+                    if(!pr) pr = 0; 
+                }
+
+                log("💾 Збереження товару в базу даних...");
+                
+                // Збереження в модернізовану таблицю products
+                const { data: newProduct, error: dbErr } = await sb.from('products').insert([{
+                    title: ai.title,
+                    category: ai.category,
+                    price: parseFloat(pr),
+                    images: imagesArray,
+                    status: 'available'
+                }]).select();
+
+                if(dbErr) throw dbErr;
+
+                // Збереження опису в таблицю ai_content (як у твоїй архітектурі)
+                if (newProduct && newProduct[0]) {
+                    await sb.from('ai_content').insert([{
+                        product_id: newProduct[0].id,
+                        fancy_description: ai.description
+                    }]);
+                }
+
+                log("✅ УСПІШНО! Товар вже на вітрині.");
+                
+                // Очищення форми
+                document.getElementById('price').value = '';
+                selectedFiles = [null, null, null];
+                document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
+                ['l1','l2','l3'].forEach(id => {
+                    document.getElementById(id+'_cam').style.background = '#000'; document.getElementById(id+'_cam').innerHTML = '📷 Камера';
+                    document.getElementById(id+'_gal').style.background = '#000'; document.getElementById(id+'_gal').innerHTML = '🖼 Галерея';
+                });
+                setTimeout(() => btn.disabled = false, 2000);
+            } catch(e) { log("❌ Помилка: " + e.message, true); btn.disabled = false; }
+        }
+    </script>
+</body>
+</html>
