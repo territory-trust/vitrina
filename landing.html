@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI-Pilot | Створити свій магазин</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ + СЕРЕДНІЙ ШРИФТ */
+        :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --olive-dark: #465926; --text: #e5e7eb; --border: #2a2e35; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 18px; padding: 20px; box-sizing: border-box;}
+        
+        .auth-card { background: var(--panel); border: 1px solid var(--olive); border-radius: 16px; padding: 40px 30px; width: 100%; max-width: 450px; box-shadow: 0 15px 50px rgba(0,0,0,0.8); text-align: center; }
+        
+        .logo { color: var(--olive); font-size: 28px; font-weight: 900; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase; }
+        .subtitle { color: #888; font-size: 16px; margin-bottom: 30px; line-height: 1.5; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: #ccc; font-weight: 500; font-size: 16px; }
+        input { width: 100%; padding: 16px; background: #000; border: 1px solid #555; color: #fff; border-radius: 10px; font-size: 18px; outline: none; box-sizing: border-box; transition: 0.2s; }
+        input:focus { border-color: var(--olive); box-shadow: 0 0 8px rgba(107, 135, 59, 0.3); }
+
+        .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; padding: 18px; border-radius: 10px; font-weight: bold; font-size: 18px; border: none; cursor: pointer; box-shadow: 0 4px 0 #2c3818; width: 100%; transition: 0.1s; text-transform: uppercase; margin-top: 10px;}
+        .btn-3d:active { transform: translateY(4px); box-shadow: none; }
+        .btn-3d:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .login-link { margin-top: 25px; display: block; color: #aaa; font-size: 16px; text-decoration: none; }
+        .login-link span { color: var(--olive); font-weight: bold; }
+
+        #status { margin-top: 15px; font-size: 16px; color: #ff4444; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="logo">AI-PILOT SHOPS</div>
+        <div class="subtitle" id="form-subtitle">Створіть розумний інтернет-магазин за 1 хвилину. Без складних реєстрацій.</div>
+
+        <div id="register-fields">
+            <div class="input-group">
+                <label>Назва вашого магазину:</label>
+                <input type="text" id="shopName" placeholder="Наприклад: АвтоСвіт">
+            </div>
+
+            <div class="input-group">
+                <label>Ваше Ім'я:</label>
+                <input type="text" id="ownerName" placeholder="Як до вас звертатися?">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Ваш телефон:</label>
+            <input type="tel" id="phone" placeholder="098 123 4567" oninput="formatPhoneInput(this)">
+        </div>
+
+        <button class="btn-3d" id="mainBtn" onclick="processAuth()">🚀 СТВОРИТИ МАГАЗИН</button>
+        <div id="status"></div>
+
+        <a href="#" class="login-link" onclick="toggleMode()">Вже є магазин? <span>Увійти за телефоном</span></a>
+    </div>
+
+    <script>
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        let isLoginMode = false;
+
+        function formatPhoneInput(el) {
+            let val = el.value.replace(/\D/g, ''); 
+            if (val.length > 10 && val.startsWith('38')) val = val.substring(2);
+            if (val.length > 10) val = val.substring(0, 10);
+            el.value = val;
+        }
+
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('register-fields').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('mainBtn').innerText = isLoginMode ? '🔑 УВІЙТИ В КАБІНЕТ' : '🚀 СТВОРИТИ МАГАЗИН';
+            document.getElementById('form-subtitle').innerText = isLoginMode ? 'Введіть свій номер телефону для входу в панель керування.' : 'Створіть розумний інтернет-магазин за 1 хвилину. Без складних реєстрацій.';
+            document.querySelector('.login-link').innerHTML = isLoginMode ? 'Немає магазину? <span>Створити</span>' : 'Вже є магазин? <span>Увійти за телефоном</span>';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        function showStatus(msg, isError = true) {
+            const s = document.getElementById('status');
+            s.style.display = 'block';
+            s.style.color = isError ? '#ff4444' : '#6b873b';
+            s.innerText = msg;
+        }
+
+        async function processAuth() {
+            const phoneVal = document.getElementById('phone').value;
+            const shopName = document.getElementById('shopName').value;
+            const ownerName = document.getElementById('ownerName').value;
+            const btn = document.getElementById('mainBtn');
+
+            if (!phoneVal || phoneVal.length < 10) {
+                return showStatus("Введіть коректний номер телефону (10 цифр).");
+            }
+
+            if (!isLoginMode && (!shopName || !ownerName)) {
+                return showStatus("Будь ласка, введіть Назву магазину та Ваше ім'я.");
+            }
+
+            btn.disabled = true;
+            btn.innerText = "⏳ Зачекайте...";
+
+            // Технічна магія: перетворюємо телефон на email та пароль для бази даних
+            const fakeEmail = `${phoneVal}@ai-pilot.com.ua`;
+            const fakePass = `${phoneVal}_SecurePass!`;
+
+            try {
+                if (isLoginMode) {
+                    // ЛОГІКА ВХОДУ
+                    const { error } = await sb.auth.signInWithPassword({ email: fakeEmail, password: fakePass });
+                    if (error) throw new Error("Користувача не знайдено. Перевірте номер або зареєструйтесь.");
+                    
+                    window.location.href = 'cabinet.html'; 
+                } else {
+                    // ЛОГІКА РЕЄСТРАЦІЇ
+                    const { data: authData, error: authErr } = await sb.auth.signUp({ email: fakeEmail, password: fakePass });
+                    
+                    if (authErr) {
+                        if (authErr.message.includes("already registered")) {
+                            throw new Error("Цей номер вже зареєстровано! Натисніть 'Увійти'.");
+                        }
+                        throw authErr;
+                    }
+
+                    // Зберігаємо профіль та магазин
+                    if (authData.user) {
+                        // Оновлюємо ім'я в таблиці profiles
+                        await sb.from('profiles').upsert([{ 
+                            id: authData.user.id, 
+                            full_name: ownerName 
+                        }]);
+
+                        // Створюємо магазин
+                        const { error: dbErr } = await sb.from('shops').insert([{
+                            owner_id: authData.user.id,
+                            shop_name: shopName,
+                            theme_color: 'dark',
+                            is_demo: false
+                        }]);
+                        if (dbErr) throw dbErr;
+                    }
+
+                    showStatus("✅ Магазин створено! Відкриваємо кабінет...", false);
+                    setTimeout(() => window.location.href = 'cabinet.html', 1500);
+                }
+            } catch (err) {
+                showStatus("❌ Помилка: " + (err.message || "Щось пішло не так"));
+                btn.disabled = false;
+                btn.innerText = isLoginMode ? '🔑 УВІЙТИ В КАБІНЕТ' : '🚀 СТВОРИТИ МАГАЗИН';
+            }
+        }
+    </script>
+</body>
+</html>
