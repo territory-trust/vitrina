@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI-Pilot | Вітрина Магазину</title>
+    <title>AI-Pilot | Вітрина</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ + СЕРЕДНІЙ ШРИФТ */
+        /* БАГАТИЙ ОКСАМИТОВИЙ СТИЛЬ */
         :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --text: #e5e7eb; --border: #2a2e35; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 140px; font-size: 16px; }
         
@@ -16,15 +16,11 @@
         .logo { color: var(--olive); font-size: 22px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;}
         .search-box { width: calc(100% - 30px); margin: 0 15px; padding: 14px; border-radius: 10px; background: #000; color: #fff; border: 1px solid var(--olive); outline: none; box-sizing: border-box; font-size: 16px;}
         
-        /* Кнопки покупця (Ті самі 3 обов'язкові) */
         .customer-btns { display: flex; gap: 8px; flex-wrap: wrap; }
         .head-btn { background: #1c2128; color: var(--olive); border: 1px solid var(--olive); padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 4px 0 #111; transition: 0.1s; }
         .head-btn:active { transform: translateY(2px); box-shadow: none; }
         .head-btn.smart { border-color: #fff; color: #fff; }
         .head-btn.crypto { background: linear-gradient(180deg, #2a2e35 0%, #14171c 100%); color: #f3ba2f; border-color: #f3ba2f; }
-
-        /* Кнопка власника */
-        #admin-btn { display: none; background: #222; color: #fff; border: 1px solid #555; padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; width: 100%; text-align: center; margin-top: 5px; }
 
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 10px 15px 0; scrollbar-width: none; }
         .nav-scroll::-webkit-scrollbar { display: none; }
@@ -52,21 +48,20 @@
 
 <div class="sticky-header">
     <div class="header-content">
-        <div class="logo" id="shopLogo">Вітрина</div>
+        <div class="logo" id="shopLogo">SmartMarket</div>
         
         <div class="customer-btns">
             <a href="https://ai-pilot.com.ua/" class="head-btn smart">SmartMarket</a>
             <a href="ai_hub.html" class="head-btn">🤖 AI-Помічники</a>
             <a href="#" class="head-btn crypto">💎 Зведення криптовалют</a>
         </div>
-        <a href="cabinet.html" id="admin-btn">🔑 Повернутися в Кабінет (Власник)</a>
     </div>
     
     <input type="text" id="search" class="search-box" placeholder="🔍 Пошук товарів..." oninput="filter()">
     
     <div class="nav-scroll" id="cat-container">
         <button class="cat-btn active" onclick="setCat('Все', this)">Всі товари</button>
-        </div>
+    </div>
 </div>
 
 <div class="grid" id="grid">
@@ -77,27 +72,35 @@
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
 
-    window.onload = () => {
-        // Перевірка чи зайшов власник
-        if (localStorage.getItem('is_admin') === 'true') {
-            document.getElementById('admin-btn').style.display = 'block';
-        }
-        load();
-    };
+    window.onload = async () => {
+        // Читаємо ID власника з посилання
+        const urlParams = new URLSearchParams(window.location.search);
+        const ownerId = urlParams.get('owner');
 
-    async function load() {
-        // У майбутньому тут буде фільтр по shop_id з URL, зараз вантажимо всі доступні
-        const { data } = await sb.from('products').select('*').in('status', ['В наявності', 'available']).order('created_at', { ascending: false });
+        let query = sb.from('products').select('*').in('status', ['В наявності', 'available']).order('created_at', { ascending: false });
+        
+        if (ownerId) {
+            // Якщо є ID, фільтруємо товари тільки цього продавця
+            query = query.eq('owner_id', ownerId);
+            
+            // Дізнаємось назву магазину з бази
+            const { data: shopData } = await sb.from('shops').select('shop_name').eq('owner_id', ownerId).single();
+            if(shopData && shopData.shop_name) {
+                document.getElementById('shopLogo').innerText = shopData.shop_name;
+                document.title = `${shopData.shop_name} | Магазин`;
+            }
+        }
+
+        const { data } = await query;
         if(data) { 
             items = data; 
             renderCats(items);
             render(items); 
         }
-    }
+    };
 
     function renderCats(list) {
         const container = document.getElementById('cat-container');
-        // Отримуємо унікальні категорії
         const cats = [...new Set(list.map(i => i.category).filter(Boolean))];
         cats.forEach(c => {
             container.innerHTML += `<button class="cat-btn" onclick="setCat('${c}', this)">${c}</button>`;
@@ -106,12 +109,10 @@
 
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
-        if(list.length === 0) return g.innerHTML = `<div class="empty-state"><h3>😕 Нічого не знайдено</h3></div>`;
+        if(list.length === 0) return g.innerHTML = `<div class="empty-state"><h3>😕 Товарів поки немає</h3></div>`;
 
         list.forEach(p => {
-            // Підтримка старої та нової структури зображень
             let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || '';
-            
             g.innerHTML += `
                 <div class="card">
                     <div class="main-p"><img src="${imgUrl}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"></div>
