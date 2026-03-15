@@ -84,7 +84,6 @@
         <div id="tab-inventory" class="section">
             <h2>📦 Склад</h2>
             <div class="input-group"><input type="text" placeholder="🔎 Пошук по складу..."></div>
-            <p style="text-align:center; color:#666;">Товари завантажуються...</p>
         </div>
 
         <div id="tab-agents" class="section active">
@@ -96,7 +95,7 @@
             
             <div class="input-group">
                 <label>Ціна продажу (грн):</label>
-                <input type="number" id="price" placeholder="Наприклад: 1500">
+                <input type="number" id="price" placeholder="Наприклад: 30">
             </div>
 
             <label>1. Головне фото:</label>
@@ -165,8 +164,8 @@
             const file = document.getElementById(inputId).files[0];
             if(file) {
                 selectedFiles[index - 1] = file;
-                const active = document.getElementById(inputId.includes('cam') ? camId : galId);
                 document.getElementById(camId).innerHTML = '📷 Камера'; document.getElementById(galId).innerHTML = '🖼 Галерея';
+                const active = document.getElementById(inputId.includes('cam') ? camId : galId);
                 active.innerHTML = '✅ Є фото';
             }
         }
@@ -223,10 +222,12 @@
                 const imagesArray = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз Gemini 3 Flash...");
-                const promptText = `JSON: {"title": "назва", "category": "категорія", "description": "опис", "rec_price": "ціна"}. Укр мова.`;
+                const promptText = `Ти - експерт. Проаналізуй фото та поверни СУВОРО JSON: {"title": "назва", "category": "категорія", "description": "опис", "rec_price": 100}. Мова українська.`;
 
                 const parts = [{ text: promptText }];
                 if(c1) parts.push({ inline_data: { mime_type: "image/jpeg", data: c1.b64 } });
+                if(c2) parts.push({ inline_data: { mime_type: "image/jpeg", data: c2.b64 } });
+                if(c3) parts.push({ inline_data: { mime_type: "image/jpeg", data: c3.b64 } });
 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${k}`, {
                     method: "POST", headers: {"Content-Type":"application/json"},
@@ -234,22 +235,26 @@
                 });
 
                 const d = await res.json();
+                if (!d.candidates || !d.candidates[0]) throw new Error("AI не повернув результат. Перевірте ключ.");
+                
                 const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/gi, '').trim();
                 const ai = JSON.parse(raw);
                 
                 if(!pr) pr = ai.rec_price;
 
                 log("💾 Збереження...");
-                const { data: newProduct } = await sb.from('products').insert([{
+                const { data: newProduct, error: pErr } = await sb.from('products').insert([{
                     title: ai.title, category: ai.category, price: parseFloat(pr),
                     images: imagesArray, status: 'available', owner_id: currentUser.id
                 }]).select();
 
-                if (newProduct) {
+                if (pErr) throw pErr;
+
+                if (newProduct && newProduct[0]) {
                     await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: ai.description }]);
                 }
 
-                log("✅ УСПІШНО!");
+                log("✅ УСПІШНО! Товар на вітрині.");
                 btn.disabled = false;
             } catch(e) { log("❌ Помилка: " + e.message); btn.disabled = false; }
         }
