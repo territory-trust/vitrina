@@ -22,7 +22,7 @@
             z-index: 1000; backdrop-filter: blur(10px); padding: 15px 20px; box-sizing: border-box;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .shop-title { color: var(--olive); font-size: 22px; font-weight: bold; margin: 0; }
+        .shop-title { color: var(--olive); font-size: 20px; font-weight: bold; margin: 0; text-transform: uppercase;}
         .header-links a { color: #ccc; text-decoration: none; font-size: 16px; border: 1px solid #555; padding: 5px 10px; border-radius: 6px; }
 
         .container { max-width: 800px; margin: 0 auto; padding: 15px; }
@@ -30,15 +30,15 @@
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-top: 0; color: #fff; }
+        h2 { font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-top: 0; color: #fff; display: flex; align-items: center; gap: 8px;}
 
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: #ccc; font-weight: 500; font-size: 16px; }
-        input[type="text"], input[type="password"], input[type="number"], select {
+        input[type="text"], input[type="password"], input[type="number"], select, textarea {
             width: 100%; padding: 14px; background: #000; border: 1px solid #555;
             color: #fff; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box;
         }
-        input:focus { border-color: var(--olive); }
+        input:focus, textarea:focus { border-color: var(--olive); }
 
         .btn-3d {
             background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%);
@@ -71,6 +71,12 @@
         }
         .nav-item.active { color: var(--olive); font-weight: bold; }
         .nav-icon { font-size: 22px; }
+
+        /* Стилі для чату підтримки */
+        .chat-box { background: #000; border: 1px solid #333; border-radius: 8px; height: 200px; overflow-y: auto; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 12px; font-size: 15px; max-width: 80%; }
+        .msg.admin { background: #1a2e1a; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg.user { background: #333; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
     </style>
 </head>
 <body>
@@ -84,7 +90,7 @@
         <div id="tab-inventory" class="section"><h2>📦 Склад</h2></div>
 
         <div id="tab-agents" class="section active">
-            <h2>🤖 AI-Аналізатор (Gemini 3 Flash)</h2>
+            <h2>➕ НОВИЙ ТОВАР</h2>
             <div class="input-group">
                 <label>Google API Key:</label>
                 <input type="password" id="apiKey" placeholder="Вставте ключ...">
@@ -119,12 +125,26 @@
 
         <div id="tab-orders" class="section"><h2>📑 Замовлення</h2></div>
         <div id="tab-stats" class="section"><h2>📊 Статистика</h2></div>
-        <div id="tab-settings" class="section"><h2>⚙️ Налаштування</h2></div>
+        
+        <div id="tab-settings" class="section">
+            <h2>⚙️ Налаштування</h2>
+            
+            <div style="background: var(--panel); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-top: 20px;">
+                <h3 style="margin-top: 0; color: #fff; font-size: 18px;">💬 Чат з підтримкою (Адміністратор)</h3>
+                <div class="chat-box" id="chatBox">
+                    <div class="msg admin">Вітаємо у системі AI-Pilot! Якщо у вас є питання щодо налаштування магазину, напишіть сюди. Ми зв'яжемося з вами найближчим часом.</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="chatInput" placeholder="Ваше повідомлення..." style="margin-bottom: 0;">
+                    <button class="btn-3d" style="width: auto; padding: 0 20px;" onclick="sendSupportMsg()">✉️</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="bottom-nav">
         <button class="nav-item" onclick="switchTab('tab-inventory', this)"><span class="nav-icon">📦</span>Склад</button>
-        <button class="nav-item active" onclick="switchTab('tab-agents', this)"><span class="nav-icon">🤖</span>Агенти</button>
+        <button class="nav-item active" onclick="switchTab('tab-agents', this)"><span class="nav-icon">➕</span>Товар</button>
         <button class="nav-item" onclick="switchTab('tab-orders', this)"><span class="nav-icon">📑</span>Замовлення</button>
         <button class="nav-item" onclick="switchTab('tab-stats', this)"><span class="nav-icon">📊</span>Статист.</button>
         <button class="nav-item" onclick="switchTab('tab-settings', this)"><span class="nav-icon">⚙️</span>Налашт.</button>
@@ -144,7 +164,10 @@
                 currentUser = user;
                 document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
                 const { data: shop } = await sb.from('shops').select('shop_name').eq('owner_id', user.id).single();
-                if(shop) document.getElementById('cabinetTitle').innerText = shop.shop_name;
+                if(shop) {
+                    // Зміна формату заголовка
+                    document.getElementById('cabinetTitle').innerText = 'магазин ' + shop.shop_name;
+                }
             } else {
                 window.location.href = 'landing.html';
             }
@@ -171,6 +194,23 @@
         function log(msg) {
             const s = document.getElementById('status');
             s.style.display = 'block'; s.innerText += msg + '\n';
+        }
+
+        function sendSupportMsg() {
+            const input = document.getElementById('chatInput');
+            const val = input.value.trim();
+            if(!val) return;
+            
+            const box = document.getElementById('chatBox');
+            box.innerHTML += `<div class="msg user">${val}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+            
+            // Імітація автовідповіді бота (до підключення БД)
+            setTimeout(() => {
+                box.innerHTML += `<div class="msg admin">Дякуємо! Ваше звернення прийнято. Адміністратор зв'яжеться з вами.</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 1000);
         }
 
         async function compressImg(file) {
@@ -202,77 +242,8 @@
         }
 
         async function startAI() {
-            const btn = document.getElementById('mainBtn');
-            const k = document.getElementById('apiKey').value;
-            let pr = document.getElementById('price').value;
-            
-            if(!k || !selectedFiles[0]) return alert("Введіть ключ та фото!");
-            localStorage.setItem('gemini_key', k);
-            btn.disabled = true; document.getElementById('status').innerText = '';
-            
-            try {
-                log("⏳ Стиснення...");
-                const c1 = await compressImg(selectedFiles[0]);
-                const c2 = await compressImg(selectedFiles[1]);
-                const c3 = await compressImg(selectedFiles[2]);
-
-                log("☁️ Завантаження...");
-                const up = async (cObj, tag) => {
-                    if(!cObj) return null;
-                    const n = `${Date.now()}_${tag}.jpg`;
-                    await sb.storage.from('tyres').upload(n, cObj.file);
-                    return sb.storage.from('tyres').getPublicUrl(n).data.publicUrl;
-                };
-
-                const u1 = await up(c1, 'main');
-                const u2 = await up(c2, 'detail');
-                const u3 = await up(c3, 'label');
-                const imagesArray = [u1, u2, u3].filter(u => u);
-
-                log("🧠 Аналіз Gemini 3 Flash...");
-                const promptText = "Ти експерт. Проаналізуй фото та поверни JSON: {\"title\": \"назва\", \"category\": \"категорія\", \"description\": \"опис\", \"rec_price\": 100}. Мова українська. Суворий JSON.";
-
-                const contents = [{
-                    parts: [
-                        { text: promptText },
-                        ...(c1 ? [{ inline_data: { mime_type: "image/jpeg", data: c1.b64 } }] : []),
-                        ...(c2 ? [{ inline_data: { mime_type: "image/jpeg", data: c2.b64 } }] : []),
-                        ...(c3 ? [{ inline_data: { mime_type: "image/jpeg", data: c3.b64 } }] : [])
-                    ]
-                }];
-
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${k}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents })
-                });
-
-                const d = await res.json();
-                if (!d.candidates || !d.candidates[0]) throw new Error("AI не відповів. Перевірте ключ.");
-                
-                const txt = d.candidates[0].content.parts[0].text.replace(/```json|```/gi, '').trim();
-                const ai = JSON.parse(txt);
-                
-                if(!pr) pr = ai.rec_price;
-
-                log("💾 Збереження...");
-                const { data: newProduct, error: pErr } = await sb.from('products').insert([{
-                    title: ai.title, category: ai.category, price: parseFloat(pr),
-                    images: imagesArray, status: 'available', owner_id: currentUser.id
-                }]).select();
-
-                if (pErr) throw pErr;
-
-                if (newProduct && newProduct[0]) {
-                    await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: ai.description }]);
-                }
-
-                log("✅ УСПІШНО!");
-                btn.disabled = false;
-            } catch(e) { 
-                log("❌ Помилка: " + e.message); 
-                btn.disabled = false; 
-            }
+            // ТУТ ЗАВТРА БУДЕ ВСТАВЛЕНО РОБОЧИЙ КОД ЗІ СТАРОГО МАГАЗИНУ ШИН
+            alert("Код AI-генерації буде інтегровано завтра з робочого файлу.");
         }
     </script>
 </body>
