@@ -76,6 +76,16 @@
         .msg { padding: 10px 15px; border-radius: 12px; font-size: 15px; max-width: 80%; }
         .msg.admin { background: #1a2e1a; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
         .msg.user { background: #333; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        /* Стилі для Складу */
+        .inv-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        .inv-img { width: 60px; height: 60px; border-radius: 6px; object-fit: cover; background: #222; }
+        .inv-info { flex: 1; }
+        .inv-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .inv-cat { font-size: 12px; color: #888; }
+        .inv-controls { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+        .inv-input { width: 80px; padding: 6px; background: #111; border: 1px solid #444; color: var(--olive); font-weight: bold; border-radius: 4px; text-align: right; font-size: 14px;}
+        .inv-qr { background: #222; border: 1px solid #555; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;}
     </style>
 </head>
 <body>
@@ -86,7 +96,15 @@
     </div>
 
     <div class="container">
-        <div id="tab-inventory" class="section"><h2>📦 Склад</h2></div>
+        <div id="tab-inventory" class="section">
+            <h2>📦 Склад та Керування</h2>
+            <div class="input-group">
+                <input type="text" id="searchInv" placeholder="🔎 Пошук по складу..." oninput="filterInventory()">
+            </div>
+            <div id="inventoryList" style="margin-top: 15px;">
+                <p style="text-align:center; color:#666;">Завантаження складу...</p>
+            </div>
+        </div>
 
         <div id="tab-agents" class="section active">
             <h2>➕ НОВИЙ ТОВАР</h2>
@@ -95,9 +113,15 @@
                 <input type="password" id="apiKey" placeholder="Вставте ключ...">
             </div>
             
-            <div class="input-group">
-                <label>Ціна продажу (грн): <br><small style="color:#666">Залиште порожнім, щоб ІІ оцінив сам</small></label>
-                <input type="number" id="price" placeholder="Наприклад: 30">
+            <div style="display: flex; gap: 10px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Ціна (грн):</label>
+                    <input type="number" id="price" placeholder="Авто">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>Кількість (шт):</label>
+                    <input type="number" id="qty" placeholder="1" value="1">
+                </div>
             </div>
 
             <label>1. Головне фото (Загальний вигляд):</label>
@@ -152,6 +176,7 @@
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null];
         let currentUser = null;
+        let inventoryData = [];
 
         window.onload = async () => {
             const savedKey = localStorage.getItem('gemini_key');
@@ -162,9 +187,10 @@
                 currentUser = user;
                 document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
                 const { data: shop } = await sb.from('shops').select('shop_name').eq('owner_id', user.id).single();
-                if(shop) {
-                    document.getElementById('cabinetTitle').innerText = 'магазин ' + shop.shop_name;
-                }
+                if(shop) document.getElementById('cabinetTitle').innerText = 'магазин ' + shop.shop_name;
+                
+                // Завантажуємо склад при вході
+                loadInventory();
             } else {
                 window.location.href = 'landing.html';
             }
@@ -175,7 +201,63 @@
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             btnElement.classList.add('active');
             document.getElementById(tabId).classList.add('active');
+            if(tabId === 'tab-inventory') loadInventory();
         }
+
+        // --- ЛОГІКА СКЛАДУ ---
+        async function loadInventory() {
+            if(!currentUser) return;
+            const { data, error } = await sb.from('products').select('*').eq('owner_id', currentUser.id).order('created_at', { ascending: false });
+            if(data) {
+                inventoryData = data;
+                renderInventory(inventoryData);
+            }
+        }
+
+        function renderInventory(list) {
+            const listEl = document.getElementById('inventoryList');
+            listEl.innerHTML = '';
+            if(list.length === 0) {
+                listEl.innerHTML = '<p style="text-align:center; color:#666;">Склад порожній. Додайте перший товар!</p>';
+                return;
+            }
+
+            list.forEach(p => {
+                let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                listEl.innerHTML += `
+                    <div class="inv-item">
+                        <img src="${imgUrl}" class="inv-img">
+                        <div class="inv-info">
+                            <div class="inv-title">${p.title || 'Без назви'}</div>
+                            <div class="inv-cat">${p.category || 'Без категорії'}</div>
+                            <button class="inv-qr" onclick="printQR('${p.id}')">🖨️ Друк QR</button>
+                        </div>
+                        <div class="inv-controls">
+                            <input type="number" class="inv-input" value="${p.price}" onchange="updateDb('${p.id}', 'price', this.value)" title="Ціна (грн)">
+                            <input type="number" class="inv-input" style="color:#fff;" value="${p.quantity || 0}" onchange="updateDb('${p.id}', 'quantity', this.value)" title="Кількість (шт)">
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterInventory() {
+            const q = document.getElementById('searchInv').value.toLowerCase();
+            const filtered = inventoryData.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q));
+            renderInventory(filtered);
+        }
+
+        async function updateDb(id, field, value) {
+            const numVal = parseFloat(value);
+            const { error } = await sb.from('products').update({ [field]: numVal }).eq('id', id);
+            if(error) alert('Помилка оновлення: ' + error.message);
+        }
+
+        function printQR(id) {
+            // Заглушка для майбутнього підключення міні-принтера по Bluetooth
+            alert("Функція підключення до міні-принтера для генерації QR коду товару ID: " + id + "\nБуде реалізовано у наступному оновленні.");
+        }
+        // ---------------------
 
         function updLbl(camId, galId, inputId, index) { 
             const file = document.getElementById(inputId).files[0];
@@ -211,24 +293,20 @@
         async function compressImg(file) {
             if(!file) return null;
             return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
+                const reader = new FileReader(); reader.readAsDataURL(file);
                 reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
+                    const img = new Image(); img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const MAX_WIDTH = 800; 
                         let width = img.width; let height = img.height;
                         if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
                         else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
+                        canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         canvas.toBlob((blob) => {
                             const newFile = new File([blob], file.name, { type: 'image/jpeg' });
-                            const reader2 = new FileReader();
-                            reader2.readAsDataURL(blob);
+                            const reader2 = new FileReader(); reader2.readAsDataURL(blob);
                             reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] });
                         }, 'image/jpeg', 0.7); 
                     };
@@ -240,6 +318,7 @@
             const btn = document.getElementById('mainBtn');
             const k = document.getElementById('apiKey').value;
             let pr = document.getElementById('price').value;
+            let qt = document.getElementById('qty').value || 1; // Беремо кількість
             
             if(!k || !selectedFiles[0]) return alert("Введіть ключ та хоча б Головне фото (1)!");
             if(!currentUser) return alert("Помилка авторизації. Перезавантажте сторінку.");
@@ -249,9 +328,7 @@
             
             try {
                 log("⏳ Оптимізація фотографій...");
-                const c1 = await compressImg(selectedFiles[0]);
-                const c2 = await compressImg(selectedFiles[1]);
-                const c3 = await compressImg(selectedFiles[2]);
+                const c1 = await compressImg(selectedFiles[0]); const c2 = await compressImg(selectedFiles[1]); const c3 = await compressImg(selectedFiles[2]);
 
                 log("☁️ Завантаження у сховище...");
                 const up = async (cObj, tag) => {
@@ -262,9 +339,7 @@
                     return sb.storage.from('tyres').getPublicUrl(n).data.publicUrl;
                 };
 
-                const u1 = await up(c1, 'main');
-                const u2 = await up(c2, 'detail');
-                const u3 = await up(c3, 'label');
+                const u1 = await up(c1, 'main'); const u2 = await up(c2, 'detail'); const u3 = await up(c3, 'label');
                 const imagesArray = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ (Генерація продаючого контенту)...");
@@ -282,8 +357,7 @@
                     ]
                 }];
 
-                // Повернули Gemini 3 Flash за твоїм запитом
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${k}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`, {
                     method: "POST", headers: {"Content-Type":"application/json"},
                     body: JSON.stringify({ contents })
                 });
@@ -304,7 +378,7 @@
                 log("💾 Збереження товару в базу даних...");
                 
                 const { data: newProduct, error: dbErr } = await sb.from('products').insert([{
-                    title: ai.title, category: ai.category, price: parseFloat(pr),
+                    title: ai.title, category: ai.category, price: parseFloat(pr), quantity: parseInt(qt), // Записуємо кількість
                     images: imagesArray, status: 'available', owner_id: currentUser.id
                 }]).select();
 
@@ -314,13 +388,14 @@
                     await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: ai.description }]);
                 }
 
-                log("✅ УСПІШНО! Товар вже на вашій вітрині.");
-                document.getElementById('price').value = ''; selectedFiles = [null, null, null];
+                log("✅ УСПІШНО! Товар вже на вашій вітрині та складі.");
+                document.getElementById('price').value = ''; document.getElementById('qty').value = '1'; selectedFiles = [null, null, null];
                 document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
                 ['l1','l2','l3'].forEach(id => {
                     document.getElementById(id+'_cam').style.background = '#000'; document.getElementById(id+'_cam').innerHTML = '📷 Камера';
                     document.getElementById(id+'_gal').style.background = '#000'; document.getElementById(id+'_gal').innerHTML = '🖼 Галерея';
                 });
+                loadInventory(); // Оновлюємо склад
                 setTimeout(() => btn.disabled = false, 2000);
             } catch(e) { log("❌ Помилка: " + e.message, true); btn.disabled = false; }
         }
