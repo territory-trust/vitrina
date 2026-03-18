@@ -77,22 +77,22 @@
         .msg.admin { background: #1a2e1a; color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
         .msg.user { background: #333; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
 
-        /* Оновлені стилі для Складу */
-        .inv-item { background: #000; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; }
-        .inv-img { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; background: #222; border: 1px solid #333;}
-        .inv-info { flex: 1; }
-        .inv-title { font-weight: bold; font-size: 16px; margin-bottom: 6px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
-        .inv-cat { font-size: 13px; color: #888; margin-bottom: 8px;}
-        .inv-qr { background: #1a1e24; border: 1px solid #444; color: #ccc; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;}
+        /* ОНОВЛЕНІ КОМПАКТНІ СТИЛІ ДЛЯ СКЛАДУ */
+        .inv-item { background: #000; border: 1px solid #333; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+        .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+        .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #222; border: 1px solid #333; flex-shrink: 0; }
+        .inv-info { flex: 1; overflow: hidden; }
+        .inv-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+        .inv-cat { font-size: 12px; color: #888; margin-bottom: 6px; }
+        .inv-qr { background: #1a1e24; border: 1px solid #444; color: #ccc; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: 0.2s; }
         .inv-qr:active { background: #2a2e35; }
         
-        /* Блок управління ціною та кількістю */
-        .inv-controls { display: flex; flex-direction: column; gap: 8px; min-width: 110px; }
-        .inv-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-        .inv-label { font-size: 13px; color: #888; }
-        .inv-input { width: 65px; padding: 6px; background: #111; border: 1px solid #444; color: var(--olive); font-weight: bold; border-radius: 6px; text-align: center; font-size: 15px; outline: none; transition: 0.2s;}
+        .inv-actions { display: flex; gap: 8px; align-items: flex-end; border-top: 1px solid #222; padding-top: 12px; }
+        .inv-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .inv-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .inv-input { width: 100%; padding: 10px 5px; background: #111; border: 1px solid #444; color: var(--olive); font-weight: bold; border-radius: 6px; text-align: center; font-size: 15px; outline: none; box-sizing: border-box; }
         .inv-input:focus { border-color: var(--olive); }
-        .inv-save-btn { background: var(--olive); color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; width: 100%; box-shadow: 0 2px 0 #2c3818;}
+        .inv-save-btn { flex: 1.2; background: var(--olive); color: #fff; border: none; padding: 10px 5px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 #2c3818; box-sizing: border-box; height: 41px; }
         .inv-save-btn:active { transform: translateY(2px); box-shadow: none; }
         .inv-save-btn:disabled { opacity: 0.7; cursor: wait; }
     </style>
@@ -108,7 +108,7 @@
         <div id="tab-inventory" class="section">
             <h2>📦 Склад та Керування</h2>
             <div class="input-group">
-                <input type="text" id="searchInv" placeholder="🔎 Пошук по складу..." oninput="filterInventory()" autocomplete="off" spellcheck="false">
+                <input type="text" id="searchInv" name="fake_search" placeholder="🔎 Пошук по складу..." oninput="filterInventory()" autocomplete="new-password" spellcheck="false">
             </div>
             <div id="inventoryList" style="margin-top: 15px;">
                 <p style="text-align:center; color:#666;">Завантаження складу...</p>
@@ -119,17 +119,17 @@
             <h2>➕ НОВИЙ ТОВАР</h2>
             <div class="input-group">
                 <label>Google API Key (зберігається):</label>
-                <input type="password" id="apiKey" placeholder="Вставте ключ...">
+                <input type="password" id="apiKey" name="fake_apikey" autocomplete="new-password" placeholder="Вставте ключ...">
             </div>
             
             <div style="display: flex; gap: 10px;">
                 <div class="input-group" style="flex: 1;">
                     <label>Ціна (грн):</label>
-                    <input type="number" id="price" placeholder="Авто">
+                    <input type="number" id="price" name="fake_price" autocomplete="new-password" placeholder="Авто">
                 </div>
                 <div class="input-group" style="flex: 1;">
                     <label>Кількість (шт):</label>
-                    <input type="number" id="qty" placeholder="1" value="1">
+                    <input type="number" id="qty" name="fake_qty" autocomplete="new-password" placeholder="1" value="1">
                 </div>
             </div>
 
@@ -166,7 +166,7 @@
                     <div class="msg admin">Вітаємо у системі AI-Pilot! Якщо у вас є питання щодо налаштування магазину, напишіть сюди. Ми зв'яжемося з вами найближчим часом.</div>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <input type="text" id="chatInput" placeholder="Ваше повідомлення..." style="margin-bottom: 0;" autocomplete="off">
+                    <input type="text" id="chatInput" placeholder="Ваше повідомлення..." style="margin-bottom: 0;" autocomplete="new-password" name="fake_chat">
                     <button class="btn-3d" style="width: auto; padding: 0 20px;" onclick="sendSupportMsg()">✉️</button>
                 </div>
             </div>
@@ -212,7 +212,7 @@
             if(tabId === 'tab-inventory') loadInventory();
         }
 
-        // --- ЛОГІКА СКЛАДУ З КНОПКОЮ ЗБЕРЕЖЕННЯ ---
+        // --- ЛОГІКА СКЛАДУ ---
         async function loadInventory() {
             if(!currentUser) return;
             const { data, error } = await sb.from('products').select('*').eq('owner_id', currentUser.id).order('created_at', { ascending: false });
@@ -234,20 +234,22 @@
                 let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
                 listEl.innerHTML += `
                     <div class="inv-item">
-                        <img src="${imgUrl}" class="inv-img">
-                        <div class="inv-info">
-                            <div class="inv-title">${p.title || 'Без назви'}</div>
-                            <div class="inv-cat">${p.category || 'Без категорії'}</div>
-                            <button class="inv-qr" onclick="printQR('${p.id}')">🖨️ Друк QR</button>
-                        </div>
-                        <div class="inv-controls">
-                            <div class="inv-row">
-                                <span class="inv-label">Ціна:</span>
-                                <input type="number" class="inv-input" id="price_${p.id}" value="${p.price}">
+                        <div class="inv-top">
+                            <img src="${imgUrl}" class="inv-img">
+                            <div class="inv-info">
+                                <div class="inv-title">${p.title || 'Без назви'}</div>
+                                <div class="inv-cat">${p.category || 'Без категорії'}</div>
+                                <button class="inv-qr" onclick="printQR('${p.id}')">🖨️ Друк QR</button>
                             </div>
-                            <div class="inv-row">
-                                <span class="inv-label">Залишок:</span>
-                                <input type="number" class="inv-input" style="color:#fff;" id="qty_${p.id}" value="${p.quantity || 0}">
+                        </div>
+                        <div class="inv-actions">
+                            <div class="inv-col">
+                                <span class="inv-label">Ціна (грн)</span>
+                                <input type="number" class="inv-input" id="price_${p.id}" value="${p.price}" autocomplete="new-password" name="p_${p.id}">
+                            </div>
+                            <div class="inv-col">
+                                <span class="inv-label">Залишок</span>
+                                <input type="number" class="inv-input" style="color:#fff;" id="qty_${p.id}" value="${p.quantity || 0}" autocomplete="new-password" name="q_${p.id}">
                             </div>
                             <button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">💾 Зберегти</button>
                         </div>
@@ -280,11 +282,9 @@
                 btn.innerHTML = '💾 Зберегти';
                 btn.disabled = false;
             } else {
-                // Анімація успіху
                 btn.innerHTML = '✅ Збережено';
                 btn.style.background = '#1a2e1a';
                 
-                // Оновлюємо локальний масив
                 const item = inventoryData.find(i => i.id === id);
                 if(item) { item.price = pr; item.quantity = qt; }
                 
@@ -299,7 +299,6 @@
         function printQR(id) {
             alert("Функція підключення до міні-принтера для генерації QR коду товару ID: " + id + "\nБуде реалізовано у наступному оновленні.");
         }
-        // ---------------------
 
         function updLbl(camId, galId, inputId, index) { 
             const file = document.getElementById(inputId).files[0];
