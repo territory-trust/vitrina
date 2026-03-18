@@ -133,7 +133,8 @@
     let items = [];
 
     async function load() {
-        const { data, error } = await sb.from('products').select('*, ai_content(fancy_description)').order('id', { ascending: false });
+        // Добавлен фильтр .is('owner_id', null), чтобы отсечь товары продавцов
+        const { data, error } = await sb.from('products').select('*, ai_content(fancy_description)').is('owner_id', null).order('id', { ascending: false });
         if (data && data.length > 0) { 
             // АРХІТЕКТУРНИЙ ЩИТ: Відфільтровуємо тестові товари Comfy, щоб вони не потрапляли на оригінальну вітрину
             items = data.filter(item => !item.product_url || !item.product_url.includes('comfy.ua'));
