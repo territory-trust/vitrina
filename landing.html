@@ -7,19 +7,81 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --text: #e5e7eb; --border: #2a2e35; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
-        .card { background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--border); width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: var(--olive); text-align: center; margin-top: 0; font-size: 28px; text-transform: uppercase; letter-spacing: 1px; }
-        p { text-align: center; color: #888; font-size: 16px; margin-bottom: 30px; }
+        :root { 
+            --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; 
+            --olive-light: rgba(107, 135, 59, 0.7); /* Напівпрозорий для рамки */
+            --text: #e5e7eb; --border: #2a2e35; 
+        }
+        
+        body { 
+            background: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; padding: 20px; box-sizing: border-box; 
+        }
+        
+        .card { 
+            background: var(--panel); padding: 40px; border-radius: 24px; 
+            border: 1px solid var(--border); width: 100%; max-width: 440px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+        }
+        
+        /* 1. СТИЛІЗАЦІЯ БРЕНДУ */
+        h1 { 
+            color: var(--olive); text-align: center; margin-top: 0; 
+            font-size: 34px; /* Збільшив розмір */
+            font-weight: 900; /* Максимальна жирність */
+            text-transform: uppercase; 
+            letter-spacing: 2.5px; /* Більший відступ між буквами */
+            /* Легке неонове світіння */
+            text-shadow: 0 0 10px rgba(107, 135, 59, 0.4); 
+            margin-bottom: 10px;
+        }
+        
+        /* 2. СТИЛІЗАЦІЯ ПІДЗАГОЛОВКА */
+        p { 
+            text-align: center; 
+            color: #aaa; /* Зробив світлішим для контрасту */
+            font-size: 18px; /* Збільшив розмір */
+            margin-bottom: 35px; 
+            line-height: 1.5; /* Покращив читаність */
+        }
+        
         label { display: block; margin-bottom: 8px; color: #ccc; font-weight: 500; font-size: 16px; }
-        input { width: 100%; padding: 15px; background: #000; border: 1px solid #444; color: #fff; border-radius: 10px; font-size: 18px; margin-bottom: 20px; outline: none; box-sizing: border-box; transition: 0.3s; }
-        input:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.3); }
-        .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, #465926 100%); color: #fff; padding: 16px; border-radius: 10px; font-weight: bold; font-size: 18px; border: none; cursor: pointer; box-shadow: 0 4px 0 #2c3818; width: 100%; display: block; text-align: center; transition: 0.1s; margin-top: 10px; }
+        
+        /* 3. ТОНЕНЬКА ЗЕЛЕНА РАМОЧКА ДЛЯ ПОЛІВ ВВОДУ */
+        input { 
+            width: 100%; padding: 16px; background: #000; 
+            border: 1px solid var(--olive-light); /* Завжди тонка зелена рамка */
+            color: #fff; border-radius: 12px; font-size: 18px; 
+            margin-bottom: 22px; outline: none; box-sizing: border-box; 
+            transition: 0.3s ease; 
+        }
+        
+        /* Ефект при фокусі (рамка стає яскравішою) */
+        input:focus { 
+            border-color: var(--olive); 
+            box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.3); 
+        }
+        
+        .btn-3d { 
+            background: linear-gradient(180deg, var(--olive) 0%, #465926 100%); 
+            color: #fff; padding: 18px; border-radius: 12px; 
+            font-weight: bold; font-size: 18px; border: none; cursor: pointer; 
+            box-shadow: 0 4px 0 #2c3818; width: 100%; display: block; 
+            text-align: center; transition: 0.1s ease; margin-top: 10px; 
+        }
         .btn-3d:active { transform: translateY(4px); box-shadow: none; }
-        .switch-mode { text-align: center; margin-top: 25px; color: #888; font-size: 16px; }
-        .switch-mode span { color: var(--olive); font-weight: bold; cursor: pointer; }
-        #errorMsg { color: #ff4444; text-align: center; margin-top: 15px; display: none; font-size: 14px; background: rgba(255, 68, 68, 0.1); padding: 10px; border-radius: 8px; }
+        .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        .switch-mode { text-align: center; margin-top: 30px; color: #888; font-size: 16px; }
+        .switch-mode span { color: var(--olive); font-weight: bold; cursor: pointer; text-decoration: underline;}
+        
+        #errorMsg { 
+            color: #ff4444; text-align: center; margin-top: 15px; 
+            display: none; font-size: 14px; background: rgba(255, 68, 68, 0.1); 
+            padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 68, 68, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -69,6 +131,7 @@
         document.getElementById('subtitle').innerText = isLogin ? 'Вхід у панель керування вашим магазином.' : 'Створіть розумний інтернет-магазин за 1 хвилину. Без складних реєстрацій.';
         document.getElementById('switchText').innerHTML = isLogin ? 'Новий користувач? <span onclick="toggleMode()">Створити магазин</span>' : 'Вже є магазин? <span onclick="toggleMode()">Увійти за телефоном</span>';
         document.getElementById('errorMsg').style.display = 'none';
+        window.scrollTo(0, 0);
     }
 
     function showError(msg) {
