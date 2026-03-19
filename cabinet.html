@@ -117,11 +117,6 @@
 
         <div id="tab-agents" class="section active">
             <h2>➕ НОВИЙ ТОВАР</h2>
-            <div class="input-group">
-                <label>Google API Key (зберігається):</label>
-                <input type="password" id="apiKey" name="fake_apikey" autocomplete="new-password" placeholder="Вставте ключ...">
-            </div>
-            
             <div style="display: flex; gap: 10px;">
                 <div class="input-group" style="flex: 1;">
                     <label>Ціна (грн):</label>
@@ -188,9 +183,6 @@
         let inventoryData = [];
 
         window.onload = async () => {
-            const savedKey = localStorage.getItem('gemini_key');
-            if(savedKey) document.getElementById('apiKey').value = savedKey;
-
             const { data: { user } } = await sb.auth.getUser();
             if (user) {
                 currentUser = user;
@@ -357,19 +349,19 @@
 
         async function startAI() {
             const btn = document.getElementById('mainBtn');
-            const k = document.getElementById('apiKey').value;
             let pr = document.getElementById('price').value;
             let qt = document.getElementById('qty').value || 1;
             
-            if(!k || !selectedFiles[0]) return alert("Введіть ключ та хоча б Головне фото (1)!");
+            if(!selectedFiles[0]) return alert("Завантажте хоча б Головне фото (1)!");
             if(!currentUser) return alert("Помилка авторизації. Перезавантажте сторінку.");
             
-            localStorage.setItem('gemini_key', k);
             btn.disabled = true; document.getElementById('status').innerText = '';
             
             try {
                 log("⏳ Оптимізація фотографій...");
-                const c1 = await compressImg(selectedFiles[0]); const c2 = await compressImg(selectedFiles[1]); const c3 = await compressImg(selectedFiles[2]);
+                const c1 = await compressImg(selectedFiles[0]); 
+                const c2 = await compressImg(selectedFiles[1]); 
+                const c3 = await compressImg(selectedFiles[2]);
 
                 log("☁️ Завантаження у сховище...");
                 const up = async (cObj, tag) => {
@@ -383,31 +375,25 @@
                 const u1 = await up(c1, 'main'); const u2 = await up(c2, 'detail'); const u3 = await up(c3, 'label');
                 const imagesArray = [u1, u2, u3].filter(url => url !== null);
 
-                log("🧠 Аналіз ІІ (Генерація продаючого контенту)...");
+                log("🧠 Аналіз ІІ через захищений сервер...");
                 const promptText = `Ти досвідчений експерт з продажу та маркетолог. Проаналізуй фото та поверни JSON: 
                 {"title": "Коротка, чітка комерційна назва", "category": "Визнач категорію (наприклад: Електроніка, Канцелярія, Взуття, Автотовар)",
                 "description": "Напиши об'ємний, продаючий опис. Розкажи про переваги. Використовуй емодзі та <br><br> для абзаців. Зроби текст візуально красивим та переконливим.", "rec_price": "Оціночна ринкова ціна (тільки цифра)"}. 
                 Мова: українська. Суворо правильний JSON без markdown-форматування та блоків \`\`\`json.`;
 
-                const contents = [{
-                    parts: [
-                        { text: promptText },
-                        ...(c1 ? [{ inline_data: { mime_type: "image/jpeg", data: c1.b64 } }] : []),
-                        ...(c2 ? [{ inline_data: { mime_type: "image/jpeg", data: c2.b64 } }] : []),
-                        ...(c3 ? [{ inline_data: { mime_type: "image/jpeg", data: c3.b64 } }] : [])
-                    ]
-                }];
-
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`, {
-                    method: "POST", headers: {"Content-Type":"application/json"},
-                    body: JSON.stringify({ contents })
+                // НОВА ЛОГІКА: Відправляємо запит до нашого серверного агента
+                const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', {
+                    body: {
+                        prompt: promptText,
+                        imageBase64: c1.b64 // Відправляємо головне фото для аналізу
+                    }
                 });
 
-                const d = await res.json();
-                if (d.error) throw new Error(d.error.message);
-                if (!d.candidates || !d.candidates[0]) throw new Error("AI не повернув результат. Перевірте ключ.");
-                
-                const raw = d.candidates[0].content.parts[0].text.replace(/```json|```/gi, '').trim();
+                if (aiError) throw new Error("Помилка Агента: " + aiError.message);
+                if (!aiResponse || !aiResponse.description) throw new Error("Агент повернув порожню відповідь.");
+
+                // Обробляємо текст, який повернув наш серверний агент
+                const raw = aiResponse.description.replace(/```json|```/gi, '').trim();
                 const ai = JSON.parse(raw);
                 
                 if(!pr) {
