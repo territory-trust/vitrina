@@ -16,27 +16,35 @@
         body { 
             background: var(--bg); color: var(--text); 
             font-family: 'Segoe UI', system-ui, sans-serif; 
-            margin: 0; display: flex; justify-content: center; align-items: center; 
-            height: 100vh; /* Жорстка прив'язка до висоти екрану */
-            padding: 15px; box-sizing: border-box; 
-            overflow: hidden; /* Ховаємо скрол, робимо як нативний додаток */
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; /* ПОДНЯТИ КАРТКУ ВГОРИ */
+            height: 100vh; /* Fixed height to match screen */
+            /* padding: 15px; */ /* УБРАТИ ПАДДИНГ, БО КАРТКА БУДЕ НА ВЕСЬ ЕКРАН */
+            box-sizing: border-box;
+            overflow: hidden; /* App-like, no scroll */
         }
         
         .card { 
             background: var(--panel); 
-            padding: 25px 20px; /* Зменшили внутрішні відступи для компактності */
+            padding: 10px 20px; /* ЗМЕНШИТИ ПАДДИНГ ДЛЯ КОМПАКТНОСТІ */
             border-radius: 20px; 
             border: 1px solid var(--border); 
             width: 100%; max-width: 440px; 
             box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
             box-sizing: border-box;
+            height: 100%; /* ЗАЙНЯТИ ВСЮ ВИСОТУ */
+            max-height: 100vh; /* СТРАХОВКА ВІД СКРОЛУ */
+            display: flex; /* РОЗПОДІЛИТИ КОНТЕНТ */
+            flex-direction: column;
         }
         
         .logo-img {
             max-width: 65%; /* Оптимізували розмір для економії місця */
             height: auto;
             display: block;
-            margin: 0 auto 10px auto; /* Підняли максимально високо */
+            margin: 0 auto 5px auto; /* ПІДНЯТИ МАКСИМАЛЬНО ВИЩЕ */
             filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6)); 
         }
         
@@ -47,7 +55,7 @@
             font-size: 16px; 
             font-weight: 500;
             margin-top: 0;
-            margin-bottom: 15px; 
+            margin-bottom: 10px; /* ЗМЕНШИТИ ВІДСТУП */
             line-height: 1.3; 
         }
         
@@ -78,12 +86,13 @@
             color: #fff; padding: 16px; border-radius: 12px; 
             font-weight: bold; font-size: 18px; border: none; cursor: pointer; 
             box-shadow: 0 4px 0 #2c3818; width: 100%; display: block; 
-            text-align: center; transition: 0.1s ease; margin-top: 5px; 
+            text-align: center; transition: 0.1s ease; margin-top: auto; /* ТОЛКНУТИ КНОПКУ І ПЕРЕМИКАЧ ВНИЗ */
         }
         .btn-3d:active { transform: translateY(4px); box-shadow: none; }
         .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         
-        .switch-mode { text-align: center; margin-top: 20px; color: #888; font-size: 15px; }
+        .switch-mode { text-align: center; margin-top: 10px; /* ДОДАТИ ВІДСТУП ВІД КНОПКИ */
+        color: #888; font-size: 15px; }
         .switch-mode span { color: var(--olive); font-weight: bold; cursor: pointer; text-decoration: underline;}
         
         #errorMsg { 
@@ -147,6 +156,7 @@
             ? 'Новий користувач? <span onclick="toggleMode()">Створити магазин</span>' 
             : 'Вже є магазин? <span onclick="toggleMode()">Увійти за телефоном</span>';
         document.getElementById('errorMsg').style.display = 'none';
+        /* window.scrollTo(0, 0); */ /* ЗАБОРОНИТИ СКРОЛ, БО КАРТКА НА ВЕСЬ ЕКРАН */
     }
 
     function showError(msg) {
