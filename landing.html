@@ -26,44 +26,42 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
         }
         
-        /* 1. СТИЛІЗАЦІЯ БРЕНДУ */
-        h1 { 
-            color: var(--olive); text-align: center; margin-top: 0; 
-            font-size: 34px; /* Збільшив розмір */
-            font-weight: 900; /* Максимальна жирність */
-            text-transform: uppercase; 
-            letter-spacing: 2.5px; /* Більший відступ між буквами */
-            /* Легке неонове світіння */
-            text-shadow: 0 0 10px rgba(107, 135, 59, 0.4); 
-            margin-bottom: 10px;
+        /* СТИЛІЗАЦІЯ НОВОГО ЛОГОТИПУ */
+        .logo-img {
+            max-width: 85%; /* Оптимальний розмір, щоб не було занадто громіздко */
+            height: auto;
+            display: block;
+            margin: 0 auto 20px auto; /* Центрування та відступ знизу */
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6)); /* Дорога тінь для металевого ефекту */
         }
         
-        /* 2. СТИЛІЗАЦІЯ ПІДЗАГОЛОВКА */
+        /* СТИЛІЗАЦІЯ ПІДЗАГОЛОВКА */
         p { 
             text-align: center; 
-            color: #aaa; /* Зробив світлішим для контрасту */
-            font-size: 18px; /* Збільшив розмір */
+            color: #aaa; 
+            font-size: 18px; /* Комфортний середній розмір */
             margin-bottom: 35px; 
-            line-height: 1.5; /* Покращив читаність */
+            line-height: 1.5; 
         }
         
         label { display: block; margin-bottom: 8px; color: #ccc; font-weight: 500; font-size: 16px; }
         
-        /* 3. ТОНЕНЬКА ЗЕЛЕНА РАМОЧКА ДЛЯ ПОЛІВ ВВОДУ */
+        /* ТОНЕНЬКА ЗЕЛЕНА РАМОЧКА ДЛЯ ПОЛІВ ВВОДУ */
         input { 
             width: 100%; padding: 16px; background: #000; 
-            border: 1px solid var(--olive-light); /* Завжди тонка зелена рамка */
+            border: 1px solid var(--olive-light); 
             color: #fff; border-radius: 12px; font-size: 18px; 
             margin-bottom: 22px; outline: none; box-sizing: border-box; 
             transition: 0.3s ease; 
         }
         
-        /* Ефект при фокусі (рамка стає яскравішою) */
+        /* Ефект при фокусі */
         input:focus { 
             border-color: var(--olive); 
             box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.3); 
         }
         
+        /* БАГАТА ОКСАМИТОВА КНОПКА (3D) */
         .btn-3d { 
             background: linear-gradient(180deg, var(--olive) 0%, #465926 100%); 
             color: #fff; padding: 18px; border-radius: 12px; 
@@ -87,7 +85,8 @@
 <body>
 
 <div class="card">
-    <h1>AI-PILOT SHOPS</h1>
+    <img src="logo.jpg" alt="AI-Pilot Shops" class="logo-img">
+    
     <p id="subtitle">Створіть розумний інтернет-магазин за 1 хвилину. Без складних реєстрацій.</p>
 
     <div id="registerFields">
