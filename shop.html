@@ -18,6 +18,9 @@
         body.theme-light .btn-read { color: #4b5563; border-color: #9ca3af; }
         body.theme-light .cat-btn.active { background: #eef2e6; }
         body.theme-light .shop-desc { color: #4b5563; }
+        body.theme-light .dropdown-content { background: #ffffff; border-color: #d1d5db; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body.theme-light .dropdown-content a { color: #111827; border-color: #e5e7eb; }
+        body.theme-light .dropdown-content a:hover { background: #f3f4f6; }
 
         /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) */
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --text: #334155; --border: #cbd5e1; --header-bg: rgba(245, 245, 245, 0.98); }
@@ -28,6 +31,9 @@
         body.theme-neutral .cat-btn.active { background: #e2e8f0; color: #475569; border-color: #94a3b8; }
         body.theme-neutral .btn-buy { background: #475569; border-color: #475569; box-shadow: 0 2px 0 #334155; }
         body.theme-neutral .shop-desc { color: #475569; }
+        body.theme-neutral .dropdown-content { background: #fafafa; border-color: #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        body.theme-neutral .dropdown-content a { color: #334155; border-color: #e2e8f0; }
+        body.theme-neutral .dropdown-content a:hover { background: #e2e8f0; }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 135px; font-size: 16px; transition: background 0.3s, color 0.3s; }
         
@@ -36,14 +42,20 @@
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px 8px; max-width: 900px; margin: auto; }
         .logo { color: var(--olive); font-size: 20px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap;}
         
-        .customer-btns { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-left: 10px; align-items: center; }
-        .customer-btns::-webkit-scrollbar { display: none; }
+        .customer-btns { display: flex; gap: 8px; overflow-x: visible; padding-left: 10px; align-items: center; }
         
-        .head-btn { background: #1a1e24; color: #aaa; border: 1px solid #333; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 12px; white-space: nowrap; transition: 0.2s; }
+        .head-btn { background: #1a1e24; color: #aaa; border: 1px solid #333; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 12px; white-space: nowrap; transition: 0.2s; cursor: pointer; }
         .head-btn:active { transform: scale(0.95); }
         .head-btn.smart { color: #fff; border-color: #555; }
-        .head-btn.crypto { color: #e5b53a; border-color: #8a6d22; }
         .head-btn.promo { background: var(--olive); color: #fff; border-color: var(--olive); }
+
+        /* ВИПАДАЮЧЕ МЕНЮ (Dropdown) */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: var(--panel); min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); z-index: 200; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; top: 100%; margin-top: 8px; }
+        .dropdown-content a { color: var(--text); padding: 14px 16px; text-decoration: none; display: block; font-size: 14px; border-bottom: 1px solid var(--border); font-weight: 500; }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover { background-color: rgba(255,255,255,0.05); }
+        .show { display: block; }
 
         .search-container { padding: 5px 15px; max-width: 900px; margin: auto; }
         .search-box { width: 100%; padding: 12px 16px; border-radius: 10px; background: #000; color: #fff; border: 1px solid var(--border); outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s;}
@@ -55,10 +67,8 @@
         .cat-btn.active { background: #1a2e1a; color: var(--olive); border-color: var(--olive); }
         
         /* ІНФО-БЛОК МАГАЗИНУ */
-        .shop-info-block { padding: 15px; max-width: 900px; margin: auto; }
-        .shop-desc { font-size: 14px; color: #aaa; margin-bottom: 10px; line-height: 1.4; }
-        .shop-contacts { display: flex; gap: 12px; flex-wrap: wrap; }
-        .contact-item { display: inline-flex; align-items: center; gap: 6px; color: var(--olive); text-decoration: none; font-weight: 600; font-size: 14px; background: rgba(107, 135, 59, 0.1); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(107, 135, 59, 0.2); }
+        .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
+        .shop-desc { font-size: 14px; color: #aaa; line-height: 1.4; background: var(--panel); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
 
         /* СІТКА */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 15px 20px; max-width: 900px; margin: auto; }
@@ -109,12 +119,31 @@
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = [];
+    let shopCategories = [];
+
+    // Логіка відкриття/закриття випадаючого меню
+    function toggleDropdown() {
+        document.getElementById("aiDropdown").classList.toggle("show");
+    }
+
+    // Закриття меню при кліку поза ним
+    window.onclick = function(event) {
+        if (!event.target.matches('.head-btn.dropdown-toggle')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
 
     window.onload = async () => {
         const urlParams = new URLSearchParams(window.location.search);
         const ownerId = urlParams.get('owner');
 
-        // 1. АВТОРИЗАЦІЯ ТА РОЛІ (Продавець чи Покупець)
+        // 1. АВТОРИЗАЦІЯ ТА РОЛІ
         const { data: { user } } = await sb.auth.getUser();
         const headerBtns = document.getElementById('headerBtns');
         
@@ -122,18 +151,23 @@
             // Режим Власника: Тільки кнопка повернення
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn promo">🔙 Назад у Кабінет</a>`;
         } else {
-            // Режим Покупця: Рекламний арсенал
+            // Режим Покупця: Створити магазин, SmartMarket та Бургер-меню
             headerBtns.innerHTML = `
-                <a href="landing.html" class="head-btn promo">🚀 Створити свій магазин</a>
-                <a href="https://ai-pilot.com.ua/" class="head-btn smart">SmartMarket</a>
-                <a href="ai_hub.html" class="head-btn">AI-Помічники</a>
-                <a href="#" class="head-btn crypto">Зведення криптовалют</a>
+                <a href="landing.html" class="head-btn promo">🚀 Створити магазин</a>
+                <a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a>
+                <div class="dropdown">
+                    <button onclick="toggleDropdown()" class="head-btn dropdown-toggle">🤖 AI-Помічники ☰</button>
+                    <div id="aiDropdown" class="dropdown-content">
+                        <a href="ai_hub.html">🧠 Каталог AI-Агентів</a>
+                        <a href="#">📈 Зведення криптовалют</a>
+                    </div>
+                </div>
             `;
         }
 
         let query;
 
-        // 2. ЗАВАНТАЖЕННЯ ДАНИХ ТА НАЛАШТУВАНЬ
+        // 2. ЗАВАНТАЖЕННЯ ДАНИХ МАГАЗИНУ
         if (ownerId) {
             query = sb.from('products').select('*')
                       .eq('owner_id', ownerId)
@@ -153,24 +187,16 @@
                     document.body.classList.add('theme-' + shopData.theme_color);
                 }
 
-                // Інфо-блок (Опис та контакти)
-                let infoHtml = '';
+                // Зберігаємо жорсткі категорії з налаштувань
+                if(shopData.categories) {
+                    shopCategories = shopData.categories.split(',').map(c => c.trim()).filter(Boolean);
+                }
+
+                // Опис магазину (без контактів)
                 if(shopData.description) {
-                    infoHtml += `<div class="shop-desc">${shopData.description}</div>`;
-                }
-                let contactsHtml = '';
-                if(shopData.phone) {
-                    contactsHtml += `<a href="tel:${shopData.phone}" class="contact-item">📞 ${shopData.phone}</a>`;
-                }
-                if(shopData.telegram) {
-                    let tgClean = shopData.telegram.replace('@', '');
-                    contactsHtml += `<a href="https://t.me/${tgClean}" target="_blank" class="contact-item">✈️ Telegram</a>`;
-                }
-                if(infoHtml || contactsHtml) {
                     document.getElementById('shopInfoContainer').innerHTML = `
                         <div class="shop-info-block">
-                            ${infoHtml}
-                            ${contactsHtml ? `<div class="shop-contacts">${contactsHtml}</div>` : ''}
+                            <div class="shop-desc">${shopData.description}</div>
                         </div>
                     `;
                 }
@@ -184,22 +210,29 @@
         const { data } = await query;
         if(data) { 
             items = data; 
-            renderCats(items);
+            renderCats(); // Викликаємо без аргументів, бо логіка всередині
             render(items); 
         }
     };
 
-    function renderCats(list) {
+    function renderCats() {
         const container = document.getElementById('cat-container');
-        const cats = [...new Set(list.map(i => i.category).filter(Boolean))];
-        cats.forEach(c => {
+        container.innerHTML = `<button class="cat-btn active" onclick="setCat('Все', this)">Всі товари</button>`;
+        
+        // Якщо продавець задав категорії в налаштуваннях - використовуємо їх. 
+        // Якщо ні - витягуємо з наявних товарів.
+        let catsToRender = shopCategories.length > 0 
+            ? shopCategories 
+            : [...new Set(items.map(i => i.category).filter(Boolean))];
+
+        catsToRender.forEach(c => {
             container.innerHTML += `<button class="cat-btn" onclick="setCat('${c}', this)">${c}</button>`;
         });
     }
 
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
-        if(list.length === 0) return g.innerHTML = `<div class="empty-state">😕 Товарів поки немає</div>`;
+        if(list.length === 0) return g.innerHTML = `<div class="empty-state">😕 У цій категорії поки немає товарів</div>`;
 
         list.forEach(p => {
             let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || '';
