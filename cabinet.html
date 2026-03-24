@@ -95,6 +95,11 @@
         .inv-save-btn { flex: 1.2; background: var(--olive); color: #fff; border: none; padding: 10px 5px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 #2c3818; box-sizing: border-box; height: 41px; }
         .inv-save-btn:active { transform: translateY(2px); box-shadow: none; }
         .inv-save-btn:disabled { opacity: 0.7; cursor: wait; }
+        
+        /* КНОПКА ВИДАЛЕННЯ */
+        .inv-del-btn { background: #3a1a1a; color: #ff6b6b; border: 1px solid #662222; padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 #220a0a; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; }
+        .inv-del-btn:active { transform: translateY(2px); box-shadow: none; }
+        .inv-del-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -225,7 +230,7 @@
             list.forEach(p => {
                 let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
                 listEl.innerHTML += `
-                    <div class="inv-item">
+                    <div class="inv-item" id="item_${p.id}">
                         <div class="inv-top">
                             <img src="${imgUrl}" class="inv-img">
                             <div class="inv-info">
@@ -244,6 +249,7 @@
                                 <input type="number" class="inv-input" style="color:#fff;" id="qty_${p.id}" value="${p.quantity || 0}" autocomplete="new-password" name="q_${p.id}">
                             </div>
                             <button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">💾 Зберегти</button>
+                            <button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')" title="Видалити товар">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -285,6 +291,45 @@
                     btn.style.background = 'var(--olive)';
                     btn.disabled = false;
                 }, 2000);
+            }
+        }
+
+        // НОВА ФУНКЦІЯ ВИДАЛЕННЯ (Із зачисткою картинок з Storage)
+        async function deleteItemDb(id) {
+            if(!confirm('Ви впевнені, що хочете видалити цей товар назавжди?')) return;
+            
+            const btn = document.getElementById(`delbtn_${id}`);
+            btn.innerHTML = '⏳'; btn.disabled = true;
+
+            try {
+                // 1. Отримуємо інформацію про товар, щоб знайти картинки
+                const item = inventoryData.find(i => i.id === id);
+                
+                // 2. Видаляємо зв'язки з таблиці описів AI (на всяк випадок, щоб уникнути помилок зовнішніх ключів)
+                await sb.from('ai_content').delete().eq('product_id', id);
+                
+                // 3. Видаляємо сам товар
+                const { error: delErr } = await sb.from('products').delete().eq('id', id);
+                if (delErr) throw delErr;
+
+                // 4. Видаляємо картинки з корзини smart_media
+                if (item && item.images && item.images.length > 0) {
+                    const filesToDelete = item.images.map(url => {
+                        const parts = url.split('/');
+                        return parts[parts.length - 1]; // Беремо тільки назву файлу з кінця посилання
+                    });
+                    if (filesToDelete.length > 0) {
+                        await sb.storage.from('smart_media').remove(filesToDelete);
+                    }
+                }
+
+                // 5. Оновлюємо інтерфейс
+                inventoryData = inventoryData.filter(i => i.id !== id);
+                renderInventory(inventoryData);
+                
+            } catch(e) {
+                alert('Помилка видалення: ' + e.message);
+                btn.innerHTML = '🗑️'; btn.disabled = false;
             }
         }
 
@@ -363,13 +408,14 @@
                 const c2 = await compressImg(selectedFiles[1]); 
                 const c3 = await compressImg(selectedFiles[2]);
 
-                log("☁️ Завантаження у сховище...");
+                log("☁️ Завантаження у сховище (smart_media)...");
                 const up = async (cObj, tag) => {
                     if(!cObj) return null;
                     const n = `${Date.now()}_${tag}.jpg`;
-                    const { error } = await sb.storage.from('tyres').upload(n, cObj.file);
+                    // ОНОВЛЕНА КОРЗИНА: smart_media
+                    const { error } = await sb.storage.from('smart_media').upload(n, cObj.file);
                     if (error) throw error;
-                    return sb.storage.from('tyres').getPublicUrl(n).data.publicUrl;
+                    return sb.storage.from('smart_media').getPublicUrl(n).data.publicUrl;
                 };
 
                 const u1 = await up(c1, 'main'); const u2 = await up(c2, 'detail'); const u3 = await up(c3, 'label');
@@ -381,18 +427,16 @@
                 "description": "Напиши об'ємний, продаючий опис. Розкажи про переваги. Використовуй емодзі та <br><br> для абзаців. Зроби текст візуально красивим та переконливим.", "rec_price": "Оціночна ринкова ціна (тільки цифра)"}. 
                 Мова: українська. Суворо правильний JSON без markdown-форматування та блоків \`\`\`json.`;
 
-                // НОВА ЛОГІКА: Відправляємо запит до нашого серверного агента
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', {
                     body: {
                         prompt: promptText,
-                        imageBase64: c1.b64 // Відправляємо головне фото для аналізу
+                        imageBase64: c1.b64 
                     }
                 });
 
                 if (aiError) throw new Error("Помилка Агента: " + aiError.message);
                 if (!aiResponse || !aiResponse.description) throw new Error("Агент повернув порожню відповідь.");
 
-                // Обробляємо текст, який повернув наш серверний агент
                 const raw = aiResponse.description.replace(/```json|```/gi, '').trim();
                 const ai = JSON.parse(raw);
                 
