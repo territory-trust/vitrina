@@ -7,22 +7,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        /* БАЗОВИЙ ТЕМНИЙ СТИЛЬ (Dark Velvet) - ПРЕМІУМ-ОНОВЛЕННЯ */
+        /* БАЗОВИЙ ТЕМНИЙ СТИЛЬ (Dark Velvet) */
         :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --text: #e5e7eb; --border: #2a2e35; --header-bg: rgba(13, 15, 18, 0.98); }
         
         /* СВІТЛИЙ СТИЛЬ (Light Creative) */
         body.theme-light { --bg: #f9fafb; --panel: #ffffff; --text: #111827; --border: #e5e7eb; --header-bg: rgba(255, 255, 255, 0.98); }
-        body.theme-light .search-box { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
+        body.theme-light .search-box { background: #ffffff; color: #111827; border-color: #9ca3af; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        body.theme-light .search-box:focus { border-color: var(--olive); }
         body.theme-light .title { color: #111827; }
         body.theme-light .btn-read { color: #4b5563; border-color: #9ca3af; }
         body.theme-light .shop-desc { color: #4b5563; background: #ffffff; border-color: #e5e7eb; }
         body.theme-light .dropdown-content { background: #ffffff; border-color: #d1d5db; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         body.theme-light .dropdown-content a { color: #111827; border-color: #e5e7eb; }
         body.theme-light .dropdown-content a:hover { background: #f3f4f6; }
+        body.theme-light .head-btn { background: #ffffff; color: #1f2937; border-color: #d1d5db; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
+        body.theme-light .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
+        body.theme-light .cat-btn { background: #ffffff; color: #1f2937; border-color: #d1d5db; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
+        body.theme-light .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive); }
 
         /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) */
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --text: #334155; --border: #cbd5e1; --header-bg: rgba(245, 245, 245, 0.98); }
-        body.theme-neutral .search-box { background: #ffffff; color: #1e293b; border-color: #cbd5e1; }
+        body.theme-neutral .search-box { background: #ffffff; color: #1e293b; border-color: #94a3b8; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        body.theme-neutral .search-box:focus { border-color: var(--olive); }
         body.theme-neutral .title { color: #1e293b; }
         body.theme-neutral .btn-read { color: #475569; border-color: #94a3b8; }
         body.theme-neutral .btn-buy { background: #475569; border-color: #475569; box-shadow: 0 2px 0 #334155; }
@@ -39,18 +45,32 @@
         .header-main { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; max-width: 900px; margin: auto; gap: 15px; }
         .logo { color: var(--olive); font-size: 18px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
         .search-container { flex-grow: 1; }
-        .search-box { width: 100%; padding: 10px 14px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--border); outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
+        
+        /* ОНОВЛЕНИЙ ПОШУК (Контрастна рамка + вдавленість) */
+        .search-box { 
+            width: 100%; 
+            padding: 10px 14px; 
+            border-radius: 8px; 
+            background: #000; 
+            color: #fff; 
+            border: 2px solid #444; /* Товстіша рамка */
+            outline: none; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            transition: 0.2s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); /* Ефект вдавленості */
+        }
         .search-box:focus { border-color: var(--olive); }
         
-        /* РЯДОК 2: Кнопки покупця (Скрол) - ПРЕМІУМ UX */
+        /* РЯДОК 2: Кнопки */
         .customer-btns-wrapper { display: none; max-width: 900px; margin: auto; }
         .customer-btns { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 5px 15px 15px; align-items: center; white-space: nowrap; }
         .customer-btns::-webkit-scrollbar { display: none; }
         
         .head-btn { 
-            background: #1a1e24; /* Базовий фон (для темної теми) */
-            color: #f3f4f6; /* Максимальний контраст тексту (майже білий) */
-            border: 1px solid #3a414a; /* Чітка обводка */
+            background: #1a1e24; 
+            color: #f3f4f6; 
+            border: 1px solid #3a414a; 
             padding: 9px 18px; 
             border-radius: 20px; 
             text-decoration: none; 
@@ -60,60 +80,55 @@
             cursor: pointer; 
             display: inline-block;
             text-shadow: 0 1px 1px rgba(0,0,0,0.2);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2); /* Об'єм і тінь */
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         }
         .head-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
 
-        /* ОНОВЛЕННЯ СТИЛІВ ДЛЯ СВІТЛОЇ ТЕМИ (Верхні кнопки) */
-        body.theme-light .head-btn { background: #ffffff; color: #1f2937; border-color: #d1d5db; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
-        body.theme-light .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
+        /* ОНОВЛЕНА КНОПКА "НАЗАД" ДЛЯ ВЛАСНИКА */
+        .head-btn.back-btn {
+            background: var(--olive) !important;
+            color: #ffffff !important;
+            border: 1px solid #465926 !important;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 10px 22px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+            text-shadow: none;
+            letter-spacing: 0.5px;
+        }
+        .head-btn.back-btn:active { transform: translateY(2px); box-shadow: none !important; }
 
-        /* ВИПАДАЮЧЕ МЕНЮ (Dropdown) */
+        /* ВИПАДАЮЧЕ МЕНЮ */
         .dropdown { position: relative; display: inline-block; }
         .dropdown-content { display: none; position: absolute; left: 0; background-color: var(--panel); min-width: 220px; box-shadow: 0px 8px 20px 0px rgba(0,0,0,0.5); z-index: 200; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; top: 100%; margin-top: 8px; transition: 0.3s; }
         .dropdown-content a { color: var(--text); padding: 14px 18px; text-decoration: none; display: block; font-size: 14px; border-bottom: 1px solid var(--border); font-weight: 500; }
         .dropdown-content a:last-child { border-bottom: none; }
         .show { display: block; }
         
-        /* РЯДОК 3: Категорії (Скрол) - ПРЕМІУМ UX + "НАТИСНУТИЙ" СТИЛЬ */
+        /* РЯДОК 3: Категорії */
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; scrollbar-width: none; max-width: 900px; margin: auto; }
         .nav-scroll::-webkit-scrollbar { display: none; }
         
         .cat-btn { 
-            background: #1a1e24; /* Замість transparent - твердий фон (для темної теми) */
-            color: #f3f4f6; /* Контрастний текст (для темної теми) */
-            border: 1px solid #3a414a; /* Бархатна обводка */
-            padding: 7px 16px; /* Трохи компактніше за верхні, але з воздухом */
+            background: #1a1e24; 
+            color: #f3f4f6; 
+            border: 1px solid #3a414a; 
+            padding: 7px 16px; 
             border-radius: 15px; 
             margin-right: 6px; 
             font-size: 13px; 
             cursor: pointer; 
             font-weight: 600; 
             transition: all 0.2s ease;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2); /* Об'єм і тінь */
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         }
-        
-        /* АКТИВНА КАТЕГОРІЯ ("Натиснута" / Зафарбована) */
         .cat-btn.active { 
-            background: var(--olive) !important; /* Повністю зафарбована оливковим */
-            color: #ffffff !important; /* Білий текст */
+            background: var(--olive) !important; 
+            color: #ffffff !important; 
             border-color: var(--olive); 
-            box-shadow: none !important; /* Убираємо тінь, щоб виглядало як "вдавлене" */
+            box-shadow: none !important; 
             cursor: default;
-        }
-
-        /* ОНОВЛЕННЯ СТИЛІВ ДЛЯ СВІТЛОЇ ТЕМИ (Кнопки категорій) */
-        body.theme-light .cat-btn {
-            background: #ffffff;
-            color: #1f2937;
-            border-color: #d1d5db;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
-        }
-        body.theme-light .cat-btn.active {
-            background: var(--olive) !important;
-            color: #ffffff !important;
-            border-color: var(--olive);
         }
         
         /* ІНФО-БЛОК МАГАЗИНУ */
@@ -173,7 +188,6 @@
     let items = [];
     let shopCategories = [];
 
-    // Логіка випадаючого меню
     function toggleDropdown() {
         document.getElementById("aiDropdown").classList.toggle("show");
     }
@@ -201,7 +215,8 @@
         btnsWrapper.style.display = 'block'; 
 
         if (user && ownerId && user.id === ownerId) {
-            headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn promo">🔙 Назад у Кабінет</a>`;
+            // ОНОВЛЕНА КНОПКА З КЛАСОМ back-btn ТА СТРІЛКОЮ
+            headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">⬅ Назад у Кабінет</a>`;
         } else {
             headerBtns.innerHTML = `
                 <a href="landing.html" class="head-btn promo">🚀 Створити магазин</a>
