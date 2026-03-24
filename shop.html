@@ -10,23 +10,21 @@
         /* БАЗОВИЙ ТЕМНИЙ СТИЛЬ (Dark Velvet) - ПРЕМІУМ-ОНОВЛЕННЯ */
         :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --text: #e5e7eb; --border: #2a2e35; --header-bg: rgba(13, 15, 18, 0.98); }
         
-        /* СВІТЛИЙ СТИЛЬ (Light Creative) - ПРЕМІУМ-ОНОВЛЕННЯ */
+        /* СВІТЛИЙ СТИЛЬ (Light Creative) */
         body.theme-light { --bg: #f9fafb; --panel: #ffffff; --text: #111827; --border: #e5e7eb; --header-bg: rgba(255, 255, 255, 0.98); }
         body.theme-light .search-box { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
         body.theme-light .title { color: #111827; }
         body.theme-light .btn-read { color: #4b5563; border-color: #9ca3af; }
-        body.theme-light .cat-btn.active { background: #eef2e6; }
         body.theme-light .shop-desc { color: #4b5563; background: #ffffff; border-color: #e5e7eb; }
         body.theme-light .dropdown-content { background: #ffffff; border-color: #d1d5db; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         body.theme-light .dropdown-content a { color: #111827; border-color: #e5e7eb; }
         body.theme-light .dropdown-content a:hover { background: #f3f4f6; }
 
-        /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) - ПРЕМІУМ-ОНОВЛЕННЯ */
+        /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) */
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --text: #334155; --border: #cbd5e1; --header-bg: rgba(245, 245, 245, 0.98); }
         body.theme-neutral .search-box { background: #ffffff; color: #1e293b; border-color: #cbd5e1; }
         body.theme-neutral .title { color: #1e293b; }
         body.theme-neutral .btn-read { color: #475569; border-color: #94a3b8; }
-        body.theme-neutral .cat-btn.active { background: #e2e8f0; color: #475569; border-color: #94a3b8; }
         body.theme-neutral .btn-buy { background: #475569; border-color: #475569; box-shadow: 0 2px 0 #334155; }
         body.theme-neutral .shop-desc { color: #475569; background: #fafafa; border-color: #cbd5e1; }
         body.theme-neutral .dropdown-content { background: #fafafa; border-color: #cbd5e1; box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
@@ -44,20 +42,20 @@
         .search-box { width: 100%; padding: 10px 14px; border-radius: 8px; background: #000; color: #fff; border: 1px solid var(--border); outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
         .search-box:focus { border-color: var(--olive); }
         
-        /* РЯДОК 2: Кнопки покупця (Скрол) - ПРЕМІУМ-ОНОВЛЕННЯ UX */
+        /* РЯДОК 2: Кнопки покупця (Скрол) - ПРЕМІУМ UX */
         .customer-btns-wrapper { display: none; max-width: 900px; margin: auto; }
         .customer-btns { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 5px 15px 15px; align-items: center; white-space: nowrap; }
         .customer-btns::-webkit-scrollbar { display: none; }
         
         .head-btn { 
-            background: #1a1e24; /* Базовий фон */
+            background: #1a1e24; /* Базовий фон (для темної теми) */
             color: #f3f4f6; /* Максимальний контраст тексту (майже білий) */
             border: 1px solid #3a414a; /* Чітка обводка */
-            padding: 9px 18px; /* Більше воздуха всередині */
+            padding: 9px 18px; 
             border-radius: 20px; 
             text-decoration: none; 
             font-weight: 600; 
-            font-size: 13px; /* Шрифт крупніше */
+            font-size: 13px; 
             transition: all 0.2s ease; 
             cursor: pointer; 
             display: inline-block;
@@ -65,53 +63,58 @@
             box-shadow: 0 3px 6px rgba(0,0,0,0.2); /* Об'єм і тінь */
         }
         .head-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
-        /* Виділення ПРОМО-КНОПКИ (Створити магазин) */
-        .head-btn.promo { 
-            color: var(--olive); 
-            border-color: var(--olive); 
-            background: rgba(107, 135, 59, 0.05); /* Легкий оливковий тінт */
-        }
+        .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
 
-        /* ОНОВЛЕННЯ СТИЛІВ ДЛЯ СВІТЛОЇ ТЕМИ */
-        body.theme-light .head-btn {
-            background: #ffffff;
-            color: #1f2937; /* Темний текст */
-            border-color: #d1d5db; /* Чітка сіра обводка */
-            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
-        }
-        body.theme-light .head-btn.promo {
-            color: var(--olive);
-            border-color: var(--olive);
-            background: rgba(107, 135, 59, 0.05);
-        }
+        /* ОНОВЛЕННЯ СТИЛІВ ДЛЯ СВІТЛОЇ ТЕМИ (Верхні кнопки) */
+        body.theme-light .head-btn { background: #ffffff; color: #1f2937; border-color: #d1d5db; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
+        body.theme-light .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
 
-        /* ВИПАДАЮЧЕ МЕНЮ (Dropdown) - ОНОВЛЕННЯ UX */
+        /* ВИПАДАЮЧЕ МЕНЮ (Dropdown) */
         .dropdown { position: relative; display: inline-block; }
-        .dropdown-content { 
-            display: none; 
-            position: absolute; 
-            left: 0; 
-            background-color: var(--panel); 
-            min-width: 220px; /* Трохи ширше */
-            box-shadow: 0px 8px 20px 0px rgba(0,0,0,0.5); 
-            z-index: 200; 
-            border-radius: 12px; 
-            border: 1px solid var(--border); 
-            overflow: hidden; 
-            top: 100%; 
-            margin-top: 8px; 
-            transition: 0.3s;
-        }
+        .dropdown-content { display: none; position: absolute; left: 0; background-color: var(--panel); min-width: 220px; box-shadow: 0px 8px 20px 0px rgba(0,0,0,0.5); z-index: 200; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; top: 100%; margin-top: 8px; transition: 0.3s; }
         .dropdown-content a { color: var(--text); padding: 14px 18px; text-decoration: none; display: block; font-size: 14px; border-bottom: 1px solid var(--border); font-weight: 500; }
         .dropdown-content a:last-child { border-bottom: none; }
         .show { display: block; }
         
-        /* РЯДОК 3: Категорії (Скрол) */
+        /* РЯДОК 3: Категорії (Скрол) - ПРЕМІУМ UX + "НАТИСНУТИЙ" СТИЛЬ */
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; scrollbar-width: none; max-width: 900px; margin: auto; }
         .nav-scroll::-webkit-scrollbar { display: none; }
-        .cat-btn { background: transparent; color: #888; border: 1px solid transparent; padding: 6px 14px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s;}
-        .cat-btn.active { background: #1a2e1a; color: var(--olive); border-color: var(--olive); }
+        
+        .cat-btn { 
+            background: #1a1e24; /* Замість transparent - твердий фон (для темної теми) */
+            color: #f3f4f6; /* Контрастний текст (для темної теми) */
+            border: 1px solid #3a414a; /* Бархатна обводка */
+            padding: 7px 16px; /* Трохи компактніше за верхні, але з воздухом */
+            border-radius: 15px; 
+            margin-right: 6px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2); /* Об'єм і тінь */
+        }
+        
+        /* АКТИВНА КАТЕГОРІЯ ("Натиснута" / Зафарбована) */
+        .cat-btn.active { 
+            background: var(--olive) !important; /* Повністю зафарбована оливковим */
+            color: #ffffff !important; /* Білий текст */
+            border-color: var(--olive); 
+            box-shadow: none !important; /* Убираємо тінь, щоб виглядало як "вдавлене" */
+            cursor: default;
+        }
+
+        /* ОНОВЛЕННЯ СТИЛІВ ДЛЯ СВІТЛОЇ ТЕМИ (Кнопки категорій) */
+        body.theme-light .cat-btn {
+            background: #ffffff;
+            color: #1f2937;
+            border-color: #d1d5db;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+        }
+        body.theme-light .cat-btn.active {
+            background: var(--olive) !important;
+            color: #ffffff !important;
+            border-color: var(--olive);
+        }
         
         /* ІНФО-БЛОК МАГАЗИНУ */
         .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
@@ -200,7 +203,6 @@
         if (user && ownerId && user.id === ownerId) {
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn promo">🔙 Назад у Кабінет</a>`;
         } else {
-            // ОНОВЛЕНИЙ СКРИПТ (Кнопка promo)
             headerBtns.innerHTML = `
                 <a href="landing.html" class="head-btn promo">🚀 Створити магазин</a>
                 <a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a>
