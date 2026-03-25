@@ -105,7 +105,6 @@
             return;
         }
 
-        // 1. Завантажуємо товар
         const { data: p, error } = await sb.from('products').select('*, ai_content(fancy_description)').eq('id', id).single();
         
         if (error || !p) {
@@ -115,19 +114,15 @@
         
         currentProduct = p;
 
-        // 2. Налаштування кнопки "Назад" та завантаження теми
         const backBtn = document.getElementById('backBtn');
         if (p.owner_id) {
             backBtn.href = `shop.html?owner=${p.owner_id}`;
-            
-            // Магія Хамелеона: дізнаємось тему магазину
             const { data: shop } = await sb.from('shops').select('theme_color').eq('owner_id', p.owner_id).single();
             if(shop && shop.theme_color && shop.theme_color !== 'dark') {
                 document.body.classList.add('theme-' + shop.theme_color);
             }
         }
 
-        // 3. Формуємо масив фотографій для каруселі
         let imagesArray = [];
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
             imagesArray = p.images;
@@ -135,25 +130,17 @@
             imagesArray = [p.image_url_1, p.image_url_2, p.image_url_3].filter(Boolean);
         }
         
-        if(imagesArray.length === 0) {
-            imagesArray.push(p.image_url || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
-        }
-        
-        lbImages = imagesArray; // Зберігаємо для лайтбокса
+        if(imagesArray.length === 0) imagesArray.push(p.image_url || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+        lbImages = imagesArray;
 
-        // Генеруємо HTML каруселі
         let carouselHtml = `<div class="carousel" id="imgSlider" onscroll="updateDots()">`;
         let dotsHtml = `<div class="dots">`;
-        
         imagesArray.forEach((img, idx) => {
             carouselHtml += `<img src="${img}" onclick="openLightbox(${idx})" alt="Фото ${idx+1}">`;
             dotsHtml += `<div class="dot ${idx === 0 ? 'active' : ''}" id="dot-${idx}"></div>`;
         });
-        
-        carouselHtml += `</div>`;
-        dotsHtml += `</div>`;
+        carouselHtml += `</div>`; dotsHtml += `</div>`;
 
-        // 4. Витягуємо ІІ-опис
         let desc = '<span style="color:#666;">Опис відсутній.</span>';
         if (p.ai_content && p.ai_content.length > 0 && p.ai_content[0].fancy_description) {
             desc = p.ai_content[0].fancy_description;
@@ -161,7 +148,9 @@
             desc = p.description;
         }
 
-        // Рендер контенту
+        // ОНОВЛЕННЯ: Жорсткий фільтр емодзі для старих товарів
+        desc = desc.replace(/\p{Emoji_Presentation}/gu, '').replace(/\p{Emoji}\uFE0F/gu, '').replace(/✨|✏️|🎁|👌|💡|✅|🌟/g, '');
+
         document.getElementById('contentBox').innerHTML = `
             <div class="carousel-container">
                 ${carouselHtml}
@@ -177,75 +166,28 @@
         document.getElementById('cartBtn').disabled = false;
     };
 
-    // --- СИНХРОНІЗАЦІЯ ТОЧОК КАРУСЕЛІ ---
     function updateDots() {
-        const slider = document.getElementById('imgSlider');
-        const dots = document.querySelectorAll('.dot');
-        if(!dots.length) return;
-        
-        const scrollLeft = slider.scrollLeft;
-        const width = slider.clientWidth;
-        const activeIndex = Math.round(scrollLeft / width);
-        
-        dots.forEach((dot, index) => {
-            if (index === activeIndex) dot.classList.add('active');
-            else dot.classList.remove('active');
-        });
+        const slider = document.getElementById('imgSlider'); const dots = document.querySelectorAll('.dot'); if(!dots.length) return;
+        const activeIndex = Math.round(slider.scrollLeft / slider.clientWidth);
+        dots.forEach((dot, index) => { if (index === activeIndex) dot.classList.add('active'); else dot.classList.remove('active'); });
     }
 
-    // --- ЛАЙТБОКС (Збільшення фото) ---
-    function openLightbox(index) {
-        lbIndex = index;
-        updateLightboxView();
-        document.getElementById('lightbox').classList.add('show');
-    }
-    
-    function updateLightboxView() {
-        document.getElementById('lb-img').src = lbImages[lbIndex];
-        const isMulti = lbImages.length > 1;
-        document.getElementById('lb-prev').style.display = isMulti ? 'flex' : 'none';
-        document.getElementById('lb-next').style.display = isMulti ? 'flex' : 'none';
-        document.getElementById('lb-counter').style.display = isMulti ? 'block' : 'none';
-        document.getElementById('lb-counter').innerText = `${lbIndex + 1} / ${lbImages.length}`;
-    }
-    
+    function openLightbox(index) { lbIndex = index; updateLightboxView(); document.getElementById('lightbox').classList.add('show'); }
+    function updateLightboxView() { document.getElementById('lb-img').src = lbImages[lbIndex]; const isMulti = lbImages.length > 1; document.getElementById('lb-prev').style.display = isMulti ? 'flex' : 'none'; document.getElementById('lb-next').style.display = isMulti ? 'flex' : 'none'; document.getElementById('lb-counter').style.display = isMulti ? 'block' : 'none'; document.getElementById('lb-counter').innerText = `${lbIndex + 1} / ${lbImages.length}`; }
     function lbNext() { lbIndex = (lbIndex + 1) % lbImages.length; updateLightboxView(); }
     function lbPrev() { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; updateLightboxView(); }
     function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
 
-    // --- ДВИЖОК КОШИКА ---
     function addToCart() {
         if (!currentProduct) return;
-        
         let cart = JSON.parse(localStorage.getItem('smart_cart')) || [];
         let existingItem = cart.find(item => item.id === currentProduct.id);
-        
-        if (existingItem) {
-            existingItem.qty += 1;
-        } else {
-            let img = currentProduct.image_url_1 || (currentProduct.images && currentProduct.images[0]) || currentProduct.image_url;
-            cart.push({
-                id: currentProduct.id,
-                title: currentProduct.title,
-                price: currentProduct.price,
-                image: img,
-                img: img, // Дублюємо для сумісності з Вітриною
-                owner_id: currentProduct.owner_id,
-                qty: 1
-            });
-        }
+        if (existingItem) existingItem.qty += 1;
+        else cart.push({ id: currentProduct.id, title: currentProduct.title, price: currentProduct.price, image: currentProduct.image_url_1 || (currentProduct.images && currentProduct.images[0]) || currentProduct.image_url, img: currentProduct.image_url_1 || (currentProduct.images && currentProduct.images[0]) || currentProduct.image_url, owner_id: currentProduct.owner_id, qty: 1 });
         
         localStorage.setItem('smart_cart', JSON.stringify(cart));
-        
-        // Анімація успіху
-        const btn = document.getElementById('cartBtn');
-        btn.innerHTML = '✅ ДОДАНО В КОШИК';
-        btn.classList.add('added');
-        
-        setTimeout(() => {
-            btn.innerHTML = '🛒 У КОШИК';
-            btn.classList.remove('added');
-        }, 1500);
+        const btn = document.getElementById('cartBtn'); btn.innerHTML = '✅ ДОДАНО В КОШИК'; btn.classList.add('added');
+        setTimeout(() => { btn.innerHTML = '🛒 У КОШИК'; btn.classList.remove('added'); }, 1500);
     }
 </script>
 </body>
