@@ -12,8 +12,13 @@
         
         /* СВІТЛИЙ СТИЛЬ (Light Creative) */
         body.theme-light { --bg: #f9fafb; --panel: #ffffff; --text: #111827; --border: #e5e7eb; --header-bg: rgba(255, 255, 255, 0.98); }
-        body.theme-light .search-box { background: #ffffff; color: #111827; border: 2px solid #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        body.theme-light .search-box:focus { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(107, 135, 59, 0.2); }
+        
+        /* ОНОВЛЕНО: Чітка окантовка полів у світлій темі */
+        body.theme-light .search-box { background: #ffffff; color: #111827; border: 2px solid #9ca3af !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        body.theme-light .search-box:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(107, 135, 59, 0.2); }
+        body.theme-light .checkout-input { background: #ffffff; color: #111827; border: 2px solid #9ca3af !important; }
+        body.theme-light .checkout-input:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.1); }
+        
         body.theme-light .title { color: #111827; }
         body.theme-light .btn-read { color: #4b5563; border-color: #9ca3af; }
         body.theme-light .shop-desc { color: #4b5563; background: #ffffff; border-color: #e5e7eb; }
@@ -27,14 +32,13 @@
         body.theme-light .cart-panel { background: #ffffff; border-left: 1px solid #e5e7eb; }
         body.theme-light .cart-header, body.theme-light .cart-item, body.theme-light .cart-footer { border-color: #e5e7eb; }
         body.theme-light .cart-footer { background: #f9fafb; }
-        body.theme-light .checkout-input { background: #ffffff; color: #111827; border: 1px solid #cbd5e1; }
-        body.theme-light .checkout-input:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.1); }
         body.theme-light .qty-btn { background: #f3f4f6; border-color: #d1d5db; color: #111827; }
 
         /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) */
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --text: #334155; --border: #cbd5e1; --header-bg: rgba(245, 245, 245, 0.98); }
-        body.theme-neutral .search-box { background: #ffffff; color: #1e293b; border: 2px solid #cbd5e1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
-        body.theme-neutral .search-box:focus { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.2); }
+        body.theme-neutral .search-box { background: #ffffff; color: #1e293b; border: 2px solid #94a3b8 !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        body.theme-neutral .search-box:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.2); }
+        body.theme-neutral .checkout-input { background: #ffffff; color: #1e293b; border: 2px solid #94a3b8 !important; }
         body.theme-neutral .title { color: #1e293b; }
         body.theme-neutral .btn-read { color: #475569; border-color: #94a3b8; }
         body.theme-neutral .btn-buy { background: #475569; border-color: #475569; box-shadow: 0 2px 0 #334155; }
@@ -44,7 +48,6 @@
         body.theme-neutral .dropdown-content a:hover { background: #e2e8f0; }
         body.theme-neutral .cart-panel { background: #fafafa; border-left: 1px solid #cbd5e1; }
         body.theme-neutral .cart-header, body.theme-neutral .cart-item, body.theme-neutral .cart-footer { border-color: #cbd5e1; }
-        body.theme-neutral .checkout-input { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; }
         body.theme-neutral .qty-btn { background: #e2e8f0; border-color: #cbd5e1; color: #1e293b; }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 155px; padding-bottom: 80px; font-size: 16px; transition: background 0.3s, color 0.3s; }
@@ -53,9 +56,11 @@
         
         .header-main { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; max-width: 900px; margin: auto; gap: 15px; }
         .logo { color: var(--olive); font-size: 18px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
+        
+        /* ОНОВЛЕНО: Чітка окантовка для базової (темної) теми */
         .search-container { flex-grow: 1; }
-        .search-box { width: 100%; padding: 10px 14px; border-radius: 8px; background: #000; color: #fff; border: 2px solid #444; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); }
-        .search-box:focus { border-color: var(--olive); }
+        .search-box { width: 100%; padding: 10px 14px; border-radius: 8px; background: #000; color: #fff; border: 2px solid #555 !important; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); }
+        .search-box:focus { border-color: var(--olive) !important; }
         
         .customer-btns-wrapper { display: none; max-width: 900px; margin: auto; }
         .customer-btns { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 5px 15px 10px; align-items: center; white-space: nowrap; }
@@ -65,17 +70,25 @@
         .head-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
         
-        .head-btn.back-btn, body.theme-light .head-btn.back-btn, body.theme-neutral .head-btn.back-btn { 
+        /* ОНОВЛЕНО: Жовтий колір та подвійні стрілки для адмін-кнопки */
+        .head-btn.back-btn { 
             background: transparent !important; 
-            color: var(--olive-dark) !important; 
+            color: #FFC107 !important; /* Яскраво жовтий для темної теми */
             border: none !important; 
             font-weight: 900; 
             font-size: 16px; 
             padding: 5px 0; 
             box-shadow: none !important; 
-            text-shadow: none !important; 
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; 
             letter-spacing: 1px; 
-            text-transform: uppercase;
+        }
+        body.theme-light .head-btn.back-btn {
+            color: #d97706 !important; /* Золотисто-янтарний для світлої теми (щоб було видно на білому) */
+            text-shadow: none !important;
+        }
+        body.theme-neutral .head-btn.back-btn {
+            color: #b45309 !important;
+            text-shadow: none !important;
         }
         .head-btn.back-btn:active, body.theme-light .head-btn.back-btn:active, body.theme-neutral .head-btn.back-btn:active { 
             transform: translateX(-4px);
@@ -144,8 +157,11 @@
         
         .checkout-form { display: none; flex-direction: column; gap: 12px; margin-top: 15px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        .checkout-input { width: 100%; padding: 12px 14px; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none; box-sizing: border-box; font-size: 14px; }
-        .checkout-input:focus { border-color: var(--olive); }
+        
+        /* ОНОВЛЕНО: Чітка окантовка для полів кошика (базова темна тема) */
+        .checkout-input { width: 100%; padding: 12px 14px; border-radius: 8px; background: #000; color: #fff; border: 2px solid #555 !important; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
+        .checkout-input:focus { border-color: var(--olive) !important; }
+        
         .form-row { display: flex; gap: 10px; }
         .form-row .checkout-input { flex: 1; }
         .checkout-label { font-size: 13px; color: #888; font-weight: bold; margin-bottom: -8px; display: block;}
@@ -261,7 +277,8 @@
         btnsWrapper.style.display = 'block'; 
 
         if (user && ownerId && user.id === ownerId) {
-            headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">« НАЗАД У КАБІНЕТ</a>`;
+            // ОНОВЛЕНО: Подвійні стрілочки та інший колір
+            headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
             headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><div class="dropdown"><button onclick="toggleDropdown()" class="head-btn dropdown-toggle">🤖 AI-Помічники ☰</button><div id="aiDropdown" class="dropdown-content"><a href="ai_hub.html">🧠 Каталог AI-Агентів</a><a href="#">📈 Зведення криптовалют</a></div></div>`;
