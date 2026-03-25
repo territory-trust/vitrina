@@ -105,37 +105,12 @@
         
         .phone-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; gap: 10px; }
         .phone-number { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.5px; white-space: nowrap; }
-        .btn-call { 
-            flex-shrink: 0; 
-            background: linear-gradient(180deg, #8bc34a 0%, #689f38 100%); 
-            color: #fff; 
-            border: none; 
-            padding: 10px 16px; 
-            border-radius: 10px; 
-            text-decoration: none; 
-            font-weight: 800; 
-            font-size: 14px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 6px; 
-            box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3), 0 3px 0 #4a7526; 
-            transition: 0.1s;
-        }
+        .btn-call { flex-shrink: 0; background: linear-gradient(180deg, #8bc34a 0%, #689f38 100%); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3), 0 3px 0 #4a7526; transition: 0.1s; }
         .btn-call:active { transform: translateY(3px); box-shadow: 0 1px 0 #4a7526; }
         
         .order-sum { color: var(--olive); font-weight: bold; font-size: 16px; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
         
-        /* Чітка та яскрава підказка для поля картки */
-        .card-label-hint { 
-            font-size: 15px; 
-            color: #fff; 
-            font-weight: 600; 
-            margin-top: 15px; 
-            margin-bottom: 4px; 
-            padding-left: 4px; 
-            letter-spacing: 0.3px; 
-        }
-        
+        .card-label-hint { font-size: 15px; color: #fff; font-weight: 600; margin-top: 15px; margin-bottom: 4px; padding-left: 4px; letter-spacing: 0.3px; }
         .action-row { display: flex; align-items: center; justify-content: space-between; background: #000; border: 1px dashed var(--olive); padding: 8px; border-radius: 10px; gap: 8px; }
         
         .card-input-wrapper { display: flex; align-items: center; flex: 1; background: #111; padding: 8px 10px; border-radius: 8px; border: 1px solid #333; overflow: hidden; }
@@ -180,22 +155,14 @@
             <div class="input-group">
                 <input type="text" id="searchInv" placeholder="🔎 Пошук по складу..." oninput="filterInventory()" autocomplete="new-password">
             </div>
-            <div id="inventoryList" style="margin-top: 15px;">
-                <p style="text-align:center; color:#666;">Завантаження складу...</p>
-            </div>
+            <div id="inventoryList" style="margin-top: 15px;"><p style="text-align:center; color:#666;">Завантаження складу...</p></div>
         </div>
 
         <div id="tab-agents" class="section active">
             <h2>➕ НОВИЙ ТОВАР</h2>
             <div style="display: flex; gap: 10px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>Ціна (грн):</label>
-                    <input type="number" id="price" autocomplete="new-password" placeholder="Авто">
-                </div>
-                <div class="input-group" style="flex: 1;">
-                    <label>Кількість (шт):</label>
-                    <input type="number" id="qty" autocomplete="new-password" placeholder="1" value="1">
-                </div>
+                <div class="input-group" style="flex: 1;"><label>Ціна (грн):</label><input type="number" id="price" autocomplete="new-password" placeholder="Авто"></div>
+                <div class="input-group" style="flex: 1;"><label>Кількість (шт):</label><input type="number" id="qty" autocomplete="new-password" placeholder="1" value="1"></div>
             </div>
 
             <label>1. Головне фото (Загальний вигляд):</label>
@@ -203,28 +170,23 @@
                 <label class="file-label" id="l1_cam"><input type="file" id="p1_cam" accept="image/*" capture="environment" onchange="updLbl('l1_cam', 'l1_gal', 'p1_cam', 1)">📷 Камера</label>
                 <label class="file-label" id="l1_gal"><input type="file" id="p1_gal" accept="image/*" onchange="updLbl('l1_cam', 'l1_gal', 'p1_gal', 1)">🖼 Галерея</label>
             </div>
-
             <label>2. Фото деталей (Логотип/Особливості):</label>
             <div class="flex-btns">
                 <label class="file-label" id="l2_cam"><input type="file" id="p2_cam" accept="image/*" capture="environment" onchange="updLbl('l2_cam', 'l2_gal', 'p2_cam', 2)">📷 Камера</label>
                 <label class="file-label" id="l2_gal"><input type="file" id="p2_gal" accept="image/*" onchange="updLbl('l2_cam', 'l2_gal', 'p2_gal', 2)">🖼 Галерея</label>
             </div>
-
             <label>3. Фото маркування (Бірка/Розмір/Модель):</label>
             <div class="flex-btns">
                 <label class="file-label" id="l3_cam"><input type="file" id="p3_cam" accept="image/*" capture="environment" onchange="updLbl('l3_cam', 'l3_gal', 'p3_cam', 3)">📷 Камера</label>
                 <label class="file-label" id="l3_gal"><input type="file" id="p3_gal" accept="image/*" onchange="updLbl('l3_cam', 'l3_gal', 'p3_gal', 3)">🖼 Галерея</label>
             </div>
-
             <button class="btn-3d" id="mainBtn" onclick="startAI()">АНАЛІЗ ТА ПУБЛІКАЦІЯ</button>
             <div id="status"></div>
         </div>
 
         <div id="tab-orders" class="section">
             <button class="btn-refresh" onclick="loadOrders()">🔄 Оновити список замовлень</button>
-            <div id="ordersList">
-                <p style="text-align:center;color:#666;">Завантаження...</p>
-            </div>
+            <div id="ordersList"><p style="text-align:center;color:#666;">Завантаження...</p></div>
         </div>
 
         <div id="tab-stats" class="section"><h2>📊 Статистика</h2><p style="text-align:center;color:#666;">Аналітика з'явиться після перших успішних продажів.</p></div>
@@ -233,16 +195,9 @@
             <h2>⚙️ Налаштування Магазину</h2>
             <div class="settings-block">
                 <h3>🏪 Основна інформація</h3>
-                <div class="input-group">
-                    <label>Назва магазину (Відображається на вітрині):</label>
-                    <input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР">
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label>Короткий опис (Про вас):</label>
-                    <textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea>
-                </div>
+                <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
+                <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
             </div>
-
             <div class="settings-block">
                 <h3>🎨 Дизайн Вітрини</h3>
                 <div class="theme-grid">
@@ -252,38 +207,21 @@
                 </div>
                 <input type="hidden" id="set_theme" value="dark">
             </div>
-
             <div class="settings-block">
                 <h3>📁 Категорії Товарів</h3>
-                <p class="hint-text">Введіть категорії через кому. Штучний Інтелект буде розподіляти товари ТІЛЬКИ по цим папок.</p>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <textarea id="set_categories" placeholder="Електроніка, Взуття, Аксесуари, Інше..."></textarea>
-                </div>
+                <p class="hint-text">Введіть категорії через кому.</p>
+                <div class="input-group" style="margin-bottom: 0;"><textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea></div>
             </div>
-
             <div class="settings-block">
-                <h3>📞 Контакти для клієнтів (Для кошика та повідомлень)</h3>
-                <div class="input-group">
-                    <label>Телефон для зв'язку:</label>
-                    <input type="text" id="set_phone" placeholder="098 123 45 67">
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label>Telegram username (Без @):</label>
-                    <input type="text" id="set_telegram" placeholder="my_shop_tg">
-                </div>
+                <h3>📞 Контакти для клієнтів</h3>
+                <div class="input-group"><label>Телефон для зв'язку:</label><input type="text" id="set_phone" placeholder="098 123 45 67"></div>
+                <div class="input-group" style="margin-bottom: 0;"><label>Telegram username (Без @):</label><input type="text" id="set_telegram" placeholder="my_shop_tg"></div>
             </div>
-
             <button class="btn-3d" id="saveSettingsBtn" onclick="saveSettings()" style="margin-bottom: 30px; font-size: 18px;">💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ</button>
-
             <div class="settings-block" style="border-color: #333; background: #0a0c0f;">
                 <h3 style="border-bottom: none; margin-bottom: 5px;">💬 Чат з підтримкою (Адмін)</h3>
-                <div class="chat-box" id="chatBox">
-                    <div class="msg admin">Вітаємо у системі AI-Pilot! Якщо у вас є питання, напишіть сюди.</div>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="chatInput" placeholder="Ваше повідомлення..." style="margin-bottom: 0;">
-                    <button class="btn-3d" style="width: auto; padding: 0 20px;" onclick="sendSupportMsg()">✉️</button>
-                </div>
+                <div class="chat-box" id="chatBox"><div class="msg admin">Вітаємо у системі AI-Pilot!</div></div>
+                <div style="display: flex; gap: 10px;"><input type="text" id="chatInput" placeholder="Ваше повідомлення..." style="margin-bottom: 0;"><button class="btn-3d" style="width: auto; padding: 0 20px;" onclick="sendSupportMsg()">✉️</button></div>
             </div>
         </div>
     </div>
@@ -307,264 +245,87 @@
         window.onload = async () => {
             const { data: { user } } = await sb.auth.getUser();
             if (user) {
-                currentUser = user;
-                document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
-                
+                currentUser = user; document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
                 const { data: shop } = await sb.from('shops').select('*').eq('owner_id', user.id).single();
                 if(shop) {
                     if(shop.shop_name) document.getElementById('cabinetTitle').innerText = 'магазин ' + shop.shop_name;
                     if(shop.categories) shopCategories = shop.categories.split(',').map(c => c.trim()).filter(Boolean);
-                    
-                    document.getElementById('set_shopName').value = shop.shop_name || '';
-                    document.getElementById('set_description').value = shop.description || '';
-                    document.getElementById('set_categories').value = shop.categories || '';
-                    document.getElementById('set_phone').value = shop.phone || '';
-                    document.getElementById('set_telegram').value = shop.telegram || '';
+                    document.getElementById('set_shopName').value = shop.shop_name || ''; document.getElementById('set_description').value = shop.description || ''; document.getElementById('set_categories').value = shop.categories || ''; document.getElementById('set_phone').value = shop.phone || ''; document.getElementById('set_telegram').value = shop.telegram || '';
                     if(shop.theme_color) { selectTheme(shop.theme_color); document.getElementById('set_theme').value = shop.theme_color; }
                 }
                 loadInventory();
-            } else {
-                window.location.href = 'landing.html';
-            }
+            } else { window.location.href = 'landing.html'; }
         };
 
-        function switchTab(tabId, btnElement) {
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            btnElement.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-            
-            if(tabId === 'tab-inventory') loadInventory();
-            if(tabId === 'tab-orders') loadOrders();
-        }
-
-        // --- ЛОГІКА ЗАМОВЛЕНЬ ---
-        
-        function formatCardInput(input) {
-            let val = input.value.replace(/\D/g, ''); 
-            let res = '';
-            for(let i=0; i<val.length; i++) {
-                if(i > 0 && i % 4 === 0) res += ' ';
-                res += val[i];
-            }
-            input.value = res.substring(0, 19); 
-        }
-
-        function saveCardToLocal(val) {
-            localStorage.setItem('saved_card_number', val);
-        }
-
-        function sendToTelegram(phone, amount, inputId) {
-            const cardInput = document.getElementById(inputId);
-            const cardValue = cardInput.value.trim() || 'картку не вказано';
-            
-            let tgMessage = encodeURIComponent(`Вітаю! Дякуємо за замовлення. 🛒\nСума до оплати: ${amount} грн.\nРеквізити картки: ${cardValue}`);
-            window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank');
-        }
+        function switchTab(tabId, btnElement) { document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active')); btnElement.classList.add('active'); document.getElementById(tabId).classList.add('active'); if(tabId === 'tab-inventory') loadInventory(); if(tabId === 'tab-orders') loadOrders(); }
+        function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
+        function saveCardToLocal(val) { localStorage.setItem('saved_card_number', val); }
+        function sendToTelegram(phone, amount, inputId) { const cardInput = document.getElementById(inputId); const cardValue = cardInput.value.trim() || 'картку не вказано'; let tgMessage = encodeURIComponent(`Вітаю! Дякуємо за замовлення. 🛒\nСума до оплати: ${amount} грн.\nРеквізити картки: ${cardValue}`); window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank'); }
 
         async function loadOrders() {
             if(!currentUser) return;
-            const listEl = document.getElementById('ordersList');
-            listEl.innerHTML = '<p style="text-align:center; color:#888;">⏳ Оновлення даних...</p>';
-            
-            const { data, error } = await sb.from('orders')
-                .select('*')
-                .eq('owner_id', currentUser.id)
-                .eq('status', 'Нове')
-                .order('created_at', { ascending: false });
-            
+            const listEl = document.getElementById('ordersList'); listEl.innerHTML = '<p style="text-align:center; color:#888;">⏳ Оновлення даних...</p>';
+            const { data, error } = await sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Нове').order('created_at', { ascending: false });
             if(error) { listEl.innerHTML = '<p style="color:#ff4444; text-align:center;">Помилка завантаження.</p>'; return; }
-            
             listEl.innerHTML = '';
-            if(!data || data.length === 0) {
-                listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:#888; border: 1px dashed #333; border-radius: 12px;">У вас поки немає нових замовлень.</div>';
-                return;
-            }
+            if(!data || data.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:#888; border: 1px dashed #333; border-radius: 12px;">У вас поки немає нових замовлень.</div>'; return; }
 
             const savedCard = localStorage.getItem('saved_card_number') || '';
-
             data.forEach(o => {
-                let itemsText = '';
-                if(o.items && Array.isArray(o.items)) {
-                    itemsText = o.items.map(i => `${i.title} (${i.qty} шт.)`).join(' | ');
-                }
-
-                let phoneClean = o.phone.replace(/\D/g, '');
-                if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean;
-
+                let itemsText = ''; if(o.items && Array.isArray(o.items)) itemsText = o.items.map(i => `${i.title} (${i.qty} шт.)`).join(' | ');
+                let phoneClean = o.phone.replace(/\D/g, ''); if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean;
                 let actionHtml = '';
-                if(o.payment_type === 'На картку') {
-                    actionHtml = `
-                    <div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div>
-                    <div class="action-row">
-                        <div class="card-input-wrapper">
-                            <input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric">
-                        </div>
-                        <button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button>
-                    </div>`;
-                }
-
-                listEl.innerHTML += `
-                    <div class="order-card" id="order_${o.id}">
-                        <div class="order-header">🛒 ${itemsText}</div>
-                        <div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div>
-                        <div class="phone-row">
-                            <span class="phone-number">${o.phone}</span>
-                            <a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a>
-                        </div>
-                        <div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div>
-                        <div class="order-row">Оплата: <strong style="${o.payment_type==='На картку' ? 'color:#ffb84d;' : ''}">${o.payment_type}</strong></div>
-                        <div class="order-sum">💰 Сума: ${o.total_amount} грн</div>
-                        ${actionHtml}
-                        <button class="btn-done" onclick="completeOrder('${o.id}')">☑ ВИКОНАНО (Відправити в продані)</button>
-                    </div>
-                `;
+                if(o.payment_type === 'На картку') { actionHtml = `<div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div><div class="action-row"><div class="card-input-wrapper"><input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric"></div><button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button></div>`; }
+                listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-row">Оплата: <strong style="${o.payment_type==='На картку' ? 'color:#ffb84d;' : ''}">${o.payment_type}</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${actionHtml}<button class="btn-done" onclick="completeOrder('${o.id}')">☑ ВИКОНАНО (Відправити в продані)</button></div>`;
             });
         }
 
         async function completeOrder(id) {
-            if(!confirm("Підтвердити виконання замовлення? Воно перейде в статистику проданих товарів.")) return;
-            const btn = document.querySelector(`#order_${id} .btn-done`);
-            btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
-            
+            if(!confirm("Підтвердити виконання замовлення?")) return;
+            const btn = document.querySelector(`#order_${id} .btn-done`); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
             const { error } = await sb.from('orders').update({ status: 'Виконано' }).eq('id', id);
-            
             if(error) { alert("Помилка: " + error.message); btn.innerHTML = '☑ ВИКОНАНО'; btn.disabled = false; return; }
-            
-            const card = document.getElementById(`order_${id}`);
-            card.style.transition = '0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                card.remove();
-                if(document.querySelectorAll('.order-card').length === 0) {
-                    document.getElementById('ordersList').innerHTML = '<div style="text-align:center; padding: 40px; color:#888; border: 1px dashed #333; border-radius: 12px;">Усі замовлення опрацьовано! 🎉</div>';
-                }
-            }, 300);
+            const card = document.getElementById(`order_${id}`); card.style.transition = '0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
+            setTimeout(() => { card.remove(); if(document.querySelectorAll('.order-card').length === 0) document.getElementById('ordersList').innerHTML = '<div style="text-align:center; padding: 40px; color:#888; border: 1px dashed #333; border-radius: 12px;">Усі замовлення опрацьовано! 🎉</div>'; }, 300);
         }
 
-        // --- ІНШИЙ ФУНКЦІОНАЛ ---
         function selectTheme(themeName) { document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active')); document.getElementById('theme_' + themeName).classList.add('active'); document.getElementById('set_theme').value = themeName; }
-
         async function saveSettings() {
-            const btn = document.getElementById('saveSettingsBtn');
-            btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
-
+            const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
             const updateData = { shop_name: document.getElementById('set_shopName').value.trim(), description: document.getElementById('set_description').value.trim(), categories: document.getElementById('set_categories').value.trim(), phone: document.getElementById('set_phone').value.trim(), telegram: document.getElementById('set_telegram').value.trim(), theme_color: document.getElementById('set_theme').value };
-
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
-
-            if(error) { alert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } 
-            else {
+            if(error) { alert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
                 if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = 'магазин ' + updateData.shop_name;
                 if(updateData.categories) shopCategories = updateData.categories.split(',').map(c => c.trim()).filter(Boolean);
-                btn.innerHTML = '✅ УСПІШНО ЗБЕРЕЖЕНО'; btn.style.background = '#1a2e1a';
-                setTimeout(() => { btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.style.background = 'linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%)'; btn.disabled = false; }, 2000);
+                btn.innerHTML = '✅ УСПІШНО ЗБЕРЕЖЕНО'; btn.style.background = '#1a2e1a'; setTimeout(() => { btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.style.background = 'linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%)'; btn.disabled = false; }, 2000);
             }
         }
 
-        async function loadInventory() {
-            if(!currentUser) return;
-            const { data, error } = await sb.from('products').select('*').eq('owner_id', currentUser.id).order('created_at', { ascending: false });
-            if(data) { inventoryData = data; renderInvCats(); filterInventory(); }
-        }
-
-        function renderInvCats() {
-            const container = document.getElementById('inv-cat-container');
-            container.innerHTML = `<button class="cat-btn ${currentInvCat === 'Все' ? 'active' : ''}" onclick="setInvCat('Все')">Всі товари</button>`;
-            let catsToRender = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))];
-            if (!catsToRender.includes("Різне")) catsToRender.push("Різне");
-            catsToRender.forEach(c => { container.innerHTML += `<button class="cat-btn ${currentInvCat === c ? 'active' : ''}" onclick="setInvCat('${c}')">${c}</button>`; });
-        }
-
+        async function loadInventory() { if(!currentUser) return; const { data, error } = await sb.from('products').select('*').eq('owner_id', currentUser.id).order('created_at', { ascending: false }); if(data) { inventoryData = data; renderInvCats(); filterInventory(); } }
+        function renderInvCats() { const container = document.getElementById('inv-cat-container'); container.innerHTML = `<button class="cat-btn ${currentInvCat === 'Все' ? 'active' : ''}" onclick="setInvCat('Все')">Всі товари</button>`; let catsToRender = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsToRender.includes("Різне")) catsToRender.push("Різне"); catsToRender.forEach(c => { container.innerHTML += `<button class="cat-btn ${currentInvCat === c ? 'active' : ''}" onclick="setInvCat('${c}')">${c}</button>`; }); }
         function setInvCat(c) { currentInvCat = c; renderInvCats(); filterInventory(); }
-
-        function filterInventory() {
-            const q = document.getElementById('searchInv').value.toLowerCase();
-            let filtered = inventoryData;
-            if (currentInvCat !== 'Все') filtered = filtered.filter(i => (i.category || 'Різне') === currentInvCat);
-            filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || 'Різне').toLowerCase().includes(q));
-            renderInventory(filtered);
-        }
+        function filterInventory() { const q = document.getElementById('searchInv').value.toLowerCase(); let filtered = inventoryData; if (currentInvCat !== 'Все') filtered = filtered.filter(i => (i.category || 'Різне') === currentInvCat); filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || 'Різне').toLowerCase().includes(q)); renderInventory(filtered); }
 
         function renderInventory(list) {
             const listEl = document.getElementById('inventoryList'); listEl.innerHTML = '';
             if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:#666;">Товарів не знайдено.</p>'; return; }
-
-            let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))];
-            if (!catsOpts.includes("Різне")) catsOpts.push("Різне");
-
+            let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsOpts.includes("Різне")) catsOpts.push("Різне");
             list.forEach(p => {
                 let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || 'data:image/png;base64,...';
-                let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}">`;
-                catsOpts.forEach(c => { let sel = (p.category || 'Різне') === c ? 'selected' : ''; selectHtml += `<option value="${c}" ${sel}>📁 ${c}</option>`; });
-                selectHtml += `</select>`;
-
-                listEl.innerHTML += `
-                    <div class="inv-item" id="item_${p.id}">
-                        <div class="inv-top">
-                            <img src="${imgUrl}" class="inv-img">
-                            <div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}<br><button class="inv-qr" onclick="printQR('${p.id}')">🖨️ Друк QR</button></div>
-                        </div>
-                        <div class="inv-actions">
-                            <div class="inv-col"><span class="inv-label">Ціна (грн)</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div>
-                            <div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" style="color:#fff;" id="qty_${p.id}" value="${p.quantity || 0}"></div>
-                            <button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">💾 Зберегти</button>
-                            <button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')" title="Видалити">🗑️</button>
-                        </div>
-                    </div>`;
+                let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}">`; catsOpts.forEach(c => { let sel = (p.category || 'Різне') === c ? 'selected' : ''; selectHtml += `<option value="${c}" ${sel}>📁 ${c}</option>`; }); selectHtml += `</select>`;
+                listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}<br><button class="inv-qr" onclick="printQR('${p.id}')">🖨️ Друк QR</button></div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна (грн)</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" style="color:#fff;" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">💾 Зберегти</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')" title="Видалити">🗑️</button></div></div>`;
             });
         }
 
-        async function saveItemDb(id) {
-            const btn = document.getElementById(`btn_${id}`);
-            const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value;
-            btn.innerHTML = '⏳...'; btn.disabled = true;
-            const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id);
-            if(error) { alert('Помилка: ' + error.message); btn.innerHTML = '💾 Зберегти'; btn.disabled = false; } 
-            else {
-                btn.innerHTML = '✅ Збережено'; btn.style.background = '#1a2e1a';
-                const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; }
-                setTimeout(() => { btn.innerHTML = '💾 Зберегти'; btn.style.background = 'var(--olive)'; btn.disabled = false; if(currentInvCat !== 'Все' && currentInvCat !== cat) filterInventory(); }, 1500);
-            }
-        }
-
-        async function deleteItemDb(id) {
-            if(!confirm('Ви впевнені, що хочете видалити цей товар назавжди?')) return;
-            const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true;
-            try {
-                const item = inventoryData.find(i => i.id === id);
-                await sb.from('ai_content').delete().eq('product_id', id);
-                await sb.from('products').delete().eq('id', id);
-                if (item && item.images && item.images.length > 0) {
-                    const filesToDelete = item.images.map(url => { const parts = url.split('/'); return parts[parts.length - 1]; });
-                    if (filesToDelete.length > 0) await sb.storage.from('smart_media').remove(filesToDelete);
-                }
-                inventoryData = inventoryData.filter(i => i.id !== id); filterInventory();
-            } catch(e) { alert('Помилка видалення: ' + e.message); btn.innerHTML = '🗑️'; btn.disabled = false; }
-        }
+        async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; btn.innerHTML = '⏳...'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(error) { alert('Помилка: ' + error.message); btn.innerHTML = '💾 Зберегти'; btn.disabled = false; } else { btn.innerHTML = '✅ Збережено'; btn.style.background = '#1a2e1a'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerHTML = '💾 Зберегти'; btn.style.background = 'var(--olive)'; btn.disabled = false; if(currentInvCat !== 'Все' && currentInvCat !== cat) filterInventory(); }, 1500); } }
+        async function deleteItemDb(id) { if(!confirm('Ви впевнені, що хочете видалити цей товар назавжди?')) return; const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; try { const item = inventoryData.find(i => i.id === id); await sb.from('ai_content').delete().eq('product_id', id); await sb.from('products').delete().eq('id', id); if (item && item.images && item.images.length > 0) { const filesToDelete = item.images.map(url => { const parts = url.split('/'); return parts[parts.length - 1]; }); if (filesToDelete.length > 0) await sb.storage.from('smart_media').remove(filesToDelete); } inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); } catch(e) { alert('Помилка видалення: ' + e.message); btn.innerHTML = '🗑️'; btn.disabled = false; } }
 
         function printQR(id) { alert("Буде реалізовано у наступному оновленні."); }
         function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; document.getElementById(camId).style.background = '#000'; document.getElementById(galId).style.background = '#000'; document.getElementById(camId).innerHTML = '📷 Камера'; document.getElementById(galId).innerHTML = '🖼 Галерея'; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.style.background = '#1a2e1a'; active.innerHTML = '✅ Є фото'; } }
         function log(msg, isErr = false) { const s = document.getElementById('status'); s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : '#6b873b'; s.innerText += msg + '\n'; s.scrollTop = s.scrollHeight; }
         function sendSupportMsg() { const input = document.getElementById('chatInput'); const val = input.value.trim(); if(!val) return; const box = document.getElementById('chatBox'); box.innerHTML += `<div class="msg user">${val}</div>`; input.value = ''; box.scrollTop = box.scrollHeight; setTimeout(() => { box.innerHTML += `<div class="msg admin">Дякуємо! Звернення прийнято.</div>`; box.scrollTop = box.scrollHeight; }, 1000); }
 
-        async function compressImg(file) {
-            if(!file) return null;
-            return new Promise((resolve) => {
-                const reader = new FileReader(); reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image(); img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; 
-                        let width = img.width; let height = img.height;
-                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
-                        else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; }
-                        canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        canvas.toBlob((blob) => { const newFile = new File([blob], file.name, { type: 'image/jpeg' }); const reader2 = new FileReader(); reader2.readAsDataURL(blob); reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] }); }, 'image/jpeg', 0.7); 
-                    };
-                };
-            });
-        }
+        async function compressImg(file) { if(!file) return null; return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; let width = img.width; let height = img.height; if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { const newFile = new File([blob], file.name, { type: 'image/jpeg' }); const reader2 = new FileReader(); reader2.readAsDataURL(blob); reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] }); }, 'image/jpeg', 0.7); }; }; }); }
 
         async function startAI() {
             const btn = document.getElementById('mainBtn'); let pr = document.getElementById('price').value; let qt = document.getElementById('qty').value || 1;
@@ -584,7 +345,8 @@
                 const imagesArray = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ через захищений сервер...");
-                const promptText = `Ти експерт з продажу. Аналізуй фото, JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Опис", "rec_price": "Ціна (тільки цифра)"}. Мова: українська. Без markdown.`;
+                // ОНОВЛЕНИЙ ПРОМПТ БЕЗ ЕМОДЗІ
+                const promptText = `Ти досвідчений експерт з продажу. Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Напиши об'ємний, діловий та продаючий опис. Розкажи про переваги. Використовуй <br><br> для абзаців. УВАГА: КАТЕГОРИЧНО ЗАБОРОНЕНО використовувати будь-які емодзі (смайлики) в тексті!", "rec_price": "Ціна (тільки цифра)"}. Мова: українська. Без markdown.`;
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
                 if (aiError) throw new Error("Помилка Агента: " + aiError.message);
                 
