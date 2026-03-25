@@ -51,14 +51,12 @@
         
         .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: var(--header-bg); z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); padding-bottom: 8px; transition: background 0.3s; }
         
-        /* РЯДОК 1: Лого та Пошук */
         .header-main { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; max-width: 900px; margin: auto; gap: 15px; }
         .logo { color: var(--olive); font-size: 18px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
         .search-container { flex-grow: 1; }
         .search-box { width: 100%; padding: 10px 14px; border-radius: 8px; background: #000; color: #fff; border: 2px solid #444; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.3); }
         .search-box:focus { border-color: var(--olive); }
         
-        /* РЯДОК 2: Кнопки */
         .customer-btns-wrapper { display: none; max-width: 900px; margin: auto; }
         .customer-btns { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding: 5px 15px 10px; align-items: center; white-space: nowrap; }
         .customer-btns::-webkit-scrollbar { display: none; }
@@ -67,7 +65,6 @@
         .head-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
         
-        /* ОНОВЛЕННЯ: Кнопка "Назад" тепер просто великий текст з подвійною стрілкою */
         .head-btn.back-btn, body.theme-light .head-btn.back-btn, body.theme-neutral .head-btn.back-btn { 
             background: transparent !important; 
             color: var(--olive-dark) !important; 
@@ -84,14 +81,12 @@
             transform: translateX(-4px);
         }
 
-        /* ВИПАДАЮЧЕ МЕНЮ */
         .dropdown { position: relative; display: inline-block; }
         .dropdown-content { display: none; position: absolute; left: 0; background-color: var(--panel); min-width: 220px; box-shadow: 0px 8px 20px 0px rgba(0,0,0,0.5); z-index: 200; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; top: 100%; margin-top: 8px; transition: 0.3s; }
         .dropdown-content a { color: var(--text); padding: 14px 18px; text-decoration: none; display: block; font-size: 14px; border-bottom: 1px solid var(--border); font-weight: 500; }
         .dropdown-content a:last-child { border-bottom: none; }
         .show { display: block; }
         
-        /* РЯДОК 3: Категорії */
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; scrollbar-width: none; max-width: 900px; margin: auto; }
         .nav-scroll::-webkit-scrollbar { display: none; }
         .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #3a414a; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
@@ -100,7 +95,6 @@
         .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
         .shop-desc { font-size: 14px; color: #aaa; line-height: 1.4; background: var(--panel); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
 
-        /* СІТКА ТОВАРІВ */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 15px 20px; max-width: 900px; margin: auto; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
         
@@ -112,7 +106,6 @@
         .title { font-weight: 600; font-size: 14px; color: #fff; line-height: 1.3; margin-bottom: 8px; height: 36px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: 0.3s; }
         .price { color: var(--olive); font-size: 16px; font-weight: 900; margin-bottom: 12px; margin-top: auto; }
         
-        /* Кнопки дій карток (Анти-перенос) */
         .card-actions { display: flex; gap: 6px; }
         .btn-action { flex: 1; padding: 10px 2px; border-radius: 8px; font-weight: bold; font-size: 13px; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; box-sizing: border-box; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .btn-action:active { transform: translateY(2px); }
@@ -122,12 +115,10 @@
         
         .empty-state { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #888; background: var(--panel); border-radius: 12px; border: 1px dashed var(--border); font-size: 14px;}
 
-        /* ПЛАВАЮЧА КНОПКА КОШИКА (FAB) */
         .cart-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--olive); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.4); cursor: pointer; z-index: 900; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; }
         .cart-fab:active { transform: scale(0.9); }
         .cart-badge { position: absolute; top: 0; right: 0; background: #ef4444; color: #fff; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
 
-        /* ВИЇЗНА ПАНЕЛЬ КОШИКА */
         .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s; }
         .cart-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 450px; height: 100%; background: var(--panel); z-index: 1001; transition: right 0.3s ease; display: flex; flex-direction: column; box-shadow: -5px 0 20px rgba(0,0,0,0.5); }
         .cart-panel.open { right: 0; }
@@ -151,7 +142,6 @@
         .cart-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
         .cart-total span { color: var(--olive); font-size: 22px; }
         
-        /* ФОРМА ОФОРМЛЕННЯ */
         .checkout-form { display: none; flex-direction: column; gap: 12px; margin-top: 15px; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .checkout-input { width: 100%; padding: 12px 14px; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none; box-sizing: border-box; font-size: 14px; }
@@ -164,7 +154,6 @@
         .btn-large:active { transform: translateY(4px); box-shadow: none; }
         .btn-large:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* ЛАЙТБОКС */
         .lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; opacity: 0; transition: opacity 0.3s; }
         .lightbox.show { display: flex; opacity: 1; }
         .lightbox img { max-width: 95%; max-height: 80vh; object-fit: contain; border-radius: 8px; user-select: none; }
@@ -225,14 +214,16 @@
                 <option value="Укрпошта">Укрпошта</option>
                 <option value="Самовивіз">Самовивіз</option>
             </select>
-            <div id="address_fields">
+            
+            <div id="address_fields" style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="order_region" class="checkout-input" placeholder="Область">
                 <div class="form-row">
-                    <input type="text" id="order_region" class="checkout-input" placeholder="Область">
                     <input type="text" id="order_city" class="checkout-input" placeholder="Місто">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="order_branch" class="checkout-input" placeholder="№ Відділення">
+                    <input type="text" inputmode="numeric" pattern="[0-9]*" id="order_index" class="checkout-input" placeholder="Індекс" style="display: none;">
                 </div>
-                <input type="text" inputmode="numeric" pattern="[0-9]*" id="order_branch" class="checkout-input" placeholder="Номер відділення (Нова Пошта)">
-                <input type="text" inputmode="numeric" pattern="[0-9]*" id="order_index" class="checkout-input" placeholder="Поштовий індекс" style="display: none;">
             </div>
+            
             <span class="checkout-label">Оплата:</span>
             <select id="order_payment" class="checkout-input">
                 <option value="При отриманні">Оплата при отриманні (Накладений платіж)</option>
@@ -270,7 +261,6 @@
         btnsWrapper.style.display = 'block'; 
 
         if (user && ownerId && user.id === ownerId) {
-            // ОНОВЛЕННЯ: Подвійна стрілка, капс і без фону
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">« НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
@@ -344,7 +334,13 @@
 
     function toggleDelivery() {
         const method = document.getElementById('order_delivery').value; const addressFields = document.getElementById('address_fields'); const branchInput = document.getElementById('order_branch'); const indexInput = document.getElementById('order_index');
-        if(method === 'Самовивіз') { addressFields.style.display = 'none'; } else { addressFields.style.display = 'block'; if (method === 'Укрпошта') { branchInput.style.display = 'none'; indexInput.style.display = 'block'; } else { branchInput.style.display = 'block'; indexInput.style.display = 'none'; branchInput.placeholder = "Номер відділення (Нова Пошта)"; } }
+        if(method === 'Самовивіз') { 
+            addressFields.style.display = 'none'; 
+        } else { 
+            addressFields.style.display = 'flex'; 
+            if (method === 'Укрпошта') { branchInput.style.display = 'none'; indexInput.style.display = 'block'; } 
+            else { branchInput.style.display = 'block'; indexInput.style.display = 'none'; branchInput.placeholder = "№ Відділення"; } 
+        }
     }
 
     async function submitOrder() {
