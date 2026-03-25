@@ -10,22 +10,27 @@
         /* БАЗОВІ ТЕМИ (Хамелеон) */
         :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --text: #e5e7eb; --border: #2a2e35; --header-bg: rgba(13, 15, 18, 0.98); }
         
+        /* Світла тема */
         body.theme-light { --bg: #f9fafb; --panel: #ffffff; --text: #111827; --border: #e5e7eb; --header-bg: rgba(255, 255, 255, 0.98); }
-        body.theme-light .back-btn { background: #ffffff; color: #1f2937; border-color: #d1d5db; }
+        body.theme-light .back-btn { background: #ffffff; color: #1f2937; border: 1px solid #d1d5db; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
         body.theme-light .title { color: #111827; }
         body.theme-light .desc-box { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+        body.theme-light .img-wrap { background: #ffffff; }
 
+        /* Нейтральна тема */
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --text: #334155; --border: #cbd5e1; --header-bg: rgba(245, 245, 245, 0.98); }
-        body.theme-neutral .back-btn { background: #ffffff; color: #475569; border-color: #cbd5e1; }
+        body.theme-neutral .back-btn { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
         body.theme-neutral .title { color: #1e293b; }
         body.theme-neutral .desc-box { background: #ffffff; color: #475569; border-color: #cbd5e1; }
+        body.theme-neutral .btn-buy { background: #475569; box-shadow: 0 4px 0 #334155; }
+        body.theme-neutral .btn-buy.added { background: #334155; box-shadow: 0 4px 0 #1e293b; }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 90px; transition: 0.3s; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 90px; transition: background 0.3s, color 0.3s; }
         
         /* Шапка */
         .header { position: fixed; top: 0; left: 0; width: 100%; background: var(--header-bg); z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); padding: 12px 15px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; transition: 0.3s; }
-        .back-btn { background: #1a1e24; color: #ccc; border: 1px solid #333; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .back-btn:active { transform: scale(0.95); }
+        .back-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #3a414a; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        .back-btn:active { transform: translateY(2px); box-shadow: none; }
 
         .content { margin-top: 65px; max-width: 600px; margin-left: auto; margin-right: auto; background: var(--panel); min-height: 100vh; transition: 0.3s;}
         
@@ -37,14 +42,18 @@
         
         /* Точки індикації */
         .dots { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: center; gap: 8px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: 0.3s; }
-        .dot.active { background: var(--olive); transform: scale(1.2); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .dot.active { background: var(--olive); transform: scale(1.3); }
 
         /* ЛАЙТБОКС (На весь екран) */
         .lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; opacity: 0; transition: opacity 0.3s; }
         .lightbox.show { display: flex; opacity: 1; }
-        .lightbox img { max-width: 95%; max-height: 80vh; object-fit: contain; border-radius: 8px; }
-        .lb-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .lightbox img { max-width: 95%; max-height: 80vh; object-fit: contain; border-radius: 8px; user-select: none; }
+        .lb-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2001;}
+        .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); border: none; color: #fff; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2001; transition: 0.2s;}
+        .lb-nav:active { background: var(--olive); }
+        .lb-prev { left: 10px; } .lb-next { right: 10px; }
+        .lb-counter { position: absolute; bottom: 30px; color: #fff; font-size: 16px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px;}
 
         .info-wrap { padding: 20px; }
         .title { font-size: 22px; font-weight: bold; color: #fff; margin: 0 0 10px 0; line-height: 1.3; transition: 0.3s; }
@@ -67,7 +76,10 @@
 
 <div class="lightbox" id="lightbox">
     <button class="lb-close" onclick="closeLightbox()">✖</button>
+    <button class="lb-nav lb-prev" id="lb-prev" onclick="lbPrev()">❮</button>
+    <button class="lb-nav lb-next" id="lb-next" onclick="lbNext()">❯</button>
     <img id="lb-img" src="">
+    <div class="lb-counter" id="lb-counter"></div>
 </div>
 
 <div class="content" id="contentBox">
@@ -81,6 +93,8 @@
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let currentProduct = null;
+    let lbImages = [];
+    let lbIndex = 0;
 
     window.onload = async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -91,50 +105,55 @@
             return;
         }
 
-        // Завантажуємо товар
-        const { data: p, error } = await sb.from('products').select('*, shops(theme_color), ai_content(fancy_description)').eq('id', id).single();
+        // 1. Завантажуємо товар
+        const { data: p, error } = await sb.from('products').select('*, ai_content(fancy_description)').eq('id', id).single();
         
         if (error || !p) {
             document.getElementById('contentBox').innerHTML = '<div style="padding:40px; text-align:center; color:#ff4444;">❌ Помилка завантаження товару</div>';
             return;
         }
         
-        currentProduct = p; // Зберігаємо глобально для кошика
+        currentProduct = p;
 
-        // Застосовуємо тему магазину (Хамелеон)
-        if (p.shops && p.shops.theme_color && p.shops.theme_color !== 'dark') {
-            document.body.classList.add('theme-' + p.shops.theme_color);
+        // 2. Налаштування кнопки "Назад" та завантаження теми
+        const backBtn = document.getElementById('backBtn');
+        if (p.owner_id) {
+            backBtn.href = `shop.html?owner=${p.owner_id}`;
+            
+            // Магія Хамелеона: дізнаємось тему магазину
+            const { data: shop } = await sb.from('shops').select('theme_color').eq('owner_id', p.owner_id).single();
+            if(shop && shop.theme_color && shop.theme_color !== 'dark') {
+                document.body.classList.add('theme-' + shop.theme_color);
+            }
         }
 
-        // Налаштування кнопки "Назад"
-        const backBtn = document.getElementById('backBtn');
-        if (p.owner_id) backBtn.href = `shop.html?owner=${p.owner_id}`;
-
-        // Формуємо масив фотографій
+        // 3. Формуємо масив фотографій для каруселі
         let imagesArray = [];
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
             imagesArray = p.images;
-        } else if (p.image_url_1) {
-            imagesArray.push(p.image_url_1);
-        } else if (p.image_url) {
-            imagesArray.push(p.image_url);
         } else {
-            imagesArray.push('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+            imagesArray = [p.image_url_1, p.image_url_2, p.image_url_3].filter(Boolean);
         }
+        
+        if(imagesArray.length === 0) {
+            imagesArray.push(p.image_url || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+        }
+        
+        lbImages = imagesArray; // Зберігаємо для лайтбокса
 
         // Генеруємо HTML каруселі
         let carouselHtml = `<div class="carousel" id="imgSlider" onscroll="updateDots()">`;
         let dotsHtml = `<div class="dots">`;
         
         imagesArray.forEach((img, idx) => {
-            carouselHtml += `<img src="${img}" onclick="openLightbox('${img}')" alt="Фото ${idx+1}">`;
+            carouselHtml += `<img src="${img}" onclick="openLightbox(${idx})" alt="Фото ${idx+1}">`;
             dotsHtml += `<div class="dot ${idx === 0 ? 'active' : ''}" id="dot-${idx}"></div>`;
         });
         
         carouselHtml += `</div>`;
         dotsHtml += `</div>`;
 
-        // Витягуємо ІІ-опис
+        // 4. Витягуємо ІІ-опис
         let desc = '<span style="color:#666;">Опис відсутній.</span>';
         if (p.ai_content && p.ai_content.length > 0 && p.ai_content[0].fancy_description) {
             desc = p.ai_content[0].fancy_description;
@@ -155,11 +174,10 @@
             </div>
         `;
 
-        // Активуємо кнопку кошика
         document.getElementById('cartBtn').disabled = false;
     };
 
-    // СИНХРОНІЗАЦІЯ ТОЧОК ПРИ СВАЙПІ КАРУСЕЛІ
+    // --- СИНХРОНІЗАЦІЯ ТОЧОК КАРУСЕЛІ ---
     function updateDots() {
         const slider = document.getElementById('imgSlider');
         const dots = document.querySelectorAll('.dot');
@@ -175,44 +193,51 @@
         });
     }
 
-    // ЛАЙТБОКС (Збільшення фото)
-    function openLightbox(imgSrc) {
-        const lb = document.getElementById('lightbox');
-        document.getElementById('lb-img').src = imgSrc;
-        lb.classList.add('show');
+    // --- ЛАЙТБОКС (Збільшення фото) ---
+    function openLightbox(index) {
+        lbIndex = index;
+        updateLightboxView();
+        document.getElementById('lightbox').classList.add('show');
     }
     
-    function closeLightbox() {
-        document.getElementById('lightbox').classList.remove('show');
+    function updateLightboxView() {
+        document.getElementById('lb-img').src = lbImages[lbIndex];
+        const isMulti = lbImages.length > 1;
+        document.getElementById('lb-prev').style.display = isMulti ? 'flex' : 'none';
+        document.getElementById('lb-next').style.display = isMulti ? 'flex' : 'none';
+        document.getElementById('lb-counter').style.display = isMulti ? 'block' : 'none';
+        document.getElementById('lb-counter').innerText = `${lbIndex + 1} / ${lbImages.length}`;
     }
+    
+    function lbNext() { lbIndex = (lbIndex + 1) % lbImages.length; updateLightboxView(); }
+    function lbPrev() { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; updateLightboxView(); }
+    function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
 
-    // БАЗОВИЙ ДВИЖОК КОШИКА (Локальне сховище)
+    // --- ДВИЖОК КОШИКА ---
     function addToCart() {
         if (!currentProduct) return;
         
-        // Дістаємо кошик з пам'яті (або створюємо новий)
         let cart = JSON.parse(localStorage.getItem('smart_cart')) || [];
-        
-        // Перевіряємо, чи є вже такий товар
         let existingItem = cart.find(item => item.id === currentProduct.id);
         
         if (existingItem) {
             existingItem.qty += 1;
         } else {
+            let img = currentProduct.image_url_1 || (currentProduct.images && currentProduct.images[0]) || currentProduct.image_url;
             cart.push({
                 id: currentProduct.id,
                 title: currentProduct.title,
                 price: currentProduct.price,
-                image: (currentProduct.images && currentProduct.images[0]) || currentProduct.image_url_1,
+                image: img,
+                img: img, // Дублюємо для сумісності з Вітриною
                 owner_id: currentProduct.owner_id,
                 qty: 1
             });
         }
         
-        // Зберігаємо назад у пам'ять
         localStorage.setItem('smart_cart', JSON.stringify(cart));
         
-        // Анімація успіху на кнопці
+        // Анімація успіху
         const btn = document.getElementById('cartBtn');
         btn.innerHTML = '✅ ДОДАНО В КОШИК';
         btn.classList.add('added');
@@ -220,7 +245,7 @@
         setTimeout(() => {
             btn.innerHTML = '🛒 У КОШИК';
             btn.classList.remove('added');
-        }, 2000);
+        }, 1500);
     }
 </script>
 </body>
