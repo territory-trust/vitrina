@@ -394,7 +394,6 @@
 
                 let actionHtml = '';
                 if(o.payment_type === 'На картку') {
-                    // ОНОВЛЕНО: Чітка та яскрава біла підказка
                     actionHtml = `
                     <div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div>
                     <div class="action-row">
@@ -411,7 +410,7 @@
                         <div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div>
                         <div class="phone-row">
                             <span class="phone-number">${o.phone}</span>
-                            <a href="tel:${phoneClean}" class="btn-call">📞 Підзвонити</a>
+                            <a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a>
                         </div>
                         <div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div>
                         <div class="order-row">Оплата: <strong style="${o.payment_type==='На картку' ? 'color:#ffb84d;' : ''}">${o.payment_type}</strong></div>
