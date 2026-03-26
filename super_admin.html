@@ -45,7 +45,11 @@
         .shop-contacts { background: var(--input-bg); padding: 10px; border-radius: 8px; font-size: 13px; color: var(--text-muted); line-height: 1.5; border: 1px solid var(--border); }
         .shop-contacts strong { color: var(--text); }
         
-        .btn-nuke { background: rgba(239, 68, 68, 0.1); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+        .shop-stats-row { display: flex; gap: 10px; margin-top: 5px; }
+        .stat-badge { background: rgba(107, 135, 59, 0.1); border: 1px solid rgba(107, 135, 59, 0.3); color: var(--olive); padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px; flex: 1; justify-content: center; }
+        .stat-badge.empty { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--red); }
+
+        .btn-nuke { background: rgba(239, 68, 68, 0.1); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; margin-top: 5px; }
         .btn-nuke:active { transform: scale(0.98); background: var(--red); color: #fff; }
 
         /* КАСТОМНІ ВІКНА */
@@ -121,15 +125,11 @@
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         
-        // ==========================================
-        // 🔒 СИСТЕМА БЕЗПЕКИ: Твій особистий доступ
-        // ==========================================
-        const ADMIN_EMAIL = "I0985887331@gmail.com"; 
+        const ADMIN_IDENTIFIER = "0985887331"; 
 
         let globalShops = [];
         let confirmCallback = null;
 
-        // Логіка кастомного Alert
         function showAlert(msg, callback) {
             document.getElementById('alertText').innerHTML = msg;
             document.getElementById('alertOverlay').style.display = 'block';
@@ -142,7 +142,6 @@
             };
         }
 
-        // Логіка кастомного Confirm
         function showConfirm(msg, callback) {
             document.getElementById('confirmText').innerHTML = msg;
             document.getElementById('confirmOverlay').style.display = 'block';
@@ -169,8 +168,12 @@
                 return;
             }
 
-            // РОЗУМНА ПЕРЕВІРКА ДОСТУПУ (Ігнорує великі/маленькі літери)
-            if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+            const userEmail = user.email || "";
+            const userPhone = user.phone || "";
+
+            const isAuthValid = userEmail.includes(ADMIN_IDENTIFIER) || userPhone.includes(ADMIN_IDENTIFIER);
+
+            if (!isAuthValid) {
                 document.getElementById('loader').style.display = 'none';
                 showAlert("Ви не є адміністратором платформи AI-Pilot.", async () => {
                     await sb.auth.signOut();
@@ -194,11 +197,10 @@
             shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Збір даних з серверів...</p>';
 
             try {
-                // 1. Збираємо статистику
                 const [resShops, resProds, resOrders] = await Promise.all([
                     sb.from('shops').select('*'),
-                    sb.from('products').select('id, images'),
-                    sb.from('orders').select('id')
+                    sb.from('products').select('id, owner_id, images'),
+                    sb.from('orders').select('id, owner_id')
                 ]);
 
                 if (resShops.error) throw resShops.error;
@@ -207,16 +209,13 @@
                 const prodCount = resProds.data ? resProds.data.length : 0;
                 const orderCount = resOrders.data ? resOrders.data.length : 0;
 
-                // Оновлюємо дашборд
                 document.getElementById('statShops').innerText = shopCount;
                 document.getElementById('statProducts').innerText = prodCount;
                 document.getElementById('statOrders').innerText = orderCount;
 
-                // Розрахунок витрат на ІІ (приблизно $0.0002 за генерацію 1 товару)
                 const aiCost = (prodCount * 0.0002).toFixed(4);
                 document.getElementById('statAiCost').innerText = `$${aiCost}`;
 
-                // 2. Виводимо список магазинів
                 globalShops = resShops.data || [];
                 shopsContainer.innerHTML = '';
 
@@ -225,7 +224,19 @@
                     return;
                 }
 
+                // Підрахунок товарів та замовлень для кожного продавця
+                let prodCounts = {};
+                let orderCounts = {};
+                
+                if (resProds.data) resProds.data.forEach(p => { prodCounts[p.owner_id] = (prodCounts[p.owner_id] || 0) + 1; });
+                if (resOrders.data) resOrders.data.forEach(o => { orderCounts[o.owner_id] = (orderCounts[o.owner_id] || 0) + 1; });
+
                 globalShops.forEach(shop => {
+                    let pCount = prodCounts[shop.owner_id] || 0;
+                    let oCount = orderCounts[shop.owner_id] || 0;
+                    
+                    let pClass = pCount === 0 ? "stat-badge empty" : "stat-badge";
+                    
                     shopsContainer.innerHTML += `
                         <div class="shop-card" id="shopCard_${shop.owner_id}">
                             <div class="shop-header">
@@ -236,8 +247,11 @@
                             </div>
                             <div class="shop-contacts">
                                 Телефон: <strong>${shop.phone || 'Не вказано'}</strong><br>
-                                Telegram: <strong>${shop.telegram || 'Не вказано'}</strong><br>
-                                Категорії: ${shop.categories || 'Немає'}
+                                Telegram: <strong>${shop.telegram || 'Не вказано'}</strong>
+                            </div>
+                            <div class="shop-stats-row">
+                                <div class="${pClass}">📦 Товарів: ${pCount}</div>
+                                <div class="stat-badge">📑 Замовлень: ${oCount}</div>
                             </div>
                             <button class="btn-nuke" onclick="nukeShop('${shop.owner_id}', '${shop.shop_name}')">
                                 🗑️ Видалити магазин та дані
@@ -260,7 +274,6 @@
                 if(btn) { btn.innerHTML = '⏳ ВИДАЛЕННЯ...'; btn.disabled = true; }
 
                 try {
-                    // 1. Шукаємо всі товари цього продавця, щоб дістати картинки
                     const { data: products } = await sb.from('products').select('id, images').eq('owner_id', ownerId);
                     
                     let filesToDelete = [];
@@ -277,34 +290,25 @@
                             }
                         });
 
-                        // 2. Видаляємо файли з Storage
                         if (filesToDelete.length > 0) {
                             await sb.storage.from('smart_media').remove(filesToDelete);
                         }
 
-                        // 3. Видаляємо ІІ-описи (ai_content)
                         for (let pid of productIds) {
                             await sb.from('ai_content').delete().eq('product_id', pid);
                         }
                     }
 
-                    // 4. Видаляємо Товари
                     await sb.from('products').delete().eq('owner_id', ownerId);
-
-                    // 5. Видаляємо Замовлення
                     await sb.from('orders').delete().eq('owner_id', ownerId);
-
-                    // 6. Видаляємо сам Магазин
                     await sb.from('shops').delete().eq('owner_id', ownerId);
 
-                    // Прибираємо карточку з екрану
                     const card = document.getElementById(`shopCard_${ownerId}`);
                     if(card) {
                         card.style.opacity = '0';
                         setTimeout(() => card.remove(), 300);
                     }
 
-                    // Оновлюємо цифри дашборду
                     setTimeout(loadDashboard, 1000);
 
                 } catch (e) {
