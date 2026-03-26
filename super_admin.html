@@ -231,21 +231,23 @@
                 if (resOrders.data) resOrders.data.forEach(o => { orderCounts[o.owner_id] = (orderCounts[o.owner_id] || 0) + 1; });
 
                 globalShops.forEach(shop => {
-                    // ЗАХИСТ ВІД БИТИХ ДАНИХ (Перевіряємо чи є owner_id)
-                    let safeId = shop.owner_id ? shop.owner_id : 'NO_ID';
-                    let shortId = shop.owner_id ? shop.owner_id.substring(0, 8) : 'НЕМАЄ';
+                    let ownerId = shop.owner_id || 'NO_OWNER';
+                    let internalId = shop.id || 'NO_ID';
+                    let shortId = ownerId !== 'NO_OWNER' ? ownerId.substring(0, 8) : 'БЕЗ ID';
                     
-                    let pCount = prodCounts[safeId] || 0;
-                    let oCount = orderCounts[safeId] || 0;
-                    
+                    let pCount = prodCounts[ownerId] || 0;
+                    let oCount = orderCounts[ownerId] || 0;
                     let pClass = pCount === 0 ? "stat-badge empty" : "stat-badge";
                     
+                    // Використовуємо internalId для HTML ID, щоб точно знайти блок
+                    let elementId = internalId !== 'NO_ID' ? internalId : ownerId;
+                    
                     shopsContainer.innerHTML += `
-                        <div class="shop-card" id="shopCard_${safeId}">
+                        <div class="shop-card" id="shopCard_${elementId}">
                             <div class="shop-header">
                                 <div>
                                     <div class="shop-name">${shop.shop_name || 'Без назви'}</div>
-                                    <div class="shop-id">ID: ${shortId}...</div>
+                                    <div class="shop-id">Owner ID: ${shortId}...</div>
                                 </div>
                             </div>
                             <div class="shop-contacts">
@@ -256,8 +258,8 @@
                                 <div class="${pClass}">📦 Товарів: ${pCount}</div>
                                 <div class="stat-badge">📑 Замовлень: ${oCount}</div>
                             </div>
-                            <button class="btn-nuke" onclick="nukeShop('${safeId}', '${shop.shop_name || 'Без назви'}')">
-                                🗑️ Видалити магазин та дані
+                            <button class="btn-nuke" onclick="nukeShop('${internalId}', '${ownerId}', '${shop.shop_name || 'Без назви'}')">
+                                🗑️ Видалити магазин
                             </button>
                         </div>
                     `;
@@ -269,49 +271,53 @@
             }
         }
 
-        // ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ"
-        function nukeShop(ownerId, shopName) {
-            if (ownerId === 'NO_ID') {
-                showAlert("Цей магазин пошкоджено. Видаліть його вручну через Supabase.");
-                return;
-            }
-
-            showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b>.<br><br>Це фізично видалить усі картинки, товари, ІІ-описи та замовлення цього продавця без можливості відновлення. Продовжити?`, async () => {
+        // ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ" - Оновлена бронебійна версія
+        function nukeShop(internalId, ownerId, shopName) {
+            showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b>.<br><br>Це фізично видалить усі дані. Продовжити?`, async () => {
                 
-                const btn = document.querySelector(`#shopCard_${ownerId} .btn-nuke`);
+                let elementId = internalId !== 'NO_ID' ? internalId : ownerId;
+                const btn = document.querySelector(`#shopCard_${elementId} .btn-nuke`);
                 if(btn) { btn.innerHTML = '⏳ ВИДАЛЕННЯ...'; btn.disabled = true; }
 
                 try {
-                    const { data: products } = await sb.from('products').select('id, images').eq('owner_id', ownerId);
-                    
-                    let filesToDelete = [];
-                    let productIds = [];
+                    // Якщо є Owner ID, вичищаємо всі його товари і картинки
+                    if (ownerId !== 'NO_OWNER') {
+                        const { data: products } = await sb.from('products').select('id, images').eq('owner_id', ownerId);
+                        let filesToDelete = [];
+                        let productIds = [];
 
-                    if (products && products.length > 0) {
-                        products.forEach(p => {
-                            productIds.push(p.id);
-                            if (p.images && p.images.length > 0) {
-                                p.images.forEach(url => {
-                                    const parts = url.split('/');
-                                    filesToDelete.push(parts[parts.length - 1]);
-                                });
+                        if (products && products.length > 0) {
+                            products.forEach(p => {
+                                productIds.push(p.id);
+                                if (p.images && p.images.length > 0) {
+                                    p.images.forEach(url => {
+                                        const parts = url.split('/');
+                                        filesToDelete.push(parts[parts.length - 1]);
+                                    });
+                                }
+                            });
+
+                            if (filesToDelete.length > 0) {
+                                await sb.storage.from('smart_media').remove(filesToDelete);
                             }
-                        });
 
-                        if (filesToDelete.length > 0) {
-                            await sb.storage.from('smart_media').remove(filesToDelete);
+                            for (let pid of productIds) {
+                                await sb.from('ai_content').delete().eq('product_id', pid);
+                            }
                         }
 
-                        for (let pid of productIds) {
-                            await sb.from('ai_content').delete().eq('product_id', pid);
-                        }
+                        await sb.from('products').delete().eq('owner_id', ownerId);
+                        await sb.from('orders').delete().eq('owner_id', ownerId);
                     }
 
-                    await sb.from('products').delete().eq('owner_id', ownerId);
-                    await sb.from('orders').delete().eq('owner_id', ownerId);
-                    await sb.from('shops').delete().eq('owner_id', ownerId);
+                    // Видаляємо саму таблицю магазину (надійно по внутрішньому ID)
+                    if (internalId !== 'NO_ID') {
+                        await sb.from('shops').delete().eq('id', internalId);
+                    } else if (ownerId !== 'NO_OWNER') {
+                        await sb.from('shops').delete().eq('owner_id', ownerId);
+                    }
 
-                    const card = document.getElementById(`shopCard_${ownerId}`);
+                    const card = document.getElementById(`shopCard_${elementId}`);
                     if(card) {
                         card.style.opacity = '0';
                         setTimeout(() => card.remove(), 300);
@@ -323,7 +329,7 @@
                     document.getElementById('alertIcon').innerText = '❌';
                     document.getElementById('alertTitle').innerText = 'ПОМИЛКА';
                     showAlert('Помилка при видаленні: ' + e.message);
-                    if(btn) { btn.innerHTML = '🗑️ Видалити магазин та дані'; btn.disabled = false; }
+                    if(btn) { btn.innerHTML = '🗑️ Видалити магазин'; btn.disabled = false; }
                 }
             });
         }
