@@ -257,7 +257,11 @@
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null];
-        let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; 
+        let currentUser = null; 
+        let inventoryData = []; 
+        let shopCategories = []; 
+        let currentInvCat = 'Все'; 
+        let currentOrders = []; // Зберігаємо поточні замовлення для списання залишків
 
         // ЛОГІКА КАСТОМНИХ ВІКОН
         function showAlert(msg) {
@@ -349,7 +353,6 @@
                 return;
             }
 
-            // Завантажуємо товари, щоб знати їх категорії
             const { data: prods } = await sb.from('products').select('id, category').eq('owner_id', currentUser.id);
             let catMap = {};
             if (prods) prods.forEach(p => catMap[p.id] = p.category || 'Різне');
@@ -361,11 +364,9 @@
                 totalRevenue += parseFloat(order.total_amount) || 0;
                 if (order.items && Array.isArray(order.items)) {
                     order.items.forEach(item => {
-                        // Рахуємо товари
                         if (!itemSales[item.title]) itemSales[item.title] = 0;
                         itemSales[item.title] += item.qty;
 
-                        // Рахуємо категорії
                         let c = catMap[item.id] || 'Різне';
                         if (!catSales[c]) catSales[c] = 0;
                         catSales[c] += item.qty;
@@ -373,7 +374,6 @@
                 }
             });
 
-            // Топ категорій
             let sortedCats = Object.entries(catSales).sort((a, b) => b[1] - a[1]);
             let maxQtyCats = sortedCats.length > 0 ? sortedCats[0][1] : 1;
             let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
@@ -382,7 +382,6 @@
                 catsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">📁 ${cat}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive); border-radius:4px;"></div></div></div>`;
             });
 
-            // Топ товарів
             let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]);
             let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
             let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Топ товарів (шт.)</h3>';
@@ -421,6 +420,10 @@
             const { data, error } = await sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Нове').order('created_at', { ascending: false });
             if(error) { listEl.innerHTML = '<p style="color:#ff4444; text-align:center;">Помилка завантаження.</p>'; return; }
             listEl.innerHTML = '';
+            
+            // Зберігаємо замовлення глобально для списання залишків
+            currentOrders = data || []; 
+
             if(!data || data.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">У вас поки немає нових замовлень.</div>'; return; }
 
             const savedCard = localStorage.getItem('saved_card_number') || '';
@@ -434,16 +437,36 @@
             });
         }
 
+        // ОНОВЛЕНО: Функція виконання замовлення ЗІ СПИСАННЯМ СКЛАДУ
         function triggerCompleteOrder(id) {
-            showConfirm("Підтвердити виконання замовлення? Воно перейде у статистику.", async () => {
+            showConfirm("Підтвердити виконання замовлення? Воно перейде у статистику, а залишки на складі будуть автоматично зменшені.", async () => {
                 const btn = document.querySelector(`#order_${id} .btn-done`); 
                 if(btn) { btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true; }
+                
+                // 1. Оновлюємо статус в базі
                 const { error } = await sb.from('orders').update({ status: 'Виконано' }).eq('id', id);
                 if(error) { 
                     showAlert("Помилка: " + error.message); 
                     if(btn) { btn.innerHTML = '☑ ВИКОНАНО (Відправити в продані)'; btn.disabled = false; }
                     return; 
                 }
+
+                // 2. СПИСУЄМО ЗІ СКЛАДУ
+                const order = currentOrders.find(o => o.id === id);
+                if(order && order.items && Array.isArray(order.items)) {
+                    for(let item of order.items) {
+                        const { data: prod } = await sb.from('products').select('quantity').eq('id', item.id).single();
+                        if(prod) {
+                            let newQty = (prod.quantity || 0) - item.qty;
+                            if(newQty < 0) newQty = 0; // Не йдемо в мінус
+                            await sb.from('products').update({ quantity: newQty }).eq('id', item.id);
+                        }
+                    }
+                    // Оновлюємо склад у фоні
+                    loadInventory(); 
+                }
+
+                // 3. Ховаємо карточку замовлення
                 const card = document.getElementById(`order_${id}`); 
                 if(card) {
                     card.style.transition = '0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
