@@ -135,7 +135,7 @@
         .msg.admin { background: var(--olive); color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; }
         .msg.user { background: var(--card-border); color: var(--text); align-self: flex-end; border-bottom-right-radius: 2px; }
 
-        /* ОНОВЛЕНО: Кастомне вспливаюче вікно замість системного Alert */
+        /* ОНОВЛЕНО: Кастомне вспливаюче вікно (БЕЗ ЗАГОЛОВКА) */
         .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; backdrop-filter: blur(4px); }
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 320px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     </style>
@@ -202,7 +202,7 @@
 
             <div class="settings-block">
                 <h3>🏪 Основна інформація</h3>
-                <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
+                <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Например: КАНЦЛЕР"></div>
                 <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
             </div>
             <div class="settings-block">
@@ -232,8 +232,7 @@
 
     <div id="customAlertOverlay" class="custom-alert-overlay" onclick="closeAlert()"></div>
     <div id="customAlertBox" class="custom-alert-box">
-        <h3 style="margin-top:0; color: var(--olive); font-size: 20px;">📱 Додаток AI-Pilot</h3>
-        <p id="customAlertText" style="font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px;"></p>
+        <p id="customAlertText" style="font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px; margin-top: 0;"></p>
         <button class="btn-3d" onclick="closeAlert()" style="margin-bottom:0; padding: 10px; font-size: 15px;">ЗРОЗУМІЛО</button>
     </div>
 
@@ -250,7 +249,6 @@
         let selectedFiles = [null, null, null];
         let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; 
 
-        // ОНОВЛЕНО: Функції керування кастомним вікном
         function showAlert(msg) {
             document.getElementById('customAlertText').innerHTML = msg;
             document.getElementById('customAlertOverlay').style.display = 'block';
@@ -267,12 +265,14 @@
             deferredPrompt = e;
         });
 
-        // ОНОВЛЕНО: Виклик кастомного вікна замість alert()
+        // ОНОВЛЕНО: Текст українською, без емодзі, починається з фрази
         function installApp() {
             const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+            let intro = "Щоб додати ярлик на робочий стіл,";
+            
             let msg = isIos
-                ? "🍏 <b>На iPhone:</b><br><br>Натисніть кнопку <b>'Поділитися'</b> (квадрат зі стрілочкою) внизу екрану, а потім виберіть <b>'На екран Домову'</b> (Add to Home Screen)."
-                : "🤖 <b>На Android:</b><br><br>Натисніть меню браузера (три крапки вгорі праворуч) та виберіть <b>'Додати на головний екран'</b> (Add to Home screen).";
+                ? `${intro} на <b>iPhone</b>:<br><br>натисніть кнопку <b>'Поділитися'</b> (квадрат зі стрілочкою) внизу екрану, а потім виберіть <b>'На екран Домову'</b> (Add to Home Screen).`
+                : `${intro} на <b>Android</b>:<br><br>натисніть меню браузера (три крапки вгорі праворуч) та виберіть <b>'Додати на головний екран'</b> (Add to Home screen).`;
             
             showAlert(msg);
         }
