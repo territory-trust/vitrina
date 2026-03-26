@@ -1,0 +1,16 @@
+{
+  "name": "AI-Pilot",
+  "short_name": "AI-Pilot",
+  "description": "Платформа для продавців",
+  "start_url": "/cabinet.html",
+  "display": "standalone",
+  "background_color": "#0d0f12",
+  "theme_color": "#0d0f12",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
