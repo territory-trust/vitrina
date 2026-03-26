@@ -48,11 +48,12 @@
         .btn-nuke { background: rgba(239, 68, 68, 0.1); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
         .btn-nuke:active { transform: scale(0.98); background: var(--red); color: #fff; }
 
-        /* КАСТОМНЕ ВІКНО */
+        /* КАСТОМНІ ВІКНА */
         .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; backdrop-filter: blur(5px); }
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center; }
         .btn-action { background: var(--text-muted); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; flex: 1; transition: 0.2s; }
         .btn-action.danger { background: var(--red); }
+        .btn-action.primary { background: var(--olive); }
     </style>
 </head>
 <body>
@@ -98,6 +99,14 @@
         Перевірка доступу... 🛡️
     </div>
 
+    <div id="alertOverlay" class="custom-alert-overlay"></div>
+    <div id="alertBox" class="custom-alert-box">
+        <div id="alertIcon" style="font-size: 40px; margin-bottom: 10px;">⛔</div>
+        <h3 id="alertTitle" style="margin-top:0; color: var(--red); font-size: 18px;">ДОСТУП ЗАБОРОНЕНО</h3>
+        <p id="alertText" style="font-size: 14px; line-height: 1.5; color: var(--text-muted); margin-bottom: 20px;"></p>
+        <button class="btn-action primary" id="alertBtn" style="width: 100%;">ЗРОЗУМІЛО</button>
+    </div>
+
     <div id="confirmOverlay" class="custom-alert-overlay" onclick="closeConfirm()"></div>
     <div id="confirmBox" class="custom-alert-box">
         <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
@@ -115,11 +124,25 @@
         // ==========================================
         // 🔒 СИСТЕМА БЕЗПЕКИ: Твій особистий доступ
         // ==========================================
-        const ADMIN_EMAIL = "i0985887331@gmail.com"; 
+        const ADMIN_EMAIL = "I0985887331@gmail.com"; 
 
         let globalShops = [];
         let confirmCallback = null;
 
+        // Логіка кастомного Alert
+        function showAlert(msg, callback) {
+            document.getElementById('alertText').innerHTML = msg;
+            document.getElementById('alertOverlay').style.display = 'block';
+            document.getElementById('alertBox').style.display = 'block';
+            
+            document.getElementById('alertBtn').onclick = () => {
+                document.getElementById('alertOverlay').style.display = 'none';
+                document.getElementById('alertBox').style.display = 'none';
+                if(callback) callback();
+            };
+        }
+
+        // Логіка кастомного Confirm
         function showConfirm(msg, callback) {
             document.getElementById('confirmText').innerHTML = msg;
             document.getElementById('confirmOverlay').style.display = 'block';
@@ -146,11 +169,13 @@
                 return;
             }
 
-            // Перевірка на Супер-Адміна
-            if (user.email !== ADMIN_EMAIL) {
-                alert("Доступ заборонено! Ви не є адміністратором платформи.");
-                await sb.auth.signOut();
-                window.location.href = 'landing.html';
+            // РОЗУМНА ПЕРЕВІРКА ДОСТУПУ (Ігнорує великі/маленькі літери)
+            if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+                document.getElementById('loader').style.display = 'none';
+                showAlert("Ви не є адміністратором платформи AI-Pilot.", async () => {
+                    await sb.auth.signOut();
+                    window.location.href = 'landing.html';
+                });
                 return;
             }
 
@@ -283,7 +308,9 @@
                     setTimeout(loadDashboard, 1000);
 
                 } catch (e) {
-                    alert('Помилка при видаленні: ' + e.message);
+                    document.getElementById('alertIcon').innerText = '❌';
+                    document.getElementById('alertTitle').innerText = 'ПОМИЛКА';
+                    showAlert('Помилка при видаленні: ' + e.message);
                     if(btn) { btn.innerHTML = '🗑️ Видалити магазин та дані'; btn.disabled = false; }
                 }
             });
