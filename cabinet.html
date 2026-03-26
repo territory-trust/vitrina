@@ -114,7 +114,6 @@
         .settings-block { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;}
         .settings-block h3 { margin-top: 0; color: var(--text); font-size: 18px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
         
-        /* PWA HINT BLOCK (РОЗУМНИЙ КОЛІР) */
         .pwa-hint { background: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFC107; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; transition: 0.3s; }
         .pwa-hint-text { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
         .pwa-hint-hl { color: #FFC107; font-weight: 800; transition: 0.3s; }
@@ -216,11 +215,7 @@
                 <p class="hint-text">Введіть категорії через кому.</p>
                 <div class="input-group" style="margin-bottom: 0;"><textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea></div>
             </div>
-            <div class="settings-block">
-                <h3>📞 Контакти для клієнтів</h3>
-                <div class="input-group"><label>Телефон для зв'язку:</label><input type="text" id="set_phone" placeholder="098 123 45 67"></div>
-                <div class="input-group" style="margin-bottom: 0;"><label>Telegram username (Без @):</label><input type="text" id="set_telegram" placeholder="my_shop_tg"></div>
-            </div>
+            
             <button class="btn-3d" id="saveSettingsBtn" onclick="saveSettings()" style="margin-bottom: 30px; font-size: 18px;">💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ</button>
             
             <div class="settings-block">
@@ -256,7 +251,6 @@
                 ? "🍏 На iPhone: Натисніть кнопку 'Поділитися' (квадрат зі стрілочкою) внизу екрану, а потім виберіть 'На екран Домову' (Add to Home Screen)."
                 : "🤖 На Android: Натисніть меню браузера (три крапки вгорі праворуч) та виберіть 'Додати на головний екран' (Add to Home screen).";
             
-            // ОНОВЛЕННЯ: Прибрано зайвий текст
             alert(msg);
         }
 
@@ -271,8 +265,7 @@
                     document.getElementById('set_shopName').value = shop.shop_name || ''; 
                     document.getElementById('set_description').value = shop.description || ''; 
                     document.getElementById('set_categories').value = shop.categories || ''; 
-                    document.getElementById('set_phone').value = shop.phone || ''; 
-                    document.getElementById('set_telegram').value = shop.telegram || '';
+                    
                     if(shop.theme_color) { selectTheme(shop.theme_color); } else { selectTheme('neutral'); }
                 } else { selectTheme('neutral'); }
                 loadInventory();
@@ -314,7 +307,12 @@
 
         async function saveSettings() {
             const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
-            const updateData = { shop_name: document.getElementById('set_shopName').value.trim(), description: document.getElementById('set_description').value.trim(), categories: document.getElementById('set_categories').value.trim(), phone: document.getElementById('set_phone').value.trim(), telegram: document.getElementById('set_telegram').value.trim(), theme_color: document.getElementById('set_theme').value };
+            const updateData = { 
+                shop_name: document.getElementById('set_shopName').value.trim(), 
+                description: document.getElementById('set_description').value.trim(), 
+                categories: document.getElementById('set_categories').value.trim(), 
+                theme_color: document.getElementById('set_theme').value 
+            };
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
             if(error) { alert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
                 if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = 'магазин ' + updateData.shop_name;
