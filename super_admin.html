@@ -224,7 +224,6 @@
                     return;
                 }
 
-                // Підрахунок товарів та замовлень для кожного продавця
                 let prodCounts = {};
                 let orderCounts = {};
                 
@@ -232,17 +231,21 @@
                 if (resOrders.data) resOrders.data.forEach(o => { orderCounts[o.owner_id] = (orderCounts[o.owner_id] || 0) + 1; });
 
                 globalShops.forEach(shop => {
-                    let pCount = prodCounts[shop.owner_id] || 0;
-                    let oCount = orderCounts[shop.owner_id] || 0;
+                    // ЗАХИСТ ВІД БИТИХ ДАНИХ (Перевіряємо чи є owner_id)
+                    let safeId = shop.owner_id ? shop.owner_id : 'NO_ID';
+                    let shortId = shop.owner_id ? shop.owner_id.substring(0, 8) : 'НЕМАЄ';
+                    
+                    let pCount = prodCounts[safeId] || 0;
+                    let oCount = orderCounts[safeId] || 0;
                     
                     let pClass = pCount === 0 ? "stat-badge empty" : "stat-badge";
                     
                     shopsContainer.innerHTML += `
-                        <div class="shop-card" id="shopCard_${shop.owner_id}">
+                        <div class="shop-card" id="shopCard_${safeId}">
                             <div class="shop-header">
                                 <div>
                                     <div class="shop-name">${shop.shop_name || 'Без назви'}</div>
-                                    <div class="shop-id">ID: ${shop.owner_id.substring(0, 8)}...</div>
+                                    <div class="shop-id">ID: ${shortId}...</div>
                                 </div>
                             </div>
                             <div class="shop-contacts">
@@ -253,7 +256,7 @@
                                 <div class="${pClass}">📦 Товарів: ${pCount}</div>
                                 <div class="stat-badge">📑 Замовлень: ${oCount}</div>
                             </div>
-                            <button class="btn-nuke" onclick="nukeShop('${shop.owner_id}', '${shop.shop_name}')">
+                            <button class="btn-nuke" onclick="nukeShop('${safeId}', '${shop.shop_name || 'Без назви'}')">
                                 🗑️ Видалити магазин та дані
                             </button>
                         </div>
@@ -268,6 +271,11 @@
 
         // ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ"
         function nukeShop(ownerId, shopName) {
+            if (ownerId === 'NO_ID') {
+                showAlert("Цей магазин пошкоджено. Видаліть його вручну через Supabase.");
+                return;
+            }
+
             showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b>.<br><br>Це фізично видалить усі картинки, товари, ІІ-описи та замовлення цього продавця без можливості відновлення. Продовжити?`, async () => {
                 
                 const btn = document.querySelector(`#shopCard_${ownerId} .btn-nuke`);
