@@ -52,7 +52,7 @@
 
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: var(--text-muted); font-weight: 500; font-size: 16px; }
-        input[type="text"], input[type="password"], input[type="number"], input[type="tel"], select, textarea { width: 100%; padding: 14px; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text); border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s; }
+        input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], select, textarea { width: 100%; padding: 14px; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text); border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s; }
         input:focus, textarea:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.1); }
         textarea { resize: vertical; min-height: 80px; }
 
@@ -178,6 +178,18 @@
 
         <div id="tab-stats" class="section">
             <h2>📊 Статистика</h2>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                    <label style="font-size: 13px;">Період від:</label>
+                    <input type="date" id="statStartDate" onchange="loadStats()" style="padding: 10px;">
+                </div>
+                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                    <label style="font-size: 13px;">До:</label>
+                    <input type="date" id="statEndDate" onchange="loadStats()" style="padding: 10px;">
+                </div>
+            </div>
+
             <div id="statsContainer">
                 <p style="text-align:center; color:var(--text-muted);">Аналітика завантажується...</p>
             </div>
@@ -316,42 +328,87 @@
             if(tabId === 'tab-stats') loadStats(); 
         }
 
-        // ЛОГІКА СТАТИСТИКИ
+        // ЛОГІКА СТАТИСТИКИ (Дати, Категорії, Назви)
         async function loadStats() {
             if (!currentUser) return;
             const container = document.getElementById('statsContainer');
             container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Завантаження аналітики...</p>';
 
-            const { data, error } = await sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Виконано');
+            let startD = document.getElementById('statStartDate').value;
+            let endD = document.getElementById('statEndDate').value;
 
+            let query = sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Виконано');
+            if (startD) query = query.gte('created_at', startD + 'T00:00:00Z');
+            if (endD) query = query.lte('created_at', endD + 'T23:59:59Z');
+
+            const { data: orders, error } = await query;
             if (error) { container.innerHTML = '<p style="color:#ff4444; text-align:center;">Помилка завантаження статистики.</p>'; return; }
-            if (!data || data.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">У вас поки немає виконаних замовлень для статистики.</div>';
+
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">За обраний період немає виконаних замовлень.</div>';
                 return;
             }
 
-            let totalRevenue = 0; let totalOrders = data.length; let itemSales = {};
+            // Завантажуємо товари, щоб знати їх категорії
+            const { data: prods } = await sb.from('products').select('id, category').eq('owner_id', currentUser.id);
+            let catMap = {};
+            if (prods) prods.forEach(p => catMap[p.id] = p.category || 'Різне');
 
-            data.forEach(order => {
+            let totalRevenue = 0; let totalOrders = orders.length; 
+            let itemSales = {}; let catSales = {};
+
+            orders.forEach(order => {
                 totalRevenue += parseFloat(order.total_amount) || 0;
                 if (order.items && Array.isArray(order.items)) {
                     order.items.forEach(item => {
+                        // Рахуємо товари
                         if (!itemSales[item.title]) itemSales[item.title] = 0;
                         itemSales[item.title] += item.qty;
+
+                        // Рахуємо категорії
+                        let c = catMap[item.id] || 'Різне';
+                        if (!catSales[c]) catSales[c] = 0;
+                        catSales[c] += item.qty;
                     });
                 }
             });
 
-            let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]);
-            let maxQty = sortedItems.length > 0 ? sortedItems[0][1] : 1;
-
-            let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Топ товарів</h3>';
-            sortedItems.slice(0, 5).forEach(([title, qty]) => {
-                let percent = Math.round((qty / maxQty) * 100);
-                itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive); border-radius:4px; transition: width 1s ease-out;"></div></div></div>`;
+            // Топ категорій
+            let sortedCats = Object.entries(catSales).sort((a, b) => b[1] - a[1]);
+            let maxQtyCats = sortedCats.length > 0 ? sortedCats[0][1] : 1;
+            let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
+            sortedCats.forEach(([cat, qty]) => {
+                let percent = Math.round((qty / maxQtyCats) * 100);
+                catsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">📁 ${cat}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive); border-radius:4px;"></div></div></div>`;
             });
 
-            container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);"><div style="font-size: 24px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Дохід</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);"><div style="font-size: 24px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">${itemsHtml}</div>`;
+            // Топ товарів
+            let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]);
+            let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
+            let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Топ товарів (шт.)</h3>';
+            sortedItems.slice(0, 5).forEach(([title, qty]) => {
+                let percent = Math.round((qty / maxQtyItems) * 100);
+                itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive); border-radius:4px;"></div></div></div>`;
+            });
+
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                        <div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div>
+                        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div>
+                    </div>
+                    <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                        <div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div>
+                    </div>
+                </div>
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                    ${catsHtml}
+                </div>
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                    ${itemsHtml}
+                </div>
+            `;
         }
 
         function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
@@ -373,12 +430,10 @@
                 let actionHtml = '';
                 if(o.payment_type === 'На картку') { actionHtml = `<div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div><div class="action-row"><div class="card-input-wrapper"><input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric"></div><button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button></div>`; }
                 
-                // ОНОВЛЕНО: Тепер кнопка ВИКОНАНО викликає triggerCompleteOrder
                 listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-row">Оплата: <strong style="color:#d97706;">${o.payment_type}</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${actionHtml}<button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО (Відправити в продані)</button></div>`;
             });
         }
 
-        // ОНОВЛЕНО: Функція виконання замовлення через кастомне вікно підтвердження
         function triggerCompleteOrder(id) {
             showConfirm("Підтвердити виконання замовлення? Воно перейде у статистику.", async () => {
                 const btn = document.querySelector(`#order_${id} .btn-done`); 
@@ -436,7 +491,6 @@
 
         async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; btn.innerHTML = '⏳...'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 Зберегти'; btn.disabled = false; } else { btn.innerHTML = '✅ Збережено'; btn.style.background = 'var(--olive-dark)'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerHTML = '💾 Зберегти'; btn.style.background = 'var(--olive)'; btn.disabled = false; if(currentInvCat !== 'Все' && currentInvCat !== cat) filterInventory(); }, 1500); } }
         
-        // ОНОВЛЕНО: Видалення через кастомне вікно
         async function deleteItemDb(id) { 
             showConfirm('Ви впевнені, що хочете видалити цей товар назавжди?', async () => {
                 const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; 
