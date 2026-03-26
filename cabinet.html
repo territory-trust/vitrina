@@ -120,7 +120,6 @@
         .pwa-hint-hl { color: #FFC107; font-weight: 800; transition: 0.3s; }
         .pwa-hint-btn { flex-shrink: 0; background: transparent; border: 1px solid #FFC107; color: #FFC107; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; }
         
-        /* Зміна кольору PWA блоку на світлих темах для ідеального контрасту */
         body.theme-light .pwa-hint, body.theme-neutral .pwa-hint { background: rgba(217, 119, 6, 0.1); border-left-color: #d97706; }
         body.theme-light .pwa-hint-hl, body.theme-neutral .pwa-hint-hl { color: #b45309; }
         body.theme-light .pwa-hint-btn, body.theme-neutral .pwa-hint-btn { color: #b45309; border-color: #d97706; }
@@ -257,7 +256,8 @@
                 ? "🍏 На iPhone: Натисніть кнопку 'Поділитися' (квадрат зі стрілочкою) внизу екрану, а потім виберіть 'На екран Домову' (Add to Home Screen)."
                 : "🤖 На Android: Натисніть меню браузера (три крапки вгорі праворуч) та виберіть 'Додати на головний екран' (Add to Home screen).";
             
-            alert(msg + "\n\nВаша фірмова іконка вже налаштована і з'явиться на робочому столі автоматично!");
+            // ОНОВЛЕННЯ: Прибрано зайвий текст
+            alert(msg);
         }
 
         window.onload = async () => {
