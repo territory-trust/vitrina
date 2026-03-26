@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI-Pilot | SUPER ADMIN</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    
+    <style>
+        /* СТРОГИЙ ТЕМНИЙ СТИЛЬ ДЛЯ ПУЛЬТА УПРАВЛІННЯ */
+        :root { 
+            --bg: #090a0c; --panel: #111418; --olive: #6b873b; 
+            --red: #ef4444; --red-dark: #b91c1c; --text: #e5e7eb; 
+            --text-muted: #9ca3af; --border: #1f242b; --input-bg: #000; 
+        }
+        
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 16px; padding-top: 70px; padding-bottom: 40px; }
+        
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: rgba(17, 20, 24, 0.95); border-bottom: 1px solid var(--border); z-index: 1000; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(10px); }
+        .header-title { color: #fff; font-size: 18px; font-weight: 900; margin: 0; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+        .header-title span { color: var(--red); }
+        .logout-btn { color: var(--text-muted); text-decoration: none; font-size: 14px; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; transition: 0.2s; background: transparent; cursor: pointer; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 15px; }
+
+        /* ДАШБОРД */
+        .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        .dash-card { background: var(--panel); border: 1px solid var(--border); padding: 20px 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .dash-card.wide { grid-column: 1 / -1; border-color: rgba(107, 135, 59, 0.3); background: linear-gradient(145deg, var(--panel) 0%, #151a14 100%); }
+        .dash-num { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 5px; }
+        .dash-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .dash-hl { color: var(--olive); }
+        .dash-hl-red { color: var(--red); }
+
+        h2 { font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 10px; margin-bottom: 15px; color: #fff; display: flex; align-items: center; justify-content: space-between;}
+
+        /* СПИСОК МАГАЗИНІВ */
+        .shop-list { display: flex; flex-direction: column; gap: 12px; }
+        .shop-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 10px; transition: 0.3s; }
+        .shop-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .shop-name { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 4px; }
+        .shop-id { font-size: 11px; color: #555; font-family: monospace; }
+        
+        .shop-contacts { background: var(--input-bg); padding: 10px; border-radius: 8px; font-size: 13px; color: var(--text-muted); line-height: 1.5; border: 1px solid var(--border); }
+        .shop-contacts strong { color: var(--text); }
+        
+        .btn-nuke { background: rgba(239, 68, 68, 0.1); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; }
+        .btn-nuke:active { transform: scale(0.98); background: var(--red); color: #fff; }
+
+        /* КАСТОМНЕ ВІКНО */
+        .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; backdrop-filter: blur(5px); }
+        .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center; }
+        .btn-action { background: var(--text-muted); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; flex: 1; transition: 0.2s; }
+        .btn-action.danger { background: var(--red); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-title">🛡️ SUPER<span>ADMIN</span></div>
+        <button class="logout-btn" onclick="logOut()">Вихід</button>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
+        
+        <div class="dash-grid">
+            <div class="dash-card">
+                <div class="dash-num" id="statShops">0</div>
+                <div class="dash-label">Магазинів</div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-num" id="statOrders">0</div>
+                <div class="dash-label">Всіх замовлень</div>
+            </div>
+            <div class="dash-card wide">
+                <div class="dash-num dash-hl" id="statProducts">0</div>
+                <div class="dash-label">Згенеровано товарів (AI)</div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); font-size: 14px; color: var(--text-muted);">
+                    Орієнтовні витрати на Google Gemini API:<br>
+                    <strong style="color: #fff; font-size: 18px;" id="statAiCost">$0.00</strong> / <span style="font-size: 12px;">$300.00</span>
+                </div>
+            </div>
+        </div>
+
+        <h2>
+            🏢 Управління магазинами
+            <button onclick="loadDashboard()" style="background:transparent; border:none; color:var(--olive); cursor:pointer; font-size: 20px;">🔄</button>
+        </h2>
+        
+        <div class="shop-list" id="shopsContainer">
+            <p style="text-align:center; color:var(--text-muted);">Завантаження бази...</p>
+        </div>
+
+    </div>
+
+    <div id="loader" style="text-align: center; margin-top: 100px; color: var(--text-muted);">
+        Перевірка доступу... 🛡️
+    </div>
+
+    <div id="confirmOverlay" class="custom-alert-overlay" onclick="closeConfirm()"></div>
+    <div id="confirmBox" class="custom-alert-box">
+        <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+        <h3 style="margin-top:0; color: var(--red); font-size: 18px;">УВАГА: ВИПАЛЕНА ЗЕМЛЯ</h3>
+        <p id="confirmText" style="font-size: 14px; line-height: 1.5; color: var(--text-muted); margin-bottom: 20px;"></p>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-action" onclick="closeConfirm()">СКАСУВАТИ</button>
+            <button class="btn-action danger" id="confirmBtn">🔥 ЗНИЩИТИ</button>
+        </div>
+    </div>
+
+    <script>
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        
+        // ==========================================
+        // 🔒 СИСТЕМА БЕЗПЕКИ: Твій особистий доступ
+        // ==========================================
+        const ADMIN_EMAIL = "i0985887331@gmail.com"; 
+
+        let globalShops = [];
+        let confirmCallback = null;
+
+        function showConfirm(msg, callback) {
+            document.getElementById('confirmText').innerHTML = msg;
+            document.getElementById('confirmOverlay').style.display = 'block';
+            document.getElementById('confirmBox').style.display = 'block';
+            confirmCallback = callback;
+        }
+
+        function closeConfirm() {
+            document.getElementById('confirmOverlay').style.display = 'none';
+            document.getElementById('confirmBox').style.display = 'none';
+            confirmCallback = null;
+        }
+
+        document.getElementById('confirmBtn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            closeConfirm();
+        });
+
+        window.onload = async () => {
+            const { data: { user } } = await sb.auth.getUser();
+            
+            if (!user) {
+                window.location.href = 'landing.html';
+                return;
+            }
+
+            // Перевірка на Супер-Адміна
+            if (user.email !== ADMIN_EMAIL) {
+                alert("Доступ заборонено! Ви не є адміністратором платформи.");
+                await sb.auth.signOut();
+                window.location.href = 'landing.html';
+                return;
+            }
+
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            loadDashboard();
+        };
+
+        async function logOut() {
+            await sb.auth.signOut();
+            window.location.href = 'landing.html';
+        }
+
+        async function loadDashboard() {
+            const shopsContainer = document.getElementById('shopsContainer');
+            shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Збір даних з серверів...</p>';
+
+            try {
+                // 1. Збираємо статистику
+                const [resShops, resProds, resOrders] = await Promise.all([
+                    sb.from('shops').select('*'),
+                    sb.from('products').select('id, images'),
+                    sb.from('orders').select('id')
+                ]);
+
+                if (resShops.error) throw resShops.error;
+                
+                const shopCount = resShops.data ? resShops.data.length : 0;
+                const prodCount = resProds.data ? resProds.data.length : 0;
+                const orderCount = resOrders.data ? resOrders.data.length : 0;
+
+                // Оновлюємо дашборд
+                document.getElementById('statShops').innerText = shopCount;
+                document.getElementById('statProducts').innerText = prodCount;
+                document.getElementById('statOrders').innerText = orderCount;
+
+                // Розрахунок витрат на ІІ (приблизно $0.0002 за генерацію 1 товару)
+                const aiCost = (prodCount * 0.0002).toFixed(4);
+                document.getElementById('statAiCost').innerText = `$${aiCost}`;
+
+                // 2. Виводимо список магазинів
+                globalShops = resShops.data || [];
+                shopsContainer.innerHTML = '';
+
+                if (globalShops.length === 0) {
+                    shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Магазинів поки немає.</p>';
+                    return;
+                }
+
+                globalShops.forEach(shop => {
+                    shopsContainer.innerHTML += `
+                        <div class="shop-card" id="shopCard_${shop.owner_id}">
+                            <div class="shop-header">
+                                <div>
+                                    <div class="shop-name">${shop.shop_name || 'Без назви'}</div>
+                                    <div class="shop-id">ID: ${shop.owner_id.substring(0, 8)}...</div>
+                                </div>
+                            </div>
+                            <div class="shop-contacts">
+                                Телефон: <strong>${shop.phone || 'Не вказано'}</strong><br>
+                                Telegram: <strong>${shop.telegram || 'Не вказано'}</strong><br>
+                                Категорії: ${shop.categories || 'Немає'}
+                            </div>
+                            <button class="btn-nuke" onclick="nukeShop('${shop.owner_id}', '${shop.shop_name}')">
+                                🗑️ Видалити магазин та дані
+                            </button>
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                shopsContainer.innerHTML = `<p style="color:var(--red); text-align:center;">Помилка БД: ${err.message}</p>`;
+            }
+        }
+
+        // ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ"
+        function nukeShop(ownerId, shopName) {
+            showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b>.<br><br>Це фізично видалить усі картинки, товари, ІІ-описи та замовлення цього продавця без можливості відновлення. Продовжити?`, async () => {
+                
+                const btn = document.querySelector(`#shopCard_${ownerId} .btn-nuke`);
+                if(btn) { btn.innerHTML = '⏳ ВИДАЛЕННЯ...'; btn.disabled = true; }
+
+                try {
+                    // 1. Шукаємо всі товари цього продавця, щоб дістати картинки
+                    const { data: products } = await sb.from('products').select('id, images').eq('owner_id', ownerId);
+                    
+                    let filesToDelete = [];
+                    let productIds = [];
+
+                    if (products && products.length > 0) {
+                        products.forEach(p => {
+                            productIds.push(p.id);
+                            if (p.images && p.images.length > 0) {
+                                p.images.forEach(url => {
+                                    const parts = url.split('/');
+                                    filesToDelete.push(parts[parts.length - 1]);
+                                });
+                            }
+                        });
+
+                        // 2. Видаляємо файли з Storage
+                        if (filesToDelete.length > 0) {
+                            await sb.storage.from('smart_media').remove(filesToDelete);
+                        }
+
+                        // 3. Видаляємо ІІ-описи (ai_content)
+                        for (let pid of productIds) {
+                            await sb.from('ai_content').delete().eq('product_id', pid);
+                        }
+                    }
+
+                    // 4. Видаляємо Товари
+                    await sb.from('products').delete().eq('owner_id', ownerId);
+
+                    // 5. Видаляємо Замовлення
+                    await sb.from('orders').delete().eq('owner_id', ownerId);
+
+                    // 6. Видаляємо сам Магазин
+                    await sb.from('shops').delete().eq('owner_id', ownerId);
+
+                    // Прибираємо карточку з екрану
+                    const card = document.getElementById(`shopCard_${ownerId}`);
+                    if(card) {
+                        card.style.opacity = '0';
+                        setTimeout(() => card.remove(), 300);
+                    }
+
+                    // Оновлюємо цифри дашборду
+                    setTimeout(loadDashboard, 1000);
+
+                } catch (e) {
+                    alert('Помилка при видаленні: ' + e.message);
+                    if(btn) { btn.innerHTML = '🗑️ Видалити магазин та дані'; btn.disabled = false; }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
