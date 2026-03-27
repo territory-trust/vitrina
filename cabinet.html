@@ -224,7 +224,6 @@
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
-        // BROWSER PUSH (Локально)
         function toggleBrowserPush() {
             const cb = document.getElementById('set_usePushNotify');
             if (cb.checked) {
@@ -248,7 +247,6 @@
             }
         }
 
-        // КНОПКА ТЕЛЕГРАМ
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
             const botUsername = "AI_Pilot_Notify_Bot"; 
@@ -334,12 +332,14 @@
                 let itemsText = ''; if(o.items) itemsText = o.items.map(i => `${i.title} (${i.qty} шт.)`).join(' | '); 
                 let phoneClean = o.phone.replace(/\D/g, ''); if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean; 
                 
+                let paymentTypeHtml = `<div style="color: #FF9800; font-weight: 900; font-size: 15px; margin-top: 6px; margin-bottom: 8px;">💳 Оплата: ${o.payment_type || 'Не вказано'}</div>`;
+                
                 let actionHtml = '';
                 if(o.payment_type === 'На картку' || (o.card_number && o.card_number !== '')) {
                     actionHtml = `<div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div><div class="action-row"><div class="card-input-wrapper"><input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric"></div><button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button></div>`;
                 }
 
-                listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${actionHtml}<button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО</button></div>`; 
+                listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${paymentTypeHtml}${actionHtml}<button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО</button></div>`; 
             }); 
         }
         
