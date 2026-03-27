@@ -48,6 +48,24 @@
         body.theme-neutral .cart-header, body.theme-neutral .cart-item, body.theme-neutral .cart-footer { border-color: #cbd5e1; }
         body.theme-neutral .qty-btn { background: #e2e8f0; border-color: #cbd5e1; color: #1e293b; }
 
+        /* ТЕМНИЙ ОКЕАН (Dark Ocean) */
+        body.theme-ocean { --bg: #051622; --panel: #0a2235; --olive: #2a8bf2; --text: #e2f1ff; --border: #143554; --header-bg: rgba(10, 34, 53, 0.98); }
+        body.theme-ocean .search-box { background: #020a10; color: #e2f1ff; border: 2px solid #1b456b !important; }
+        body.theme-ocean .search-box:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(42, 139, 242, 0.2); }
+        body.theme-ocean .checkout-input { background: #020a10; color: #e2f1ff; border: 2px solid #1b456b !important; }
+        body.theme-ocean .checkout-input:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.1); }
+        body.theme-ocean .btn-buy { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: 0 2px 0 #1565c0; }
+        body.theme-ocean .shop-desc { color: #7d9cb8; background: #0a2235; border-color: #143554; }
+        body.theme-ocean .dropdown-content { background: #0a2235; border-color: #143554; }
+        body.theme-ocean .dropdown-content a { color: #e2f1ff; border-color: #143554; }
+        body.theme-ocean .dropdown-content a:hover { background: #0d2840; }
+        body.theme-ocean .cart-panel { background: #0a2235; border-left: 1px solid #143554; }
+        body.theme-ocean .cart-header, body.theme-ocean .cart-item, body.theme-ocean .cart-footer { border-color: #143554; }
+        body.theme-ocean .qty-btn { background: #0d2840; border-color: #1a426b; color: #e2f1ff; }
+        body.theme-ocean .head-btn { background: #0d2840; color: #e2f1ff; border: 1px solid #1a426b; }
+        body.theme-ocean .cat-btn { background: #0d2840; color: #7d9cb8; border: 1px solid #1a426b; }
+        body.theme-ocean .empty-state { background: #0a2235; border-color: #143554; color: #7d9cb8; }
+
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 155px; padding-bottom: 80px; font-size: 16px; transition: background 0.3s, color 0.3s; }
         
         .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: var(--header-bg); z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); padding-bottom: 8px; transition: background 0.3s; }
@@ -67,7 +85,7 @@
         .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
         
         /* МАГІЯ: Жовтий текст із жорстким чорним абрисом (читається всюди!) */
-        .head-btn.back-btn, body.theme-light .head-btn.back-btn, body.theme-neutral .head-btn.back-btn { 
+        .head-btn.back-btn, body.theme-light .head-btn.back-btn, body.theme-neutral .head-btn.back-btn, body.theme-ocean .head-btn.back-btn { 
             background: transparent !important; 
             color: #FFEA00 !important; /* Яскраво-жовтий */
             border: none !important; 
@@ -84,7 +102,7 @@
                  0px  3px 4px rgba(0,0,0,0.6) !important; 
             letter-spacing: 1px; 
         }
-        .head-btn.back-btn:active, body.theme-light .head-btn.back-btn:active, body.theme-neutral .head-btn.back-btn:active { 
+        .head-btn.back-btn:active, body.theme-light .head-btn.back-btn:active, body.theme-neutral .head-btn.back-btn:active, body.theme-ocean .head-btn.back-btn:active { 
             transform: translateX(-4px);
         }
 
