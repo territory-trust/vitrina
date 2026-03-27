@@ -112,12 +112,18 @@
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 320px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
 
         .cat-instruction-box { font-size: 15px; color: var(--text); line-height: 1.4; margin-bottom: 10px; background: rgba(107,135,59,0.1); padding: 10px; border-left: 3px solid var(--olive); border-radius: 4px; }
+
+        /* НОВИЙ БЛОК PWA ІНСТРУКЦІЇ */
+        .pwa-banner { display: flex; align-items: center; justify-content: space-between; background: var(--panel); border: 1px solid var(--border); border-left: 4px solid #eab308; border-radius: 8px; padding: 12px 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); gap: 10px; flex-wrap: wrap; }
+        .pwa-text { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; line-height: 1.3; flex: 1; min-width: 180px; }
+        .pwa-btn { background: transparent; border: 1px solid #eab308; color: #eab308; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.2s; }
+        .pwa-btn:active { background: rgba(234, 179, 8, 0.1); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="shop-title" id="cabinetTitle">AI-Магазин</div>
+        <div class="shop-title" id="cabinetTitle">Магазин</div>
         <div class="header-links"><a href="shop.html" id="shopLink" target="_blank">Вітрина</a></div>
     </div>
 
@@ -222,6 +228,11 @@
                 </div>
             </div>
 
+            <div class="pwa-banner">
+                <div class="pwa-text"><span>⚠️</span> <div><span style="color: #eab308; font-weight: bold;">ВАЖЛИВО:</span> Встановіть ярлик на головний екран.</div></div>
+                <button class="pwa-btn" onclick="openPwaModal()"><span style="color: #ff4444; font-weight: 900;">?</span> Як встановити</button>
+            </div>
+
             <button class="btn-3d" id="saveSettingsBtn" onclick="saveSettings()" style="margin-bottom: 30px; font-size: 16px;">💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ</button>
         </div>
     </div>
@@ -240,6 +251,19 @@
             <button class="btn-3d" onclick="closeConfirmModal()" style="background: transparent; border: 2px solid var(--border); box-shadow: none; color: var(--text-muted);">Скасувати</button>
             <button class="btn-3d" id="confirmActionBtn">Підтвердити</button>
         </div>
+    </div>
+
+    <div id="pwaModalOverlay" class="custom-alert-overlay" onclick="closePwaModal()"></div>
+    <div id="pwaModalBox" class="custom-alert-box" style="padding: 20px;">
+        <h3 style="margin-top:0; font-size: 18px; color: var(--text); display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">📱 Встановлення додатка</h3>
+        <p style="font-size: 15px; line-height: 1.6; color: var(--text-muted); margin-bottom: 20px; text-align: left;">
+            <strong style="color: var(--text);">🤖 Для Android:</strong><br>
+            Натисніть меню <strong>«Три крапки»</strong> (у правому верхньому куті браузера) ➡️ <strong>«Додати на головний екран»</strong>.
+            <br><br>
+            <strong style="color: var(--text);">🍏 Для iPhone (Safari):</strong><br>
+            Натисніть іконку <strong>«Поділитися»</strong> (квадрат зі стрілочкою внизу) ➡️ <strong>«На початковий екран» ➕</strong>.
+        </p>
+        <button class="btn-3d" onclick="closePwaModal()" style="margin-bottom:0; padding: 10px; font-size: 15px;">ЗРОЗУМІЛО</button>
     </div>
 
     <div class="bottom-nav">
@@ -267,60 +291,53 @@
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
-        // Функція для вікна ВИКОНАНО
         function openConfirmModal(id, phone) {
-            pendingOrderId = id;
-            pendingOrderPhone = phone;
+            pendingOrderId = id; pendingOrderPhone = phone;
             document.getElementById('confirmOrderOverlay').style.display = 'block';
             document.getElementById('confirmOrderBox').style.display = 'block';
             document.getElementById('confirmActionBtn').onclick = () => executeCompleteOrder();
         }
         function closeConfirmModal() {
-            document.getElementById('confirmOrderOverlay').style.display = 'none';
-            document.getElementById('confirmOrderBox').style.display = 'none';
+            document.getElementById('confirmOrderOverlay').style.display = 'none'; document.getElementById('confirmOrderBox').style.display = 'none';
             pendingOrderId = null; pendingOrderPhone = null;
         }
 
-        // Копіювання посилання
+        // Функції для модалки PWA
+        function openPwaModal() {
+            document.getElementById('pwaModalOverlay').style.display = 'block';
+            document.getElementById('pwaModalBox').style.display = 'block';
+        }
+        function closePwaModal() {
+            document.getElementById('pwaModalOverlay').style.display = 'none';
+            document.getElementById('pwaModalBox').style.display = 'none';
+        }
+
         function copyShopLink() {
             const input = document.getElementById('shopLinkInput');
-            input.select();
-            input.setSelectionRange(0, 99999); 
+            input.select(); input.setSelectionRange(0, 99999); 
             navigator.clipboard.writeText(input.value);
-            const btn = document.getElementById('copyLinkBtn');
-            const originalText = btn.innerText;
-            btn.innerText = '✅ Скопійовано!';
-            btn.style.background = 'var(--olive)';
+            const btn = document.getElementById('copyLinkBtn'); const originalText = btn.innerText;
+            btn.innerText = '✅ Скопійовано!'; btn.style.background = 'var(--olive)';
             setTimeout(() => { btn.innerText = originalText; btn.style.background = ''; }, 2000);
         }
 
         function toggleBrowserPush() {
             const cb = document.getElementById('set_usePushNotify');
             if (cb.checked) {
-                if (!("Notification" in window)) {
-                    showAlert("Ваш браузер не підтримує push-сповіщення.");
-                    cb.checked = false;
-                    return;
-                }
+                if (!("Notification" in window)) { showAlert("Ваш браузер не підтримує push-сповіщення."); cb.checked = false; return; }
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") {
                         localStorage.setItem('push_enabled', 'true');
                         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                            navigator.serviceWorker.ready.then(reg => {
-                                reg.showNotification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg", vibrate: [100, 50, 100] });
-                            });
+                            navigator.serviceWorker.ready.then(reg => { reg.showNotification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg", vibrate: [100, 50, 100] }); });
                         } else {
                             new Notification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg" });
                         }
                     } else {
-                        showAlert("Ви заборонили сповіщення у налаштуваннях браузера.");
-                        cb.checked = false;
-                        localStorage.setItem('push_enabled', 'false');
+                        showAlert("Ви заборонили сповіщення у налаштуваннях браузера."); cb.checked = false; localStorage.setItem('push_enabled', 'false');
                     }
                 });
-            } else {
-                localStorage.setItem('push_enabled', 'false');
-            }
+            } else { localStorage.setItem('push_enabled', 'false'); }
         }
 
         function connectTelegram() {
@@ -334,7 +351,6 @@
             if (user) {
                 currentUser = user; 
                 document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
-                // Генеруємо посилання для інпуту
                 document.getElementById('shopLinkInput').value = window.location.origin + '/shop.html?owner=' + user.id;
 
                 const { data: shop } = await sb.from('shops').select('*').eq('owner_id', user.id).single();
@@ -344,9 +360,7 @@
                     document.getElementById('set_shopName').value = shop.shop_name || ''; 
                     document.getElementById('set_description').value = shop.description || ''; 
                     document.getElementById('set_categories').value = shop.categories || ''; 
-                    
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
-
                     if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('neutral', false); }
                 } else { selectTheme('neutral', false); }
                 
@@ -357,22 +371,13 @@
                       if (localStorage.getItem('push_enabled') === 'true' && Notification.permission === "granted") {
                           if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                               navigator.serviceWorker.ready.then(reg => {
-                                  reg.showNotification("🆕 Нове замовлення!", {
-                                      body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`,
-                                      icon: "icon-512.jpeg",
-                                      vibrate: [200, 100, 200]
-                                  });
+                                  reg.showNotification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "icon-512.jpeg", vibrate: [200, 100, 200] });
                               });
                           } else {
-                              new Notification("🆕 Нове замовлення!", {
-                                  body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`,
-                                  icon: "icon-512.jpeg"
-                              });
+                              new Notification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "icon-512.jpeg" });
                           }
                       }
-                      if(document.getElementById('tab-orders').classList.contains('active')) {
-                          loadOrders();
-                      }
+                      if(document.getElementById('tab-orders').classList.contains('active')) { loadOrders(); }
                   })
                   .subscribe();
 
@@ -395,13 +400,7 @@
         async function saveSettings() {
             const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
             const curTheme = document.getElementById('set_theme').value;
-            
-            const updateData = { 
-                shop_name: document.getElementById('set_shopName').value.trim(), 
-                description: document.getElementById('set_description').value.trim(), 
-                categories: document.getElementById('set_categories').value.trim(), 
-                theme_color: curTheme
-            };
+            const updateData = { shop_name: document.getElementById('set_shopName').value.trim(), description: document.getElementById('set_description').value.trim(), categories: document.getElementById('set_categories').value.trim(), theme_color: curTheme };
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
             if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
                 if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = updateData.shop_name;
@@ -453,10 +452,7 @@
         }
         
         async function executeCompleteOrder() { 
-            const id = pendingOrderId;
-            const phone = pendingOrderPhone;
-            closeConfirmModal();
-
+            const id = pendingOrderId; const phone = pendingOrderPhone; closeConfirmModal();
             const btn = document.querySelector(`#order_${id} .btn-done`); 
             if(btn) { btn.innerHTML = '⏳...'; btn.disabled = true; } 
             
@@ -477,7 +473,6 @@
             const card = document.getElementById(`order_${id}`); 
             if(card) { card.style.opacity = '0'; setTimeout(() => card.remove(), 300); } 
 
-            // Відкриваємо ТГ з повідомленням клієнту
             if (phone) {
                 let tgMessage = encodeURIComponent(`Вітаю! Ваше замовлення відправлено. Дякуємо за покупку! 📦`);
                 window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank');
