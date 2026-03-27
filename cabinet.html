@@ -19,25 +19,29 @@
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --olive-dark: #475569; --text: #1e293b; --text-muted: #475569; --border: #cbd5e1; --input-bg: #ffffff; --input-border: #94a3b8; --card-bg: #ffffff; --card-border: #cbd5e1; }
         body.theme-ocean { --bg: #051622; --panel: #0a2235; --olive: #2a8bf2; --olive-dark: #1565c0; --text: #e2f1ff; --text-muted: #7d9cb8; --border: #143554; --input-bg: #020a10; --input-border: #1b456b; --card-bg: #0d2840; --card-border: #1a426b; }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 18px; padding-top: 70px; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 16px; padding-top: 70px; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
+        
         .header { position: fixed; top: 0; left: 0; width: 100%; background: var(--panel); border-bottom: 1px solid var(--border); z-index: 1000; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         .shop-title { color: var(--olive); font-size: 20px; font-weight: bold; margin: 0; text-transform: uppercase;}
-        .header-links a { color: var(--text-muted); text-decoration: none; font-size: 16px; border: 1px solid var(--input-border); padding: 5px 10px; border-radius: 6px; transition: 0.2s;}
+        
+        /* Чітка рамка для кнопки Вітрина */
+        .header-links a { color: var(--text); text-decoration: none; font-size: 15px; border: 2px solid var(--olive); padding: 8px 16px; border-radius: 8px; transition: 0.2s; font-weight: bold; background: var(--input-bg); box-shadow: 0 3px 6px rgba(0,0,0,0.15); display: inline-block; }
+        .header-links a:active { transform: translateY(2px); box-shadow: none; }
 
         .container { max-width: 800px; margin: 0 auto; padding: 15px; }
         .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-top: 0; color: var(--text); display: flex; align-items: center; gap: 8px; transition: 0.3s;}
+        h2 { font-size: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-top: 0; color: var(--text); display: flex; align-items: center; gap: 8px; transition: 0.3s;}
 
         .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; color: var(--text-muted); font-weight: 500; font-size: 16px; }
+        label { display: block; margin-bottom: 8px; color: var(--text-muted); font-weight: 500; font-size: 15px; }
         input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], select, textarea { width: 100%; padding: 14px; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text); border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s; }
         input:focus, textarea:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.1); }
         textarea { resize: vertical; min-height: 80px; }
 
-        .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 16px; border: none; cursor: pointer; box-shadow: 0 4px 0 var(--olive-dark); width: 100%; display: block; text-align: center; transition: 0.1s; }
+        .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 15px; border: none; cursor: pointer; box-shadow: 0 4px 0 var(--olive-dark); width: 100%; display: block; text-align: center; transition: 0.1s; text-transform: uppercase; }
         .btn-3d:active { transform: translateY(4px); box-shadow: none; }
 
         .flex-btns { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -45,7 +49,7 @@
         input[type="file"] { display: none; }
         
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--panel); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; transition: 0.3s; }
-        .nav-item { background: transparent; border: none; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 20%; transition: 0.2s; }
+        .nav-item { background: transparent; border: none; color: var(--text-muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; width: 20%; transition: 0.2s; font-weight: 500;}
         .nav-item.active { color: var(--olive); font-weight: bold; }
         .nav-icon { font-size: 22px; }
 
@@ -57,7 +61,7 @@
         .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; }
         .inv-info { flex: 1; overflow: hidden; }
-        .inv-title { font-weight: bold; font-size: 15px; margin-bottom: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+        .inv-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
         .inv-select-cat { width: 100%; max-width: 200px; padding: 6px; background: var(--bg); border: 2px solid var(--input-border); color: var(--olive); border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 6px; font-weight: bold;}
         .inv-actions { display: flex; gap: 8px; align-items: flex-end; border-top: 1px solid var(--border); padding-top: 12px; }
         .inv-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
@@ -66,21 +70,21 @@
         .inv-save-btn { flex: 1.2; background: var(--olive); color: #fff; border: none; padding: 10px 5px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 var(--olive-dark); box-sizing: border-box; height: 41px; }
         .inv-del-btn { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; }
 
-        .btn-refresh { background: var(--input-bg); color: var(--olive); border: 2px solid var(--olive); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; transition: 0.2s; }
+        .btn-refresh { background: var(--input-bg); color: var(--olive); border: 2px solid var(--olive); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; transition: 0.2s; }
         .order-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: 0.3s;}
-        .order-header { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 12px; line-height: 1.4; border-bottom: 1px dashed var(--input-border); padding-bottom: 12px; }
+        .order-header { font-size: 14px; font-weight: bold; color: var(--text); margin-bottom: 12px; line-height: 1.4; border-bottom: 1px dashed var(--input-border); padding-bottom: 12px; }
         .order-row { font-size: 14px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.3;}
         .order-row strong { color: var(--text); font-weight: 600; }
         .phone-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; gap: 10px; }
         .phone-number { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; white-space: nowrap; }
-        .btn-call { flex-shrink: 0; background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 3px 0 var(--olive-dark); transition: 0.1s; }
+        .btn-call { flex-shrink: 0; background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 3px 0 var(--olive-dark); transition: 0.1s; }
         .btn-call:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--olive-dark); }
         .order-sum { color: var(--olive); font-weight: bold; font-size: 16px; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
         .btn-done { background: #8bb34d; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-top: 18px; cursor: pointer; box-shadow: 0 4px 0 #5c7a31; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-done:active { transform: translateY(4px); box-shadow: none; }
 
         .settings-block { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;}
-        .settings-block h3 { margin-top: 0; color: var(--text); font-size: 18px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
+        .settings-block h3 { margin-top: 0; color: var(--text); font-size: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
         
         .theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px; }
         .theme-card { border: 2px solid var(--card-border); background: var(--input-bg); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--text-muted); font-size: 13px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -140,21 +144,31 @@
             <div class="settings-block">
                 <h3>🏪 Основна інформація</h3>
                 <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
-                <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
+                
+                <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; margin-top: 15px;">
+                    <input type="checkbox" id="set_showReport" style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--olive);" onchange="toggleReportSettings()">
+                    <label for="set_showReport" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text);">📢 Показувати звіт на вітрині</label>
+                </div>
+                <div id="reportSettingsBlock" style="display: none;">
+                    <div class="input-group" style="margin-bottom: 0;">
+                        <textarea id="set_reportText" placeholder="Текст звіту (Акції / Оновлення)..."></textarea>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0; margin-top: 15px;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
             </div>
 
             <div class="settings-block">
-                <h3>✈️ Сповіщення в Telegram</h3>
-                <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <input type="checkbox" id="set_useTgNotify" style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--olive);" onchange="toggleTgSettings()">
-                    <label for="set_useTgNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text);">🔔 Включити сповіщення</label>
+                <h3>🔔 Сповіщення (Push & Telegram)</h3>
+                
+                <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; background: var(--input-bg);">
+                    <input type="checkbox" id="set_useTgNotify" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--olive); margin: 0;" onchange="toggleTgSettings()">
+                    <label for="set_useTgNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 6px;">🔔 Включити push-увідомлення</label>
                 </div>
 
-                <div id="tgSettingsBlock" style="display: none;">
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <label>Ваш Telegram Chat ID:</label>
-                        <input type="text" id="set_tgChatId" placeholder="Наприклад: 123456789">
-                    </div>
+                <div id="tgSettingsBlock" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border);">
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 0; margin-bottom: 15px;">Натисніть кнопку нижче, щоб підключити нашого бота. Він буде миттєво надсилати деталі нових замовлень.</p>
+                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ</button>
                 </div>
             </div>
 
@@ -174,7 +188,7 @@
                 <div class="input-group" style="margin-bottom: 0;"><textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea></div>
             </div>
 
-            <button class="btn-3d" id="saveSettingsBtn" onclick="saveSettings()" style="margin-bottom: 30px; font-size: 18px;">💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ</button>
+            <button class="btn-3d" id="saveSettingsBtn" onclick="saveSettings()" style="margin-bottom: 30px; font-size: 16px;">💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ</button>
         </div>
     </div>
 
@@ -200,6 +214,14 @@
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
         function toggleTgSettings() { document.getElementById('tgSettingsBlock').style.display = document.getElementById('set_useTgNotify').checked ? 'block' : 'none'; }
+        function toggleReportSettings() { document.getElementById('reportSettingsBlock').style.display = document.getElementById('set_showReport').checked ? 'block' : 'none'; }
+
+        // ПІДКЛЮЧЕННЯ БОТА ЧЕРЕЗ DEEP LINK
+        function connectTelegram() {
+            if(!currentUser) return showAlert("Помилка авторизації");
+            const botUsername = "AI_Pilot_Notify_Bot"; // ТУТ БУДЕ ІМ'Я ТВОГО БОТА
+            window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
+        }
 
         window.onload = async () => {
             const { data: { user } } = await sb.auth.getUser();
@@ -214,8 +236,11 @@
                     document.getElementById('set_categories').value = shop.categories || ''; 
                     
                     document.getElementById('set_useTgNotify').checked = shop.use_tg_notify === true;
-                    document.getElementById('set_tgChatId').value = shop.tg_chat_id || '';
                     toggleTgSettings();
+
+                    document.getElementById('set_showReport').checked = shop.show_report === true;
+                    document.getElementById('set_reportText').value = shop.report_text || '';
+                    toggleReportSettings();
 
                     if(shop.theme_color) { selectTheme(shop.theme_color); } else { selectTheme('neutral'); }
                 } else { selectTheme('neutral'); }
@@ -233,7 +258,8 @@
                 description: document.getElementById('set_description').value.trim(), 
                 categories: document.getElementById('set_categories').value.trim(), 
                 use_tg_notify: document.getElementById('set_useTgNotify').checked,
-                tg_chat_id: document.getElementById('set_tgChatId').value.trim(),
+                show_report: document.getElementById('set_showReport').checked,
+                report_text: document.getElementById('set_reportText').value.trim(),
                 theme_color: document.getElementById('set_theme').value 
             };
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
