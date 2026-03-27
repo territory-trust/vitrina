@@ -68,7 +68,7 @@
         .inv-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
         .inv-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .inv-input { width: 100%; padding: 10px 5px; background: var(--bg); border: 2px solid var(--input-border); color: var(--text); font-weight: bold; border-radius: 6px; text-align: center; font-size: 15px; outline: none; box-sizing: border-box; }
-        .inv-save-btn { flex: 1.2; background: var(--olive); color: #fff; border: none; padding: 10px 5px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 var(--olive-dark); box-sizing: border-box; height: 41px; }
+        .inv-save-btn { flex: 1.5; background: var(--olive); color: #fff; border: none; padding: 10px 0; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 var(--olive-dark); box-sizing: border-box; height: 41px; text-transform: uppercase; letter-spacing: 0.5px; }
         .inv-del-btn { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; }
 
         .btn-refresh { background: var(--input-bg); color: var(--olive); border: 2px solid var(--olive); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; transition: 0.2s; }
@@ -83,6 +83,15 @@
         .order-sum { color: var(--olive); font-weight: bold; font-size: 16px; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
         .btn-done { background: #8bb34d; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-top: 18px; cursor: pointer; box-shadow: 0 4px 0 #5c7a31; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-done:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Стилі для поля картки в замовленнях */
+        .card-label-hint { font-size: 15px; color: var(--text); font-weight: 600; margin-top: 15px; margin-bottom: 4px; padding-left: 4px; letter-spacing: 0.3px; }
+        .action-row { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 2px dashed var(--olive); padding: 8px; border-radius: 10px; gap: 8px; }
+        .card-input-wrapper { display: flex; align-items: center; flex: 1; background: var(--bg); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--input-border); overflow: hidden; }
+        .card-input { background: transparent; border: none; color: var(--text); font-family: monospace; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; outline: none; width: 100%; padding: 0;}
+        .card-input::placeholder { color: var(--text-muted); font-weight: normal; letter-spacing: normal;}
+        .btn-tg { flex-shrink: 0; background: #2AABEE; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; flex-direction: row; align-items: center; gap: 5px; box-shadow: 0 3px 0 #1c7ba6; transition: 0.1s;}
+        .btn-tg:active { transform: translateY(2px); box-shadow: 0 1px 0 #1c7ba6; }
 
         .settings-block { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;}
         .settings-block h3 { margin-top: 0; color: var(--text); font-size: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
@@ -174,7 +183,7 @@
 
                 <div id="tgSettingsBlock" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border);">
                     <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 0; margin-bottom: 15px;">Натисніть кнопку нижче, щоб підключити нашого бота. Він буде миттєво надсилати деталі нових замовлень.</p>
-                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ (для сповіщень про замовлення)</button>
+                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ</button>
                 </div>
             </div>
 
@@ -204,14 +213,6 @@
         <button class="btn-3d" onclick="closeAlert()" style="margin-bottom:0; padding: 10px; font-size: 15px;">ЗРОЗУМІЛО</button>
     </div>
 
-    <div class="bottom-nav">
-        <button class="nav-item" onclick="switchTab('tab-inventory', this)"><span class="nav-icon">📦</span>Склад</button>
-        <button class="nav-item active" onclick="switchTab('tab-agents', this)"><span class="nav-icon">➕</span>Товар</button>
-        <button class="nav-item" onclick="switchTab('tab-orders', this)"><span class="nav-icon">📑</span>Замовл.</button>
-        <button class="nav-item" onclick="switchTab('tab-stats', this)"><span class="nav-icon">📊</span>Статист.</button>
-        <button class="nav-item" onclick="switchTab('tab-settings', this)"><span class="nav-icon">⚙️</span>Налашт.</button>
-    </div>
-
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; let currentOrders = []; 
@@ -221,10 +222,9 @@
 
         function toggleTgSettings() { document.getElementById('tgSettingsBlock').style.display = document.getElementById('set_useTgNotify').checked ? 'block' : 'none'; }
 
-        // ПІДКЛЮЧЕННЯ БОТА ЧЕРЕЗ DEEP LINK
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
-            const botUsername = "AI_Pilot_Notify_Bot"; // ТУТ БУДЕ ІМ'Я ТВОГО БОТА
+            const botUsername = "AI_Pilot_Notify_Bot"; 
             window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
 
@@ -243,26 +243,37 @@
                     document.getElementById('set_useTgNotify').checked = shop.use_tg_notify === true;
                     toggleTgSettings();
 
-                    if(shop.theme_color) { selectTheme(shop.theme_color); } else { selectTheme('neutral'); }
-                } else { selectTheme('neutral'); }
+                    if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('neutral', false); }
+                } else { selectTheme('neutral', false); }
                 loadInventory();
             } else { window.location.href = 'landing.html'; }
         };
 
-        function selectTheme(themeName) { document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active')); document.getElementById('theme_' + themeName).classList.add('active'); document.getElementById('set_theme').value = themeName; document.body.className = ''; if(themeName !== 'dark') document.body.classList.add('theme-' + themeName); }
+        function selectTheme(themeName, doSave = true) { 
+            document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active')); 
+            const card = document.getElementById('theme_' + themeName);
+            if(card) card.classList.add('active'); 
+            document.getElementById('set_theme').value = themeName; 
+            const myThemes = ['theme-dark', 'theme-light', 'theme-neutral', 'theme-ocean'];
+            myThemes.forEach(t => document.body.classList.remove(t));
+            if(themeName !== 'dark') document.body.classList.add('theme-' + themeName); 
+            if(doSave && currentUser) { sb.from('shops').update({ theme_color: themeName }).eq('owner_id', currentUser.id); }
+        }
+
         function switchTab(tabId, btnElement) { document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active')); btnElement.classList.add('active'); document.getElementById(tabId).classList.add('active'); if(tabId === 'tab-inventory') loadInventory(); if(tabId === 'tab-orders') loadOrders(); if(tabId === 'tab-stats') loadStats(); }
 
         async function saveSettings() {
             const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
+            const curTheme = document.getElementById('set_theme').value;
             const updateData = { 
                 shop_name: document.getElementById('set_shopName').value.trim(), 
                 description: document.getElementById('set_description').value.trim(), 
                 categories: document.getElementById('set_categories').value.trim(), 
                 use_tg_notify: document.getElementById('set_useTgNotify').checked,
-                theme_color: document.getElementById('set_theme').value 
+                theme_color: curTheme
             };
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
-            if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
+            if(error) { showAlert('Помилка: ' + error.message + '\n\nПереконайтесь, що ви додали колонки в базу даних (SQL).'); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
                 if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = 'магазин ' + updateData.shop_name;
                 if(updateData.categories) shopCategories = updateData.categories.split(',').map(c => c.trim()).filter(Boolean);
                 btn.innerHTML = '✅ УСПІШНО ЗБЕРЕЖЕНО'; btn.style.background = 'var(--olive-dark)'; setTimeout(() => { btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.style.background = ''; btn.disabled = false; }, 2000);
@@ -273,10 +284,39 @@
         function renderInvCats() { const container = document.getElementById('inv-cat-container'); container.innerHTML = `<button class="cat-btn ${currentInvCat === 'Все' ? 'active' : ''}" onclick="setInvCat('Все')">Всі товари</button>`; let catsToRender = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsToRender.includes("Різне")) catsToRender.push("Різне"); catsToRender.forEach(c => { container.innerHTML += `<button class="cat-btn ${currentInvCat === c ? 'active' : ''}" onclick="setInvCat('${c}')">${c}</button>`; }); }
         function setInvCat(c) { currentInvCat = c; renderInvCats(); filterInventory(); }
         function filterInventory() { const q = document.getElementById('searchInv').value.toLowerCase(); let filtered = inventoryData; if (currentInvCat !== 'Все') filtered = filtered.filter(i => (i.category || 'Різне') === currentInvCat); filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || 'Різне').toLowerCase().includes(q)); renderInventory(filtered); }
-        function renderInventory(list) { const listEl = document.getElementById('inventoryList'); listEl.innerHTML = ''; if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Товарів не знайдено.</p>'; return; } let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsOpts.includes("Різне")) catsOpts.push("Різне"); list.forEach(p => { let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}">`; catsOpts.forEach(c => { let sel = (p.category || 'Різне') === c ? 'selected' : ''; selectHtml += `<option value="${c}" ${sel}>📁 ${c}</option>`; }); selectHtml += `</select>`; listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">💾</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; }); }
-        async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; btn.innerHTML = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerHTML = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerHTML = '💾'; btn.disabled = false; }, 1000); } }
+        function renderInventory(list) { const listEl = document.getElementById('inventoryList'); listEl.innerHTML = ''; if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Товарів не знайдено.</p>'; return; } let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsOpts.includes("Різне")) catsOpts.push("Різне"); list.forEach(p => { let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}">`; catsOpts.forEach(c => { let sel = (p.category || 'Різне') === c ? 'selected' : ''; selectHtml += `<option value="${c}" ${sel}>📁 ${c}</option>`; }); selectHtml += `</select>`; listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; }); }
+        
+        async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; const oldText = btn.innerText; btn.innerText = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerText = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerText = oldText; btn.disabled = false; }, 1000); } }
         async function deleteItemDb(id) { const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); }
-        async function loadOrders() { if(!currentUser) return; const listEl = document.getElementById('ordersList'); listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Оновлення...</p>'; const { data } = await sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Нове').order('created_at', { ascending: false }); currentOrders = data || []; listEl.innerHTML = ''; if(!data || data.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">Немає нових замовлень.</div>'; return; } data.forEach(o => { let itemsText = ''; if(o.items) itemsText = o.items.map(i => `${i.title} (${i.qty} шт.)`).join(' | '); let phoneClean = o.phone.replace(/\D/g, ''); if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean; listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div><button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО</button></div>`; }); }
+
+        // Допоміжні функції для картки
+        function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
+        function saveCardToLocal(val) { localStorage.setItem('saved_card_number', val); }
+        function sendToTelegram(phone, amount, inputId) { const cardInput = document.getElementById(inputId); const cardValue = cardInput.value.trim() || 'картку не вказано'; let tgMessage = encodeURIComponent(`Вітаю! Дякуємо за замовлення. 🛒\nСума до оплати: ${amount} грн.\nРеквізити картки: ${cardValue}`); window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank'); }
+
+        async function loadOrders() { 
+            if(!currentUser) return; 
+            const listEl = document.getElementById('ordersList'); 
+            listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Оновлення...</p>'; 
+            const { data } = await sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Нове').order('created_at', { ascending: false }); 
+            currentOrders = data || []; 
+            listEl.innerHTML = ''; 
+            if(!data || data.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">Немає нових замовлень.</div>'; return; } 
+            
+            const savedCard = localStorage.getItem('saved_card_number') || '';
+
+            data.forEach(o => { 
+                let itemsText = ''; if(o.items) itemsText = o.items.map(i => `${i.title} (${i.qty} шт.)`).join(' | '); 
+                let phoneClean = o.phone.replace(/\D/g, ''); if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean; 
+                
+                let actionHtml = '';
+                if(o.payment_type === 'На картку') {
+                    actionHtml = `<div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div><div class="action-row"><div class="card-input-wrapper"><input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric"></div><button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button></div>`;
+                }
+
+                listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${actionHtml}<button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО</button></div>`; 
+            }); 
+        }
         
         async function triggerCompleteOrder(id) { const btn = document.querySelector(`#order_${id} .btn-done`); if(btn) { btn.innerHTML = '⏳...'; btn.disabled = true; } await sb.from('orders').update({ status: 'Виконано' }).eq('id', id); const order = currentOrders.find(o => o.id === id); if(order && order.items) { for(let item of order.items) { const { data: prod } = await sb.from('products').select('quantity').eq('id', item.id).single(); if(prod) { let newQty = (prod.quantity || 0) - item.qty; await sb.from('products').update({ quantity: newQty < 0 ? 0 : newQty }).eq('id', item.id); } } loadInventory(); } const card = document.getElementById(`order_${id}`); if(card) { card.style.opacity = '0'; setTimeout(() => card.remove(), 300); } }
 
@@ -323,22 +363,7 @@
             container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
         }
 
-        // ВИПРАВЛЕНО: Зміна тексту без видалення <input>
-        function updLbl(camId, galId, inputId, index) { 
-            const file = document.getElementById(inputId).files[0]; 
-            if(file) { 
-                selectedFiles[index - 1] = file; 
-                document.getElementById(camId).style.background = 'var(--input-bg)'; 
-                document.getElementById(galId).style.background = 'var(--input-bg)'; 
-                document.getElementById(camId).querySelector('span').innerText = '📷 Камера'; 
-                document.getElementById(galId).querySelector('span').innerText = '🖼 Галерея'; 
-                
-                const active = document.getElementById(inputId.includes('cam') ? camId : galId); 
-                active.style.background = 'rgba(107, 135, 59, 0.2)'; 
-                active.querySelector('span').innerText = '✅ Є фото'; 
-            } 
-        }
-
+        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.querySelector('span').innerText = '✅ Є фото'; } }
         function log(msg, isErr = false) { const s = document.getElementById('status'); s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : 'var(--olive)'; s.innerText += msg + '\n'; s.scrollTop = s.scrollHeight; }
         
         async function compressImg(file) { if(!file) return null; return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; let width = img.width; let height = img.height; if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { const newFile = new File([blob], file.name, { type: 'image/jpeg' }); const reader2 = new FileReader(); reader2.readAsDataURL(blob); reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] }); }, 'image/jpeg', 0.7); }; }; }); }
@@ -361,8 +386,6 @@
                 const imagesArray = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ...");
-                
-                // ВІДНОВЛЕНО ОРИГІНАЛЬНИЙ ДЕТАЛЬНИЙ ПРОМПТ
                 const promptText = `Ти досвідчений експерт з продажу. Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Напиши об'ємний, діловий та продаючий опис. Розкажи про характеристики та переваги. Використовуй <br><br> для абзаців. УВАГА: КАТЕГОРИЧНО ЗАБОРОНЕНО використовувати будь-які емодзі (смайлики) в тексті!", "rec_price": "Ціна (тільки цифри)"}. Мова: українська. Без markdown.`;
                 
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
@@ -378,11 +401,9 @@
 
                 log("✅ Товар на вітрині!");
                 
-                // Очищення форми
                 document.getElementById('price').value = ''; document.getElementById('qty').value = '1'; selectedFiles = [null, null, null];
                 document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
                 
-                // Безпечне скидання кнопок (тільки span)
                 ['l1','l2','l3'].forEach(id => { 
                     document.getElementById(id+'_cam').style.background = 'var(--input-bg)'; 
                     document.getElementById(id+'_cam').querySelector('span').innerText = '📷 Камера'; 
