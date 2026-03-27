@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        /* БАЗОВІ ЗМІННІ (Хамелеон) */
+        /* БАЗОВІ ЗМІННІ (Хамелеон) - По замовчуванню Dark Velvet */
         :root { 
             --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; 
             --olive-dark: #465926; --text: #e5e7eb; --text-muted: #aaa; 
@@ -22,7 +22,7 @@
             --card-bg: #1a1e24; --card-border: #333;
         }
         
-        /* СВІТЛИЙ СТИЛЬ */
+        /* СВІТЛИЙ СТИЛЬ (Light Creative) */
         body.theme-light { 
             --bg: #f9fafb; --panel: #ffffff; --olive: #6b873b; 
             --olive-dark: #465926; --text: #111827; --text-muted: #4b5563; 
@@ -30,12 +30,27 @@
             --card-bg: #ffffff; --card-border: #e5e7eb;
         }
         
-        /* НЕЙТРАЛЬНИЙ СТИЛЬ */
+        /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) */
         body.theme-neutral { 
             --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; 
             --olive-dark: #475569; --text: #1e293b; --text-muted: #475569; 
             --border: #cbd5e1; --input-bg: #ffffff; --input-border: #94a3b8; 
             --card-bg: #ffffff; --card-border: #cbd5e1;
+        }
+
+        /* 🌊 НОВИЙ СТИЛЬ: ТЕМНИЙ ОКЕАН (Dark Ocean) */
+        body.theme-ocean { 
+            --bg: #051622; /* Глибокий синьо-чорний фон */
+            --panel: #0a2235; /* Темно-сині панелі */
+            --olive: #2a8bf2; /* Яскравий синій для кнопок */
+            --olive-dark: #1565c0; /* Глибокий синій для тіней градієнту */
+            --text: #e2f1ff; /* Світло-блакитний текст */
+            --text-muted: #7d9cb8; /* Приглушений блакитний */
+            --border: #143554; /* Сині бордери */
+            --input-bg: #020a10; /* Найтемніший синій для інпутів */
+            --input-border: #1b456b;
+            --card-bg: #0d2840; /* Світліші сині картки */
+            --card-border: #1a426b;
         }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 18px; padding-top: 70px; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
@@ -53,7 +68,7 @@
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: var(--text-muted); font-weight: 500; font-size: 16px; }
         input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], select, textarea { width: 100%; padding: 14px; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text); border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s; }
-        input:focus, textarea:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.1); }
+        input:focus, textarea:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.1); }
         textarea { resize: vertical; min-height: 80px; }
 
         .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 16px; border: none; cursor: pointer; box-shadow: 0 4px 0 var(--olive-dark); width: 100%; display: block; text-align: center; transition: 0.1s; }
@@ -96,8 +111,8 @@
         .order-row strong { color: var(--text); font-weight: 600; }
         .phone-row { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; gap: 10px; }
         .phone-number { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; white-space: nowrap; }
-        .btn-call { flex-shrink: 0; background: linear-gradient(180deg, #8bc34a 0%, #689f38 100%); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3), 0 3px 0 #4a7526; transition: 0.1s; }
-        .btn-call:active { transform: translateY(3px); box-shadow: 0 1px 0 #4a7526; }
+        .btn-call { flex-shrink: 0; background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 3px 0 var(--olive-dark); transition: 0.1s; }
+        .btn-call:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--olive-dark); }
         .order-sum { color: var(--olive); font-weight: bold; font-size: 16px; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
         .card-label-hint { font-size: 15px; color: var(--text); font-weight: 600; margin-top: 15px; margin-bottom: 4px; padding-left: 4px; letter-spacing: 0.3px; }
         .action-row { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 2px dashed var(--olive); padding: 8px; border-radius: 10px; gap: 8px; }
@@ -122,11 +137,18 @@
         body.theme-light .pwa-hint-hl, body.theme-neutral .pwa-hint-hl { color: #b45309; }
         body.theme-light .pwa-hint-btn, body.theme-neutral .pwa-hint-btn { color: #b45309; border-color: #d97706; }
 
-        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .theme-card { border: 2px solid var(--card-border); background: var(--input-bg); border-radius: 10px; padding: 10px 5px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--text-muted); font-size: 13px; font-weight: 600; }
-        .theme-card.active { border-color: var(--olive); color: var(--text); background: rgba(107, 135, 59, 0.1); }
+        /* Сітка 2х2 для тем */
+        .theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px; }
+        .theme-card { border: 2px solid var(--card-border); background: var(--input-bg); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--text-muted); font-size: 13px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .theme-card.active { border-color: var(--olive); color: var(--text); background: rgba(107, 135, 59, 0.05); box-shadow: 0 0 0 1px var(--olive); }
+        body.theme-ocean .theme-card.active { background: rgba(42, 139, 242, 0.05); }
         .theme-color-box { height: 40px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--input-border); }
-        .t-dark { background: #0d0f12; } .t-light { background: #f3f4f6; } .t-neutral { background: #e5e5e5; }
+        
+        /* Кольори для мініатюр тем */
+        .t-dark { background: #0d0f12; } 
+        .t-light { background: #f3f4f6; } 
+        .t-neutral { background: #e5e5e5; }
+        .t-ocean { background: #051622; border-color: #2a8bf2 !important; }
         
         .chat-box { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 8px; height: 150px; overflow-y: auto; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
         .msg { padding: 10px 15px; border-radius: 12px; font-size: 15px; max-width: 80%; }
@@ -212,6 +234,7 @@
                 <h3>🎨 Дизайн Вітрини та Кабінету</h3>
                 <div class="theme-grid">
                     <div class="theme-card" id="theme_dark" onclick="selectTheme('dark')"><div class="theme-color-box t-dark"></div>Dark Velvet</div>
+                    <div class="theme-card" id="theme_ocean" onclick="selectTheme('ocean')"><div class="theme-color-box t-ocean"></div>Dark Ocean</div>
                     <div class="theme-card" id="theme_light" onclick="selectTheme('light')"><div class="theme-color-box t-light"></div>Light Creative</div>
                     <div class="theme-card active" id="theme_neutral" onclick="selectTheme('neutral')"><div class="theme-color-box t-neutral"></div>Neutral Classic</div>
                 </div>
@@ -261,7 +284,7 @@
         let inventoryData = []; 
         let shopCategories = []; 
         let currentInvCat = 'Все'; 
-        let currentOrders = []; // Зберігаємо поточні замовлення для списання залишків
+        let currentOrders = []; 
 
         // ЛОГІКА КАСТОМНИХ ВІКОН
         function showAlert(msg) {
@@ -320,7 +343,13 @@
             } else { window.location.href = 'landing.html'; }
         };
 
-        function selectTheme(themeName) { document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active')); document.getElementById('theme_' + themeName).classList.add('active'); document.getElementById('set_theme').value = themeName; document.body.className = ''; if(themeName !== 'dark') document.body.classList.add('theme-' + themeName); }
+        function selectTheme(themeName) { 
+            document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active')); 
+            document.getElementById('theme_' + themeName).classList.add('active'); 
+            document.getElementById('set_theme').value = themeName; 
+            document.body.className = ''; 
+            if(themeName !== 'dark') document.body.classList.add('theme-' + themeName); 
+        }
         
         function switchTab(tabId, btnElement) { 
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active')); 
@@ -421,7 +450,6 @@
             if(error) { listEl.innerHTML = '<p style="color:#ff4444; text-align:center;">Помилка завантаження.</p>'; return; }
             listEl.innerHTML = '';
             
-            // Зберігаємо замовлення глобально для списання залишків
             currentOrders = data || []; 
 
             if(!data || data.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">У вас поки немає нових замовлень.</div>'; return; }
@@ -437,13 +465,12 @@
             });
         }
 
-        // ОНОВЛЕНО: Функція виконання замовлення ЗІ СПИСАННЯМ СКЛАДУ
+        // Функція виконання замовлення ЗІ СПИСАННЯМ СКЛАДУ
         function triggerCompleteOrder(id) {
             showConfirm("Підтвердити виконання замовлення? Воно перейде у статистику, а залишки на складі будуть автоматично зменшені.", async () => {
                 const btn = document.querySelector(`#order_${id} .btn-done`); 
                 if(btn) { btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true; }
                 
-                // 1. Оновлюємо статус в базі
                 const { error } = await sb.from('orders').update({ status: 'Виконано' }).eq('id', id);
                 if(error) { 
                     showAlert("Помилка: " + error.message); 
@@ -451,22 +478,19 @@
                     return; 
                 }
 
-                // 2. СПИСУЄМО ЗІ СКЛАДУ
                 const order = currentOrders.find(o => o.id === id);
                 if(order && order.items && Array.isArray(order.items)) {
                     for(let item of order.items) {
                         const { data: prod } = await sb.from('products').select('quantity').eq('id', item.id).single();
                         if(prod) {
                             let newQty = (prod.quantity || 0) - item.qty;
-                            if(newQty < 0) newQty = 0; // Не йдемо в мінус
+                            if(newQty < 0) newQty = 0;
                             await sb.from('products').update({ quantity: newQty }).eq('id', item.id);
                         }
                     }
-                    // Оновлюємо склад у фоні
                     loadInventory(); 
                 }
 
-                // 3. Ховаємо карточку замовлення
                 const card = document.getElementById(`order_${id}`); 
                 if(card) {
                     card.style.transition = '0.3s'; card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
@@ -533,7 +557,7 @@
         }
 
         function printQR(id) { showAlert("Буде реалізовано у наступному оновленні."); }
-        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; document.getElementById(camId).style.background = 'var(--input-bg)'; document.getElementById(galId).style.background = 'var(--input-bg)'; document.getElementById(camId).innerHTML = '📷 Камера'; document.getElementById(galId).innerHTML = '🖼 Галерея'; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.style.background = 'rgba(107, 135, 59, 0.1)'; active.innerHTML = '✅ Є фото'; } }
+        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; document.getElementById(camId).style.background = 'var(--input-bg)'; document.getElementById(galId).style.background = 'var(--input-bg)'; document.getElementById(camId).innerHTML = '📷 Камера'; document.getElementById(galId).innerHTML = '🖼 Галерея'; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.style.background = 'rgba(42, 139, 242, 0.1)'; active.innerHTML = '✅ Є фото'; } }
         function log(msg, isErr = false) { const s = document.getElementById('status'); s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : 'var(--olive)'; s.innerText += msg + '\n'; s.scrollTop = s.scrollHeight; }
         function sendSupportMsg() { const input = document.getElementById('chatInput'); const val = input.value.trim(); if(!val) return; const box = document.getElementById('chatBox'); box.innerHTML += `<div class="msg user">${val}</div>`; input.value = ''; box.scrollTop = box.scrollHeight; setTimeout(() => { box.innerHTML += `<div class="msg admin">Дякуємо! Звернення прийнято.</div>`; box.scrollTop = box.scrollHeight; }, 1000); }
 
