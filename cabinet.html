@@ -14,7 +14,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        /* ПОСИЛЕНІ РАМКИ: --input-border тепер має вищий контраст для всіх тем */
         :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --olive-dark: #465926; --text: #e5e7eb; --text-muted: #aaa; --border: #2a2e35; --input-bg: #050505; --input-border: #666; --card-bg: #1a1e24; --card-border: #333; }
         body.theme-light { --bg: #f9fafb; --panel: #ffffff; --olive: #6b873b; --olive-dark: #465926; --text: #111827; --text-muted: #4b5563; --border: #e5e7eb; --input-bg: #ffffff; --input-border: #a1a1aa; --card-bg: #ffffff; --card-border: #e5e7eb; }
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --olive-dark: #475569; --text: #1e293b; --text-muted: #475569; --border: #cbd5e1; --input-bg: #ffffff; --input-border: #94a3b8; --card-bg: #ffffff; --card-border: #cbd5e1; }
@@ -38,7 +37,6 @@
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: var(--text-muted); font-weight: 500; font-size: 15px; }
         
-        /* ЧІТКІ РАМКИ ДЛЯ ВСІХ ПОЛІВ */
         input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], select, textarea { 
             width: 100%; padding: 14px; background: var(--input-bg); 
             border: 2px solid var(--input-border) !important; 
@@ -92,14 +90,6 @@
         .btn-done { background: #8bb34d; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-top: 18px; cursor: pointer; box-shadow: 0 4px 0 #5c7a31; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-done:active { transform: translateY(4px); box-shadow: none; }
 
-        .card-label-hint { font-size: 15px; color: var(--text); font-weight: 600; margin-top: 15px; margin-bottom: 4px; padding-left: 4px; letter-spacing: 0.3px; }
-        .action-row { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 2px dashed var(--olive); padding: 8px; border-radius: 10px; gap: 8px; }
-        .card-input-wrapper { display: flex; align-items: center; flex: 1; background: var(--bg); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--input-border) !important; overflow: hidden; }
-        .card-input { background: transparent !important; border: none !important; color: var(--text); font-family: monospace; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; outline: none; width: 100%; padding: 0 !important; box-shadow: none !important;}
-        .card-input::placeholder { color: var(--text-muted); font-weight: normal; letter-spacing: normal;}
-        .btn-tg { flex-shrink: 0; background: #2AABEE; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; flex-direction: row; align-items: center; gap: 5px; box-shadow: 0 3px 0 #1c7ba6; transition: 0.1s;}
-        .btn-tg:active { transform: translateY(2px); box-shadow: 0 1px 0 #1c7ba6; }
-
         .settings-block { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;}
         .settings-block h3 { margin-top: 0; color: var(--text); font-size: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
         
@@ -112,6 +102,8 @@
         
         .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; backdrop-filter: blur(4px); transition: 0.2s;}
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 320px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+
+        .cat-instruction-box { font-size: 15px; color: var(--text); line-height: 1.4; margin-bottom: 10px; background: rgba(107,135,59,0.1); padding: 10px; border-left: 3px solid var(--olive); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -175,12 +167,12 @@
         <div id="tab-settings" class="section">
             
             <div class="settings-block">
-                <h3>🏪 Основна інформація</h3>
+                <h3>🏪 НАЛАШТУВАННЯ МАГАЗИНУ</h3>
                 <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
                 
                 <div class="input-group">
-                    <label>Категорії Товарів (відображаються на Вашій Вітрині):</label>
-                    <p style="font-size: 13px; color: var(--text-muted); margin-top: -5px; margin-bottom: 8px; line-height: 1.3;">Впишіть назви категорій через кому, наприклад: зошити, ручки, папки і т.д. (можна доповнити, виправити в будь-який момент).</p>
+                    <label style="font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 5px;">Категорії Товарів (відображаються на Вашій Вітрині):</label>
+                    <div class="cat-instruction-box">Впишіть назви категорій через кому, наприклад: зошити, ручки, папки і т.д. (можна доповнити, виправити в будь-який момент).</div>
                     <textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea>
                 </div>
                 
@@ -234,8 +226,7 @@
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; let currentOrders = []; 
-        let pendingAiData = null; // Стан для двоетапної публікації
-        let uploadedImageUrls = [];
+        let pendingAiData = null;
 
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
@@ -404,7 +395,6 @@
             container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
         }
 
-        // АРХІТЕКТУРА 2-ЕТАПНОЇ ПУБЛІКАЦІЇ ТОВАРУ
         function updLbl(camId, galId, inputId, index) { 
             const file = document.getElementById(inputId).files[0]; 
             if(file) { 
@@ -413,7 +403,6 @@
                 active.style.background = 'rgba(107, 135, 59, 0.2)'; 
                 active.querySelector('span').innerText = '✅ Є фото'; 
                 
-                // Якщо завантажили нове фото під час підтвердження - скидаємо статус
                 pendingAiData = null;
                 const btn = document.getElementById('mainBtn');
                 if (btn.innerText.includes('ПІДТВЕРДИТИ')) {
@@ -435,7 +424,6 @@
             
             if(!currentUser) return showAlert("Помилка авторизації.");
 
-            // ЕТАП 2: КОРИСТУВАЧ ПІДТВЕРДЖУЄ ПУБЛІКАЦІЮ
             if (pendingAiData) {
                 btn.disabled = true;
                 btn.innerHTML = '⏳ ПУБЛІКАЦІЯ...';
@@ -453,7 +441,6 @@
 
                     log("✅ Товар успішно опубліковано на вітрині!");
                     
-                    // Очищення після успіху
                     prInput.value = ''; qtInput.value = '1'; selectedFiles = [null, null, null]; uploadedImageUrls = []; pendingAiData = null;
                     document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
                     ['l1','l2','l3'].forEach(id => { 
@@ -476,7 +463,6 @@
                 return;
             }
 
-            // ЕТАП 1: АНАЛІЗ ЧЕРЕЗ ІІ
             if(!selectedFiles[0]) return showAlert("Завантажте хоча б Головне фото (1)!");
             
             btn.disabled = true; document.getElementById('status').innerText = '';
@@ -502,9 +488,8 @@
                 
                 let finalAiPrice = prInput.value ? parseFloat(prInput.value) : (parseFloat(ai.rec_price) || 0);
                 
-                // Зберігаємо дані для другого етапу
                 pendingAiData = { title: ai.title, category: ai.category, description: ai.description, price: finalAiPrice };
-                prInput.value = finalAiPrice; // Підставляємо в інпут для візуальної перевірки
+                prInput.value = finalAiPrice; 
 
                 log(`✅ Аналіз завершено!\n\nНазва: ${ai.title}\nКатегорія: ${ai.category}\nЦіна: ${finalAiPrice} грн.\n\n⚠️ Перевірте ціну у полі вище. Якщо згодні — натисніть кнопку "Підтвердити".`);
                 
