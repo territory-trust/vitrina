@@ -20,7 +20,7 @@ self.addEventListener('notificationclick', (event) => {
             for (let i = 0; i < windowClients.length; i++) {
                 let client = windowClients[i];
                 if (client.url.includes('cabinet.html') && 'focus' in client) {
-                    return client.focus(); // Просто перемикаємось на неї
+                    return client.focus(); // Перемикаємось на неї
                 }
             }
             // Якщо вкладка закрита - відкриваємо нову
