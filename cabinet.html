@@ -84,7 +84,6 @@
         .btn-done { background: #8bb34d; color: #fff; border: none; width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 14px; margin-top: 18px; cursor: pointer; box-shadow: 0 4px 0 #5c7a31; transition: 0.1s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-done:active { transform: translateY(4px); box-shadow: none; }
 
-        /* Стилі для поля картки в замовленнях */
         .card-label-hint { font-size: 15px; color: var(--text); font-weight: 600; margin-top: 15px; margin-bottom: 4px; padding-left: 4px; letter-spacing: 0.3px; }
         .action-row { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 2px dashed var(--olive); padding: 8px; border-radius: 10px; gap: 8px; }
         .card-input-wrapper { display: flex; align-items: center; flex: 1; background: var(--bg); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--input-border); overflow: hidden; }
@@ -213,6 +212,14 @@
         <button class="btn-3d" onclick="closeAlert()" style="margin-bottom:0; padding: 10px; font-size: 15px;">ЗРОЗУМІЛО</button>
     </div>
 
+    <div class="bottom-nav">
+        <button class="nav-item" onclick="switchTab('tab-inventory', this)"><span class="nav-icon">📦</span>Склад</button>
+        <button class="nav-item active" onclick="switchTab('tab-agents', this)"><span class="nav-icon">➕</span>Товар</button>
+        <button class="nav-item" onclick="switchTab('tab-orders', this)"><span class="nav-icon">📑</span>Замовл.</button>
+        <button class="nav-item" onclick="switchTab('tab-stats', this)"><span class="nav-icon">📊</span>Статист.</button>
+        <button class="nav-item" onclick="switchTab('tab-settings', this)"><span class="nav-icon">⚙️</span>Налашт.</button>
+    </div>
+
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; let currentOrders = []; 
@@ -289,7 +296,6 @@
         async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; const oldText = btn.innerText; btn.innerText = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerText = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerText = oldText; btn.disabled = false; }, 1000); } }
         async function deleteItemDb(id) { const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); }
 
-        // Допоміжні функції для картки
         function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
         function saveCardToLocal(val) { localStorage.setItem('saved_card_number', val); }
         function sendToTelegram(phone, amount, inputId) { const cardInput = document.getElementById(inputId); const cardValue = cardInput.value.trim() || 'картку не вказано'; let tgMessage = encodeURIComponent(`Вітаю! Дякуємо за замовлення. 🛒\nСума до оплати: ${amount} грн.\nРеквізити картки: ${cardValue}`); window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank'); }
@@ -310,7 +316,7 @@
                 let phoneClean = o.phone.replace(/\D/g, ''); if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean; 
                 
                 let actionHtml = '';
-                if(o.payment_type === 'На картку') {
+                if(o.payment_type === 'На картку' || (o.card_number && o.card_number !== '')) {
                     actionHtml = `<div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div><div class="action-row"><div class="card-input-wrapper"><input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric"></div><button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button></div>`;
                 }
 
