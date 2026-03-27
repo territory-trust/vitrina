@@ -84,16 +84,14 @@
         .head-btn:active { transform: translateY(1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
         
-        /* МАГІЯ: Жовтий текст із жорстким чорним абрисом (читається всюди!) */
         .head-btn.back-btn, body.theme-light .head-btn.back-btn, body.theme-neutral .head-btn.back-btn, body.theme-ocean .head-btn.back-btn { 
             background: transparent !important; 
-            color: #FFEA00 !important; /* Яскраво-жовтий */
+            color: #FFEA00 !important; 
             border: none !important; 
             font-weight: 900; 
             font-size: 16px; 
             padding: 5px 0; 
             box-shadow: none !important; 
-            /* Робимо абрис по всіх 4 сторонах + легку тінь знизу */
             text-shadow: 
                 -1px -1px 0 #000,  
                  1px -1px 0 #000,
@@ -292,7 +290,6 @@
         btnsWrapper.style.display = 'block'; 
 
         if (user && ownerId && user.id === ownerId) {
-            // Кнопка, яка перемагає закони фізики
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt;&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
@@ -337,14 +334,39 @@
         if(list.length === 0) return g.innerHTML = `<div class="empty-state">😕 У цій категорії поки немає товарів</div>`;
         list.forEach(p => {
             let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || '';
-            g.innerHTML += `<div class="card"><div class="main-p" onclick="openLightbox('${p.id}')"><img src="${imgUrl}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"></div><div class="card-body"><div class="title">${p.title || 'Без назви'}</div><div class="price">${p.price} грн</div><div class="card-actions"><a href="product.html?id=${p.id}" class="btn-action btn-read">Опис</a><button onclick="addToCart('${p.id}', this)" class="btn-action btn-buy">У кошик</button></div></div></div>`;
+            let qty = p.quantity || 0; 
+            
+            // РІВЕНЬ 1 ЗАХИСТУ: Блокуємо кнопку, якщо товару немає
+            let btnHtml = '';
+            if (qty > 0) {
+                btnHtml = `<button onclick="addToCart('${p.id}', this)" class="btn-action btn-buy">У кошик</button>`;
+            } else {
+                btnHtml = `<button class="btn-action" style="background: var(--panel); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none; cursor: not-allowed;" disabled>Немає</button>`;
+            }
+
+            g.innerHTML += `<div class="card"><div class="main-p" onclick="openLightbox('${p.id}')"><img src="${imgUrl}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"></div><div class="card-body"><div class="title">${p.title || 'Без назви'}</div><div class="price">${p.price} грн</div><div class="card-actions"><a href="product.html?id=${p.id}" class="btn-action btn-read">Опис</a>${btnHtml}</div></div></div>`;
         });
     }
 
     function addToCart(id, btnEl) {
         const p = items.find(i => i.id === id); if(!p) return;
-        let existing = cart.find(i => i.id === p.id); if(existing) existing.qty += 1; else cart.push({ id: p.id, title: p.title, price: p.price, owner_id: p.owner_id, img: p.image_url_1 || (p.images && p.images[0]) || p.image_url, qty: 1 });
-        saveCart(); const originalText = btnEl.innerHTML; btnEl.innerHTML = '✅ Додано'; btnEl.style.background = '#1a2e1a'; setTimeout(() => { btnEl.innerHTML = originalText; btnEl.style.background = ''; }, 1500);
+        let existing = cart.find(i => i.id === p.id); 
+        
+        // РІВЕНЬ 2 ЗАХИСТУ: Блокуємо повторне натискання на вітрині, якщо досягли ліміту
+        if(existing) {
+            if (existing.qty < p.quantity) {
+                existing.qty += 1;
+            } else {
+                alert(`На складі є лише ${p.quantity} шт. цього товару.`);
+                return;
+            }
+        } else { 
+            // Зберігаємо максимальний залишок у кошик для подальшої перевірки
+            cart.push({ id: p.id, title: p.title, price: p.price, owner_id: p.owner_id, img: p.image_url_1 || (p.images && p.images[0]) || p.image_url, qty: 1, maxQty: p.quantity }); 
+        }
+        
+        saveCart(); 
+        const originalText = btnEl.innerHTML; btnEl.innerHTML = '✅ Додано'; btnEl.style.background = '#1a2e1a'; setTimeout(() => { btnEl.innerHTML = originalText; btnEl.style.background = ''; }, 1500);
     }
 
     function saveCart() { localStorage.setItem('smart_cart', JSON.stringify(cart)); updateCartBadge(); renderCartItems(); }
@@ -367,12 +389,29 @@
         if(cart.length === 0) { container.innerHTML = '<div style="text-align:center; padding: 40px 20px; color:#888;">🛒 Кошик порожній</div>'; document.getElementById('btnCheckoutInit').disabled = true; } 
         else {
             document.getElementById('btnCheckoutInit').disabled = false;
-            cart.forEach((item, index) => { total += item.price * item.qty; container.innerHTML += `<div class="cart-item"><img src="${item.img}"><div class="cart-item-info"><div class="cart-item-title">${item.title}</div><div class="cart-item-price">${item.price} грн</div><div class="qty-controls"><button class="qty-btn" onclick="updateQty(${index}, -1)">-</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="updateQty(${index}, 1)">+</button></div></div></div>`; });
+            cart.forEach((item, index) => { 
+                total += item.price * item.qty; 
+                container.innerHTML += `<div class="cart-item"><img src="${item.img}"><div class="cart-item-info"><div class="cart-item-title">${item.title}</div><div class="cart-item-price">${item.price} грн</div><div class="qty-controls"><button class="qty-btn" onclick="updateQty(${index}, -1)">-</button><span class="qty-num">${item.qty}</span><button class="qty-btn" onclick="updateQty(${index}, 1)">+</button></div></div></div>`; 
+            });
         }
         document.getElementById('cartTotalSum').innerText = `${total} грн`;
     }
 
-    function updateQty(index, delta) { cart[index].qty += delta; if(cart[index].qty <= 0) cart.splice(index, 1); saveCart(); }
+    function updateQty(index, delta) { 
+        let newQty = cart[index].qty + delta;
+        // Запасний варіант для старих товарів у кеші кошика, у яких не було maxQty
+        let max = cart[index].maxQty !== undefined ? cart[index].maxQty : 999; 
+        
+        // РІВЕНЬ 3 ЗАХИСТУ: Блокування натискання + всередині кошика
+        if (delta > 0 && newQty > max) {
+            alert(`На складі є лише ${max} шт. цього товару.`);
+            return;
+        }
+        
+        cart[index].qty = newQty; 
+        if(cart[index].qty <= 0) cart.splice(index, 1); 
+        saveCart(); 
+    }
     
     function showCheckoutForm() { 
         document.getElementById('btnCheckoutInit').style.display = 'none'; 
