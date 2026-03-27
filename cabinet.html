@@ -42,6 +42,7 @@
 
         .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 15px; border: none; cursor: pointer; box-shadow: 0 4px 0 var(--olive-dark); width: 100%; display: block; text-align: center; transition: 0.1s; text-transform: uppercase; }
         .btn-3d:active { transform: translateY(4px); box-shadow: none; }
+        .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .flex-btns { display: flex; gap: 10px; margin-bottom: 15px; }
         .file-label { flex: 1; background: var(--input-bg); border: 2px solid var(--olive); padding: 12px 5px; text-align: center; border-radius: 8px; color: var(--olive); cursor: pointer; font-weight: bold; font-size: 14px; margin: 0; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -56,6 +57,7 @@
         .nav-scroll::-webkit-scrollbar { display: none; }
         .cat-btn { background: var(--card-bg); color: var(--text-muted); border: 1px solid var(--card-border); padding: 6px 14px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .cat-btn.active { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: none; cursor: default;}
+        
         .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s;}
         .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; }
@@ -117,10 +119,27 @@
                 <div class="input-group" style="flex: 1;"><label>Ціна (грн):</label><input type="number" id="price" autocomplete="new-password" placeholder="Авто"></div>
                 <div class="input-group" style="flex: 1;"><label>Кількість (шт):</label><input type="number" id="qty" autocomplete="new-password" placeholder="1" value="1"></div>
             </div>
+            
             <label>1. Головне фото (Загальний вигляд):</label>
-            <div class="flex-btns"><label class="file-label" id="l1_cam"><input type="file" id="p1_cam" accept="image/*" capture="environment" onchange="updLbl('l1_cam', 'l1_gal', 'p1_cam', 1)">📷 Камера</label><label class="file-label" id="l1_gal"><input type="file" id="p1_gal" accept="image/*" onchange="updLbl('l1_cam', 'l1_gal', 'p1_gal', 1)">🖼 Галерея</label></div>
+            <div class="flex-btns">
+                <label class="file-label" id="l1_cam"><input type="file" id="p1_cam" accept="image/*" capture="environment" onchange="updLbl('l1_cam', 'l1_gal', 'p1_cam', 1)">📷 Камера</label>
+                <label class="file-label" id="l1_gal"><input type="file" id="p1_gal" accept="image/*" onchange="updLbl('l1_cam', 'l1_gal', 'p1_gal', 1)">🖼 Галерея</label>
+            </div>
+            
+            <label>2. Фото деталей (Логотип/Особливості):</label>
+            <div class="flex-btns">
+                <label class="file-label" id="l2_cam"><input type="file" id="p2_cam" accept="image/*" capture="environment" onchange="updLbl('l2_cam', 'l2_gal', 'p2_cam', 2)">📷 Камера</label>
+                <label class="file-label" id="l2_gal"><input type="file" id="p2_gal" accept="image/*" onchange="updLbl('l2_cam', 'l2_gal', 'p2_gal', 2)">🖼 Галерея</label>
+            </div>
+            
+            <label>3. Фото маркування (Бірка/Розмір/Модель):</label>
+            <div class="flex-btns">
+                <label class="file-label" id="l3_cam"><input type="file" id="p3_cam" accept="image/*" capture="environment" onchange="updLbl('l3_cam', 'l3_gal', 'p3_cam', 3)">📷 Камера</label>
+                <label class="file-label" id="l3_gal"><input type="file" id="p3_gal" accept="image/*" onchange="updLbl('l3_cam', 'l3_gal', 'p3_gal', 3)">🖼 Галерея</label>
+            </div>
+            
             <button class="btn-3d" id="mainBtn" onclick="startAI()" style="margin-top: 15px;">АНАЛІЗ ТА ПУБЛІКАЦІЯ</button>
-            <div id="status" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: var(--input-bg); color: var(--text); border-left: 4px solid var(--olive); display: none;"></div>
+            <div id="status" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: var(--input-bg); color: var(--text); font-size: 16px; border-left: 4px solid var(--olive); white-space: pre-wrap; display: none;"></div>
         </div>
 
         <div id="tab-orders" class="section">
@@ -138,22 +157,23 @@
         </div>
         
         <div id="tab-settings" class="section">
-            <h2>⚙️ Налаштування Магазину</h2>
             
             <div class="settings-block">
+                <h3>🏪 Основна інформація</h3>
                 <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
                 <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
             </div>
 
             <div class="settings-block">
+                <h3>🔔 Сповіщення (Push & Telegram)</h3>
+                
                 <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; background: var(--input-bg);">
                     <input type="checkbox" id="set_useTgNotify" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--olive); margin: 0;" onchange="toggleTgSettings()">
-                    <label for="set_useTgNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 6px;">✈️ Підключити Телеграм (для сповіщень про замовлення)</label>
+                    <label for="set_useTgNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 6px;">🔔 Включити push-увідомлення</label>
                 </div>
 
                 <div id="tgSettingsBlock" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border);">
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 0; margin-bottom: 15px;">Натисніть кнопку нижче, щоб підключити нашого бота. Він буде миттєво надсилати деталі нових замовлень.</p>
-                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ БОТА</button>
+                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ</button>
                 </div>
             </div>
 
@@ -200,7 +220,6 @@
 
         function toggleTgSettings() { document.getElementById('tgSettingsBlock').style.display = document.getElementById('set_useTgNotify').checked ? 'block' : 'none'; }
 
-        // ПІДКЛЮЧЕННЯ БОТА ЧЕРЕЗ DEEP LINK
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
             const botUsername = "AI_Pilot_Notify_Bot"; // ТУТ БУДЕ ІМ'Я ТВОГО БОТА
@@ -256,10 +275,94 @@
         async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; btn.innerHTML = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerHTML = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerHTML = '💾'; btn.disabled = false; }, 1000); } }
         async function deleteItemDb(id) { const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); }
         async function loadOrders() { if(!currentUser) return; const listEl = document.getElementById('ordersList'); listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Оновлення...</p>'; const { data } = await sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Нове').order('created_at', { ascending: false }); currentOrders = data || []; listEl.innerHTML = ''; if(!data || data.length === 0) { listEl.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">Немає нових замовлень.</div>'; return; } data.forEach(o => { let itemsText = ''; if(o.items) itemsText = o.items.map(i => `${i.title} (${i.qty} шт.)`).join(' | '); let phoneClean = o.phone.replace(/\D/g, ''); if(phoneClean.length > 0 && phoneClean[0] !== '+') phoneClean = '+' + phoneClean; listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div><button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО</button></div>`; }); }
+        
         async function triggerCompleteOrder(id) { const btn = document.querySelector(`#order_${id} .btn-done`); if(btn) { btn.innerHTML = '⏳...'; btn.disabled = true; } await sb.from('orders').update({ status: 'Виконано' }).eq('id', id); const order = currentOrders.find(o => o.id === id); if(order && order.items) { for(let item of order.items) { const { data: prod } = await sb.from('products').select('quantity').eq('id', item.id).single(); if(prod) { let newQty = (prod.quantity || 0) - item.qty; await sb.from('products').update({ quantity: newQty < 0 ? 0 : newQty }).eq('id', item.id); } } loadInventory(); } const card = document.getElementById(`order_${id}`); if(card) { card.style.opacity = '0'; setTimeout(() => card.remove(), 300); } }
-        async function loadStats() { document.getElementById('statsContainer').innerHTML = '<div style="background:var(--panel); padding:20px; border-radius:12px; text-align:center;">Статистика працює.</div>'; }
-        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.innerHTML = '✅ Є фото'; } }
-        async function startAI() { showAlert("У цьому шаблоні публікація працює."); }
+
+        async function loadStats() {
+            if (!currentUser) return;
+            const container = document.getElementById('statsContainer');
+            container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Завантаження аналітики...</p>';
+
+            let startD = document.getElementById('statStartDate').value;
+            let endD = document.getElementById('statEndDate').value;
+
+            let query = sb.from('orders').select('*').eq('owner_id', currentUser.id).eq('status', 'Виконано');
+            if (startD) query = query.gte('created_at', startD + 'T00:00:00Z');
+            if (endD) query = query.lte('created_at', endD + 'T23:59:59Z');
+
+            const { data: orders, error } = await query;
+            if (error) { container.innerHTML = '<p style="color:#ff4444; text-align:center;">Помилка завантаження.</p>'; return; }
+            if (!orders || orders.length === 0) { container.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">Немає виконаних замовлень.</div>'; return; }
+
+            const { data: prods } = await sb.from('products').select('id, category').eq('owner_id', currentUser.id);
+            let catMap = {}; if (prods) prods.forEach(p => catMap[p.id] = p.category || 'Різне');
+
+            let totalRevenue = 0; let totalOrders = orders.length; 
+            let itemSales = {}; let catSales = {};
+
+            orders.forEach(order => {
+                totalRevenue += parseFloat(order.total_amount) || 0;
+                if (order.items && Array.isArray(order.items)) {
+                    order.items.forEach(item => {
+                        if (!itemSales[item.title]) itemSales[item.title] = 0; itemSales[item.title] += item.qty;
+                        let c = catMap[item.id] || 'Різне'; if (!catSales[c]) catSales[c] = 0; catSales[c] += item.qty;
+                    });
+                }
+            });
+
+            let sortedCats = Object.entries(catSales).sort((a, b) => b[1] - a[1]); let maxQtyCats = sortedCats.length > 0 ? sortedCats[0][1] : 1;
+            let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
+            sortedCats.forEach(([cat, qty]) => { let percent = Math.round((qty / maxQtyCats) * 100); catsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600;">📁 ${cat}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; });
+
+            let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]); let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
+            let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Топ товарів (шт.)</h3>';
+            sortedItems.slice(0, 5).forEach(([title, qty]) => { let percent = Math.round((qty / maxQtyItems) * 100); itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; });
+
+            container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
+        }
+
+        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; document.getElementById(camId).style.background = 'var(--input-bg)'; document.getElementById(galId).style.background = 'var(--input-bg)'; document.getElementById(camId).innerHTML = '📷 Камера'; document.getElementById(galId).innerHTML = '🖼 Галерея'; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.style.background = 'rgba(42, 139, 242, 0.1)'; active.innerHTML = '✅ Є фото'; } }
+        function log(msg, isErr = false) { const s = document.getElementById('status'); s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : 'var(--olive)'; s.innerText += msg + '\n'; s.scrollTop = s.scrollHeight; }
+        
+        async function compressImg(file) { if(!file) return null; return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; let width = img.width; let height = img.height; if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { const newFile = new File([blob], file.name, { type: 'image/jpeg' }); const reader2 = new FileReader(); reader2.readAsDataURL(blob); reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] }); }, 'image/jpeg', 0.7); }; }; }); }
+
+        async function startAI() {
+            const btn = document.getElementById('mainBtn'); let pr = document.getElementById('price').value; let qt = document.getElementById('qty').value || 1;
+            if(!selectedFiles[0]) return showAlert("Завантажте хоча б Головне фото (1)!");
+            if(!currentUser) return showAlert("Помилка авторизації.");
+            
+            btn.disabled = true; document.getElementById('status').innerText = '';
+            
+            try {
+                let catInstruction = "Визнач категорію";
+                if (shopCategories.length > 0) catInstruction = `ОБОВ'ЯЗКОВО вибери ОДНУ категорію суворо з цього списку: [${shopCategories.join(', ')}]. Якщо не підходить, пиши "Різне".`;
+
+                log("⏳ Оптимізація фотографій...");
+                const c1 = await compressImg(selectedFiles[0]); const c2 = await compressImg(selectedFiles[1]); const c3 = await compressImg(selectedFiles[2]);
+                const up = async (cObj, tag) => { if(!cObj) return null; const n = `${Date.now()}_${tag}.jpg`; const { error } = await sb.storage.from('smart_media').upload(n, cObj.file); if (error) throw error; return sb.storage.from('smart_media').getPublicUrl(n).data.publicUrl; };
+                const u1 = await up(c1, 'main'); const u2 = await up(c2, 'detail'); const u3 = await up(c3, 'label');
+                const imagesArray = [u1, u2, u3].filter(url => url !== null);
+
+                log("🧠 Аналіз ІІ...");
+                const promptText = `Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Опис без емодзі", "rec_price": "Ціна (цифра)"}. Мова: українська. Без markdown.`;
+                const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
+                if (aiError) throw new Error(aiError.message);
+                
+                const raw = aiResponse.description.replace(/```json|```/gi, '').trim(); const ai = JSON.parse(raw);
+                if(!pr) { pr = ai.rec_price || 0; }
+
+                log("💾 Збереження товару...");
+                const { data: newProduct, error: dbErr } = await sb.from('products').insert([{ title: ai.title, category: ai.category, price: parseFloat(pr), quantity: parseInt(qt), images: imagesArray, status: 'available', owner_id: currentUser.id }]).select();
+                if(dbErr) throw dbErr;
+                if (newProduct && newProduct[0]) await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: ai.description }]);
+
+                log("✅ Товар на вітрині!");
+                document.getElementById('price').value = ''; document.getElementById('qty').value = '1'; selectedFiles = [null, null, null];
+                document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
+                ['l1','l2','l3'].forEach(id => { document.getElementById(id+'_cam').style.background = 'var(--input-bg)'; document.getElementById(id+'_cam').innerHTML = '📷 Камера'; document.getElementById(id+'_gal').style.background = 'var(--input-bg)'; document.getElementById(id+'_gal').innerHTML = '🖼 Галерея'; });
+                loadInventory(); setTimeout(() => btn.disabled = false, 2000);
+            } catch(e) { log("❌ Помилка: " + e.message, true); btn.disabled = false; }
+        }
     </script>
 </body>
 </html>
