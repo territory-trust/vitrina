@@ -113,7 +113,6 @@
 
         .cat-instruction-box { font-size: 15px; color: var(--text); line-height: 1.4; margin-bottom: 10px; background: rgba(107,135,59,0.1); padding: 10px; border-left: 3px solid var(--olive); border-radius: 4px; }
 
-        /* ОНОВЛЕНИЙ БЛОК PWA ІНСТРУКЦІЇ (Theme-Aware) */
         .pwa-banner { display: flex; align-items: center; justify-content: space-between; background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--pwa-accent); border-radius: 8px; padding: 12px 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); gap: 10px; flex-wrap: wrap; transition: 0.3s; }
         .pwa-text { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; line-height: 1.3; flex: 1; min-width: 180px; }
         .pwa-btn { background: transparent; border: 1px solid var(--pwa-accent); color: var(--pwa-accent); padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.2s; }
@@ -342,7 +341,8 @@
 
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
-            const botUsername = "AI_Pilot_Notify_Bot"; 
+            // ТУТ ВКАЗАНО ТВІЙ РЕАЛЬНИЙ БОТ
+            const botUsername = "AIPilot_Shops_bot"; 
             window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
 
