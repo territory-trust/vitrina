@@ -111,8 +111,7 @@
         .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: none; backdrop-filter: blur(4px); transition: 0.2s;}
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 320px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
 
-        /* ВІДНОВЛЕНА ЧИТАБЕЛЬНА ІНСТРУКЦІЯ */
-        .cat-instruction-box { font-size: 15px; color: var(--text); line-height: 1.5; margin-bottom: 12px; background: rgba(107,135,59,0.15); padding: 12px 15px; border-left: 4px solid var(--olive); border-radius: 6px; font-weight: 500; letter-spacing: 0.3px; }
+        .cat-instruction-box { font-size: 15px; color: var(--text); line-height: 1.4; margin-bottom: 10px; background: rgba(107,135,59,0.1); padding: 10px; border-left: 3px solid var(--olive); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -186,7 +185,15 @@
                     <textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea>
                 </div>
                 
-                <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
+                <div class="input-group"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
+                
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label style="font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 5px;">🔗 Посилання на Вашу Вітрину:</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="shopLinkInput" readonly style="color: var(--text-muted); background: var(--bg); font-size: 14px;">
+                        <button class="btn-3d" id="copyLinkBtn" onclick="copyShopLink()" style="width: auto; padding: 14px 20px; flex-shrink: 0; font-size: 14px;">📋 Копіювати</button>
+                    </div>
+                </div>
             </div>
 
             <div class="settings-block">
@@ -224,6 +231,16 @@
         <p id="customAlertText" style="font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px; margin-top: 0;"></p>
         <button class="btn-3d" onclick="closeAlert()" style="margin-bottom:0; padding: 10px; font-size: 15px;">ЗРОЗУМІЛО</button>
     </div>
+    
+    <div id="confirmOrderOverlay" class="custom-alert-overlay" onclick="closeConfirmModal()"></div>
+    <div id="confirmOrderBox" class="custom-alert-box">
+        <h3 style="margin-top:0; font-size: 18px; color: var(--olive); text-transform: uppercase;">Підтвердження</h3>
+        <p style="font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px;">Позначити замовлення як виконане? Товар буде списано, а вам буде запропоновано надіслати клієнту повідомлення про відправку.</p>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-3d" onclick="closeConfirmModal()" style="background: transparent; border: 2px solid var(--border); box-shadow: none; color: var(--text-muted);">Скасувати</button>
+            <button class="btn-3d" id="confirmActionBtn">Підтвердити</button>
+        </div>
+    </div>
 
     <div class="bottom-nav">
         <button class="nav-item" onclick="switchTab('tab-inventory', this)"><span class="nav-icon">📦</span>Склад</button>
@@ -234,7 +251,6 @@
     </div>
 
     <script>
-        // РЕЄСТРАЦІЯ SERVICE WORKER (ОБОВ'ЯЗКОВО ДЛЯ PUSH-СПОВІЩЕНЬ)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => {
                 console.log('Service Worker registered', reg);
@@ -246,11 +262,38 @@
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; let currentOrders = []; 
         let pendingAiData = null;
+        let pendingOrderId = null; let pendingOrderPhone = null;
 
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
-        // ОНОВЛЕНА ЛОГІКА ВИКЛИКУ PUSH (Через Service Worker)
+        // Функція для вікна ВИКОНАНО
+        function openConfirmModal(id, phone) {
+            pendingOrderId = id;
+            pendingOrderPhone = phone;
+            document.getElementById('confirmOrderOverlay').style.display = 'block';
+            document.getElementById('confirmOrderBox').style.display = 'block';
+            document.getElementById('confirmActionBtn').onclick = () => executeCompleteOrder();
+        }
+        function closeConfirmModal() {
+            document.getElementById('confirmOrderOverlay').style.display = 'none';
+            document.getElementById('confirmOrderBox').style.display = 'none';
+            pendingOrderId = null; pendingOrderPhone = null;
+        }
+
+        // Копіювання посилання
+        function copyShopLink() {
+            const input = document.getElementById('shopLinkInput');
+            input.select();
+            input.setSelectionRange(0, 99999); 
+            navigator.clipboard.writeText(input.value);
+            const btn = document.getElementById('copyLinkBtn');
+            const originalText = btn.innerText;
+            btn.innerText = '✅ Скопійовано!';
+            btn.style.background = 'var(--olive)';
+            setTimeout(() => { btn.innerText = originalText; btn.style.background = ''; }, 2000);
+        }
+
         function toggleBrowserPush() {
             const cb = document.getElementById('set_usePushNotify');
             if (cb.checked) {
@@ -262,7 +305,6 @@
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") {
                         localStorage.setItem('push_enabled', 'true');
-                        // Використовуємо правильний PWA метод
                         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                             navigator.serviceWorker.ready.then(reg => {
                                 reg.showNotification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg", vibrate: [100, 50, 100] });
@@ -290,10 +332,14 @@
         window.onload = async () => {
             const { data: { user } } = await sb.auth.getUser();
             if (user) {
-                currentUser = user; document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
+                currentUser = user; 
+                document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
+                // Генеруємо посилання для інпуту
+                document.getElementById('shopLinkInput').value = window.location.origin + '/shop.html?owner=' + user.id;
+
                 const { data: shop } = await sb.from('shops').select('*').eq('owner_id', user.id).single();
                 if(shop) {
-                    if(shop.shop_name) document.getElementById('cabinetTitle').innerText = 'магазин ' + shop.shop_name;
+                    if(shop.shop_name) document.getElementById('cabinetTitle').innerText = shop.shop_name;
                     if(shop.categories) shopCategories = shop.categories.split(',').map(c => c.trim()).filter(Boolean);
                     document.getElementById('set_shopName').value = shop.shop_name || ''; 
                     document.getElementById('set_description').value = shop.description || ''; 
@@ -306,11 +352,9 @@
                 
                 loadInventory();
                 
-                // РЕАЛЬНИЙ ЧАС: ПРОСЛУШОВУВАННЯ НОВИХ ЗАМОВЛЕНЬ ДЛЯ PUSH-СПОВІЩЕНЬ
                 sb.channel('public:orders')
                   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders', filter: 'owner_id=eq.' + currentUser.id }, payload => {
                       if (localStorage.getItem('push_enabled') === 'true' && Notification.permission === "granted") {
-                          // Використовуємо Service Worker для відображення системного пуша
                           if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                               navigator.serviceWorker.ready.then(reg => {
                                   reg.showNotification("🆕 Нове замовлення!", {
@@ -360,7 +404,7 @@
             };
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
             if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
-                if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = 'магазин ' + updateData.shop_name;
+                if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = updateData.shop_name;
                 if(updateData.categories) shopCategories = updateData.categories.split(',').map(c => c.trim()).filter(Boolean);
                 btn.innerHTML = '✅ УСПІШНО ЗБЕРЕЖЕНО'; btn.style.background = 'var(--olive-dark)'; setTimeout(() => { btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.style.background = ''; btn.disabled = false; }, 2000);
             }
@@ -373,7 +417,10 @@
         function renderInventory(list) { const listEl = document.getElementById('inventoryList'); listEl.innerHTML = ''; if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Товарів не знайдено.</p>'; return; } let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsOpts.includes("Різне")) catsOpts.push("Різне"); list.forEach(p => { let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}">`; catsOpts.forEach(c => { let sel = (p.category || 'Різне') === c ? 'selected' : ''; selectHtml += `<option value="${c}" ${sel}>📁 ${c}</option>`; }); selectHtml += `</select>`; listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; }); }
         
         async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; const oldText = btn.innerText; btn.innerText = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerText = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerText = oldText; btn.disabled = false; }, 1000); } }
-        async function deleteItemDb(id) { const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); }
+        async function deleteItemDb(id) { 
+            if(!confirm("Ви дійсно хочете видалити цей товар зі складу?")) return;
+            const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); 
+        }
 
         function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
         function saveCardToLocal(val) { localStorage.setItem('saved_card_number', val); }
@@ -401,11 +448,41 @@
                     actionHtml = `<div class="card-label-hint">Введіть свій номер картки для отримання оплати:</div><div class="action-row"><div class="card-input-wrapper"><input type="text" class="card-input" id="card_${o.id}" placeholder="Введіть номер..." value="${savedCard}" oninput="formatCardInput(this)" onchange="saveCardToLocal(this.value)" inputmode="numeric"></div><button onclick="sendToTelegram('${phoneClean}', '${o.total_amount}', 'card_${o.id}')" class="btn-tg">✈️ Telegram</button></div>`;
                 }
 
-                listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${paymentTypeHtml}${actionHtml}<button class="btn-done" onclick="triggerCompleteOrder('${o.id}')">☑ ВИКОНАНО</button></div>`; 
+                listEl.innerHTML += `<div class="order-card" id="order_${o.id}"><div class="order-header">🛒 ${itemsText}</div><div class="order-row">Клієнт: <strong>${o.customer_name}</strong></div><div class="phone-row"><span class="phone-number">${o.phone}</span><a href="tel:${phoneClean}" class="btn-call">📞 Подзвонити</a></div><div class="order-row">Доставка: <strong>${o.delivery_type} (${o.delivery_address})</strong></div><div class="order-sum">💰 Сума: ${o.total_amount} грн</div>${paymentTypeHtml}${actionHtml}<button class="btn-done" onclick="openConfirmModal('${o.id}', '${phoneClean}')">☑ ВИКОНАНО</button></div>`; 
             }); 
         }
         
-        async function triggerCompleteOrder(id) { const btn = document.querySelector(`#order_${id} .btn-done`); if(btn) { btn.innerHTML = '⏳...'; btn.disabled = true; } await sb.from('orders').update({ status: 'Виконано' }).eq('id', id); const order = currentOrders.find(o => o.id === id); if(order && order.items) { for(let item of order.items) { const { data: prod } = await sb.from('products').select('quantity').eq('id', item.id).single(); if(prod) { let newQty = (prod.quantity || 0) - item.qty; await sb.from('products').update({ quantity: newQty < 0 ? 0 : newQty }).eq('id', item.id); } } loadInventory(); } const card = document.getElementById(`order_${id}`); if(card) { card.style.opacity = '0'; setTimeout(() => card.remove(), 300); } }
+        async function executeCompleteOrder() { 
+            const id = pendingOrderId;
+            const phone = pendingOrderPhone;
+            closeConfirmModal();
+
+            const btn = document.querySelector(`#order_${id} .btn-done`); 
+            if(btn) { btn.innerHTML = '⏳...'; btn.disabled = true; } 
+            
+            await sb.from('orders').update({ status: 'Виконано' }).eq('id', id); 
+            const order = currentOrders.find(o => o.id === id); 
+            
+            if(order && order.items) { 
+                for(let item of order.items) { 
+                    const { data: prod } = await sb.from('products').select('quantity').eq('id', item.id).single(); 
+                    if(prod) { 
+                        let newQty = (prod.quantity || 0) - item.qty; 
+                        await sb.from('products').update({ quantity: newQty < 0 ? 0 : newQty }).eq('id', item.id); 
+                    } 
+                } 
+                loadInventory(); 
+            } 
+            
+            const card = document.getElementById(`order_${id}`); 
+            if(card) { card.style.opacity = '0'; setTimeout(() => card.remove(), 300); } 
+
+            // Відкриваємо ТГ з повідомленням клієнту
+            if (phone) {
+                let tgMessage = encodeURIComponent(`Вітаю! Ваше замовлення відправлено. Дякуємо за покупку! 📦`);
+                window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank');
+            }
+        }
 
         async function loadStats() {
             if (!currentUser) return;
