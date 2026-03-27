@@ -24,7 +24,6 @@
         .header { position: fixed; top: 0; left: 0; width: 100%; background: var(--panel); border-bottom: 1px solid var(--border); z-index: 1000; padding: 15px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         .shop-title { color: var(--olive); font-size: 20px; font-weight: bold; margin: 0; text-transform: uppercase;}
         
-        /* Чітка рамка для кнопки Вітрина */
         .header-links a { color: var(--text); text-decoration: none; font-size: 15px; border: 2px solid var(--olive); padding: 8px 16px; border-radius: 8px; transition: 0.2s; font-weight: bold; background: var(--input-bg); box-shadow: 0 3px 6px rgba(0,0,0,0.15); display: inline-block; }
         .header-links a:active { transform: translateY(2px); box-shadow: none; }
 
@@ -142,33 +141,19 @@
             <h2>⚙️ Налаштування Магазину</h2>
             
             <div class="settings-block">
-                <h3>🏪 Основна інформація</h3>
                 <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
-                
-                <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; margin-top: 15px;">
-                    <input type="checkbox" id="set_showReport" style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--olive);" onchange="toggleReportSettings()">
-                    <label for="set_showReport" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text);">📢 Показувати звіт на вітрині</label>
-                </div>
-                <div id="reportSettingsBlock" style="display: none;">
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <textarea id="set_reportText" placeholder="Текст звіту (Акції / Оновлення)..."></textarea>
-                    </div>
-                </div>
-
-                <div class="input-group" style="margin-bottom: 0; margin-top: 15px;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
+                <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
             </div>
 
             <div class="settings-block">
-                <h3>🔔 Сповіщення (Push & Telegram)</h3>
-                
                 <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; background: var(--input-bg);">
                     <input type="checkbox" id="set_useTgNotify" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--olive); margin: 0;" onchange="toggleTgSettings()">
-                    <label for="set_useTgNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 6px;">🔔 Включити push-увідомлення</label>
+                    <label for="set_useTgNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 6px;">✈️ Підключити Телеграм (для сповіщень про замовлення)</label>
                 </div>
 
                 <div id="tgSettingsBlock" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border);">
                     <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 0; margin-bottom: 15px;">Натисніть кнопку нижче, щоб підключити нашого бота. Він буде миттєво надсилати деталі нових замовлень.</p>
-                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ</button>
+                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ БОТА</button>
                 </div>
             </div>
 
@@ -214,7 +199,6 @@
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
         function toggleTgSettings() { document.getElementById('tgSettingsBlock').style.display = document.getElementById('set_useTgNotify').checked ? 'block' : 'none'; }
-        function toggleReportSettings() { document.getElementById('reportSettingsBlock').style.display = document.getElementById('set_showReport').checked ? 'block' : 'none'; }
 
         // ПІДКЛЮЧЕННЯ БОТА ЧЕРЕЗ DEEP LINK
         function connectTelegram() {
@@ -238,10 +222,6 @@
                     document.getElementById('set_useTgNotify').checked = shop.use_tg_notify === true;
                     toggleTgSettings();
 
-                    document.getElementById('set_showReport').checked = shop.show_report === true;
-                    document.getElementById('set_reportText').value = shop.report_text || '';
-                    toggleReportSettings();
-
                     if(shop.theme_color) { selectTheme(shop.theme_color); } else { selectTheme('neutral'); }
                 } else { selectTheme('neutral'); }
                 loadInventory();
@@ -258,8 +238,6 @@
                 description: document.getElementById('set_description').value.trim(), 
                 categories: document.getElementById('set_categories').value.trim(), 
                 use_tg_notify: document.getElementById('set_useTgNotify').checked,
-                show_report: document.getElementById('set_showReport').checked,
-                report_text: document.getElementById('set_reportText').value.trim(),
                 theme_color: document.getElementById('set_theme').value 
             };
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
