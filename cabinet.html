@@ -14,10 +14,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --olive-dark: #465926; --text: #e5e7eb; --text-muted: #aaa; --border: #2a2e35; --input-bg: #000; --input-border: #444; --card-bg: #1a1e24; --card-border: #333; }
-        body.theme-light { --bg: #f9fafb; --panel: #ffffff; --olive: #6b873b; --olive-dark: #465926; --text: #111827; --text-muted: #4b5563; --border: #e5e7eb; --input-bg: #f3f4f6; --input-border: #d1d5db; --card-bg: #ffffff; --card-border: #e5e7eb; }
+        /* ПОСИЛЕНІ РАМКИ: --input-border тепер має вищий контраст для всіх тем */
+        :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --olive-dark: #465926; --text: #e5e7eb; --text-muted: #aaa; --border: #2a2e35; --input-bg: #050505; --input-border: #666; --card-bg: #1a1e24; --card-border: #333; }
+        body.theme-light { --bg: #f9fafb; --panel: #ffffff; --olive: #6b873b; --olive-dark: #465926; --text: #111827; --text-muted: #4b5563; --border: #e5e7eb; --input-bg: #ffffff; --input-border: #a1a1aa; --card-bg: #ffffff; --card-border: #e5e7eb; }
         body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --olive-dark: #475569; --text: #1e293b; --text-muted: #475569; --border: #cbd5e1; --input-bg: #ffffff; --input-border: #94a3b8; --card-bg: #ffffff; --card-border: #cbd5e1; }
-        body.theme-ocean { --bg: #051622; --panel: #0a2235; --olive: #2a8bf2; --olive-dark: #1565c0; --text: #e2f1ff; --text-muted: #7d9cb8; --border: #143554; --input-bg: #020a10; --input-border: #1b456b; --card-bg: #0d2840; --card-border: #1a426b; }
+        body.theme-ocean { --bg: #051622; --panel: #0a2235; --olive: #2a8bf2; --olive-dark: #1565c0; --text: #e2f1ff; --text-muted: #7d9cb8; --border: #143554; --input-bg: #020a10; --input-border: #1e6bc4; --card-bg: #0d2840; --card-border: #1a426b; }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 16px; padding-top: 70px; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
         
@@ -36,8 +37,15 @@
 
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; color: var(--text-muted); font-weight: 500; font-size: 15px; }
-        input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], select, textarea { width: 100%; padding: 14px; background: var(--input-bg); border: 2px solid var(--input-border); color: var(--text); border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s; }
-        input:focus, textarea:focus { border-color: var(--olive); box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.1); }
+        
+        /* ЧІТКІ РАМКИ ДЛЯ ВСІХ ПОЛІВ */
+        input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], select, textarea { 
+            width: 100%; padding: 14px; background: var(--input-bg); 
+            border: 2px solid var(--input-border) !important; 
+            color: var(--text); border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.2s; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        input:focus, textarea:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(107, 135, 59, 0.2) !important; }
         textarea { resize: vertical; min-height: 80px; }
 
         .btn-3d { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 15px; border: none; cursor: pointer; box-shadow: 0 4px 0 var(--olive-dark); width: 100%; display: block; text-align: center; transition: 0.1s; text-transform: uppercase; }
@@ -45,7 +53,7 @@
         .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .flex-btns { display: flex; gap: 10px; margin-bottom: 15px; }
-        .file-label { flex: 1; background: var(--input-bg); border: 2px solid var(--olive); padding: 12px 5px; text-align: center; border-radius: 8px; color: var(--olive); cursor: pointer; font-weight: bold; font-size: 14px; margin: 0; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .file-label { flex: 1; background: var(--input-bg); border: 2px solid var(--input-border); padding: 12px 5px; text-align: center; border-radius: 8px; color: var(--text); cursor: pointer; font-weight: bold; font-size: 14px; margin: 0; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         input[type="file"] { display: none; }
         
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--panel); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; transition: 0.3s; }
@@ -86,8 +94,8 @@
 
         .card-label-hint { font-size: 15px; color: var(--text); font-weight: 600; margin-top: 15px; margin-bottom: 4px; padding-left: 4px; letter-spacing: 0.3px; }
         .action-row { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border: 2px dashed var(--olive); padding: 8px; border-radius: 10px; gap: 8px; }
-        .card-input-wrapper { display: flex; align-items: center; flex: 1; background: var(--bg); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--input-border); overflow: hidden; }
-        .card-input { background: transparent; border: none; color: var(--text); font-family: monospace; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; outline: none; width: 100%; padding: 0;}
+        .card-input-wrapper { display: flex; align-items: center; flex: 1; background: var(--bg); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--input-border) !important; overflow: hidden; }
+        .card-input { background: transparent !important; border: none !important; color: var(--text); font-family: monospace; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; outline: none; width: 100%; padding: 0 !important; box-shadow: none !important;}
         .card-input::placeholder { color: var(--text-muted); font-weight: normal; letter-spacing: normal;}
         .btn-tg { flex-shrink: 0; background: #2AABEE; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; flex-direction: row; align-items: center; gap: 5px; box-shadow: 0 3px 0 #1c7ba6; transition: 0.1s;}
         .btn-tg:active { transform: translateY(2px); box-shadow: 0 1px 0 #1c7ba6; }
@@ -169,7 +177,13 @@
             <div class="settings-block">
                 <h3>🏪 Основна інформація</h3>
                 <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
-                <div class="input-group"><label>Категорії Товарів (через кому):</label><textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea></div>
+                
+                <div class="input-group">
+                    <label>Категорії Товарів (відображаються на Вашій Вітрині):</label>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: -5px; margin-bottom: 8px; line-height: 1.3;">Впишіть назви категорій через кому, наприклад: зошити, ручки, папки і т.д. (можна доповнити, виправити в будь-який момент).</p>
+                    <textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea>
+                </div>
+                
                 <div class="input-group" style="margin-bottom: 0;"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
             </div>
 
@@ -220,6 +234,8 @@
     <script>
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
         let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; let currentOrders = []; 
+        let pendingAiData = null; // Стан для двоетапної публікації
+        let uploadedImageUrls = [];
 
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
@@ -388,15 +404,80 @@
             container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
         }
 
-        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.querySelector('span').innerText = '✅ Є фото'; } }
+        // АРХІТЕКТУРА 2-ЕТАПНОЇ ПУБЛІКАЦІЇ ТОВАРУ
+        function updLbl(camId, galId, inputId, index) { 
+            const file = document.getElementById(inputId).files[0]; 
+            if(file) { 
+                selectedFiles[index - 1] = file; 
+                const active = document.getElementById(inputId.includes('cam') ? camId : galId); 
+                active.style.background = 'rgba(107, 135, 59, 0.2)'; 
+                active.querySelector('span').innerText = '✅ Є фото'; 
+                
+                // Якщо завантажили нове фото під час підтвердження - скидаємо статус
+                pendingAiData = null;
+                const btn = document.getElementById('mainBtn');
+                if (btn.innerText.includes('ПІДТВЕРДИТИ')) {
+                    btn.innerHTML = 'АНАЛІЗ ТА ПУБЛІКАЦІЯ';
+                    btn.style.background = '';
+                    document.getElementById('status').style.display = 'none';
+                }
+            } 
+        }
+
         function log(msg, isErr = false) { const s = document.getElementById('status'); s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : 'var(--olive)'; s.innerText += msg + '\n'; s.scrollTop = s.scrollHeight; }
         
         async function compressImg(file) { if(!file) return null; return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; let width = img.width; let height = img.height; if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { const newFile = new File([blob], file.name, { type: 'image/jpeg' }); const reader2 = new FileReader(); reader2.readAsDataURL(blob); reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] }); }, 'image/jpeg', 0.7); }; }; }); }
 
         async function startAI() {
-            const btn = document.getElementById('mainBtn'); let pr = document.getElementById('price').value; let qt = document.getElementById('qty').value || 1;
-            if(!selectedFiles[0]) return showAlert("Завантажте хоча б Головне фото (1)!");
+            const btn = document.getElementById('mainBtn'); 
+            let prInput = document.getElementById('price'); 
+            let qtInput = document.getElementById('qty');
+            
             if(!currentUser) return showAlert("Помилка авторизації.");
+
+            // ЕТАП 2: КОРИСТУВАЧ ПІДТВЕРДЖУЄ ПУБЛІКАЦІЮ
+            if (pendingAiData) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ ПУБЛІКАЦІЯ...';
+                try {
+                    let finalPrice = parseFloat(prInput.value) || pendingAiData.price;
+                    let finalQty = parseInt(qtInput.value) || 1;
+
+                    const { data: newProduct, error: dbErr } = await sb.from('products').insert([{ 
+                        title: pendingAiData.title, category: pendingAiData.category, price: finalPrice, 
+                        quantity: finalQty, images: uploadedImageUrls, status: 'available', owner_id: currentUser.id 
+                    }]).select();
+                    
+                    if(dbErr) throw dbErr;
+                    if (newProduct && newProduct[0]) await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: pendingAiData.description }]);
+
+                    log("✅ Товар успішно опубліковано на вітрині!");
+                    
+                    // Очищення після успіху
+                    prInput.value = ''; qtInput.value = '1'; selectedFiles = [null, null, null]; uploadedImageUrls = []; pendingAiData = null;
+                    document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
+                    ['l1','l2','l3'].forEach(id => { 
+                        document.getElementById(id+'_cam').style.background = 'var(--input-bg)'; 
+                        document.getElementById(id+'_cam').querySelector('span').innerText = '📷 Камера'; 
+                        document.getElementById(id+'_gal').style.background = 'var(--input-bg)'; 
+                        document.getElementById(id+'_gal').querySelector('span').innerText = '🖼 Галерея'; 
+                    });
+                    
+                    btn.innerHTML = 'АНАЛІЗ ТА ПУБЛІКАЦІЯ';
+                    btn.style.background = '';
+                    
+                    loadInventory(); 
+                    setTimeout(() => { btn.disabled = false; document.getElementById('status').style.display = 'none'; }, 3000);
+                } catch(e) {
+                    log("❌ Помилка публікації: " + e.message, true);
+                    btn.innerHTML = '✅ ПІДТВЕРДИТИ ТА ОПУБЛІКУВАТИ';
+                    btn.disabled = false;
+                }
+                return;
+            }
+
+            // ЕТАП 1: АНАЛІЗ ЧЕРЕЗ ІІ
+            if(!selectedFiles[0]) return showAlert("Завантажте хоча б Головне фото (1)!");
             
             btn.disabled = true; document.getElementById('status').innerText = '';
             
@@ -408,7 +489,7 @@
                 const c1 = await compressImg(selectedFiles[0]); const c2 = await compressImg(selectedFiles[1]); const c3 = await compressImg(selectedFiles[2]);
                 const up = async (cObj, tag) => { if(!cObj) return null; const n = `${Date.now()}_${tag}.jpg`; const { error } = await sb.storage.from('smart_media').upload(n, cObj.file); if (error) throw error; return sb.storage.from('smart_media').getPublicUrl(n).data.publicUrl; };
                 const u1 = await up(c1, 'main'); const u2 = await up(c2, 'detail'); const u3 = await up(c3, 'label');
-                const imagesArray = [u1, u2, u3].filter(url => url !== null);
+                uploadedImageUrls = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ...");
                 const promptText = `Ти досвідчений експерт з продажу. Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Напиши об'ємний, діловий та продаючий опис. Розкажи про характеристики та переваги. Використовуй <br><br> для абзаців. УВАГА: КАТЕГОРИЧНО ЗАБОРОНЕНО використовувати будь-які емодзі (смайлики) в тексті!", "rec_price": "Ціна (тільки цифри)"}. Мова: українська. Без markdown.`;
@@ -416,28 +497,26 @@
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
                 if (aiError) throw new Error(aiError.message);
                 
-                const raw = aiResponse.description.replace(/```json|```/gi, '').trim(); const ai = JSON.parse(raw);
-                if(!pr) { pr = ai.rec_price || 0; }
-
-                log("💾 Збереження товару...");
-                const { data: newProduct, error: dbErr } = await sb.from('products').insert([{ title: ai.title, category: ai.category, price: parseFloat(pr), quantity: parseInt(qt), images: imagesArray, status: 'available', owner_id: currentUser.id }]).select();
-                if(dbErr) throw dbErr;
-                if (newProduct && newProduct[0]) await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: ai.description }]);
-
-                log("✅ Товар на вітрині!");
+                const raw = aiResponse.description.replace(/```json|```/gi, '').trim(); 
+                const ai = JSON.parse(raw);
                 
-                document.getElementById('price').value = ''; document.getElementById('qty').value = '1'; selectedFiles = [null, null, null];
-                document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
+                let finalAiPrice = prInput.value ? parseFloat(prInput.value) : (parseFloat(ai.rec_price) || 0);
                 
-                ['l1','l2','l3'].forEach(id => { 
-                    document.getElementById(id+'_cam').style.background = 'var(--input-bg)'; 
-                    document.getElementById(id+'_cam').querySelector('span').innerText = '📷 Камера'; 
-                    document.getElementById(id+'_gal').style.background = 'var(--input-bg)'; 
-                    document.getElementById(id+'_gal').querySelector('span').innerText = '🖼 Галерея'; 
-                });
+                // Зберігаємо дані для другого етапу
+                pendingAiData = { title: ai.title, category: ai.category, description: ai.description, price: finalAiPrice };
+                prInput.value = finalAiPrice; // Підставляємо в інпут для візуальної перевірки
 
-                loadInventory(); setTimeout(() => btn.disabled = false, 2000);
-            } catch(e) { log("❌ Помилка: " + e.message, true); btn.disabled = false; }
+                log(`✅ Аналіз завершено!\n\nНазва: ${ai.title}\nКатегорія: ${ai.category}\nЦіна: ${finalAiPrice} грн.\n\n⚠️ Перевірте ціну у полі вище. Якщо згодні — натисніть кнопку "Підтвердити".`);
+                
+                btn.innerHTML = '✅ ПІДТВЕРДИТИ ТА ОПУБЛІКУВАТИ';
+                btn.style.background = '#8bb34d';
+                btn.disabled = false;
+
+            } catch(e) { 
+                log("❌ Помилка: " + e.message, true); 
+                btn.disabled = false; 
+                pendingAiData = null;
+            }
         }
     </script>
 </body>
