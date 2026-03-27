@@ -122,20 +122,20 @@
             
             <label>1. Головне фото (Загальний вигляд):</label>
             <div class="flex-btns">
-                <label class="file-label" id="l1_cam"><input type="file" id="p1_cam" accept="image/*" capture="environment" onchange="updLbl('l1_cam', 'l1_gal', 'p1_cam', 1)">📷 Камера</label>
-                <label class="file-label" id="l1_gal"><input type="file" id="p1_gal" accept="image/*" onchange="updLbl('l1_cam', 'l1_gal', 'p1_gal', 1)">🖼 Галерея</label>
+                <label class="file-label" id="l1_cam"><input type="file" id="p1_cam" accept="image/*" capture="environment" onchange="updLbl('l1_cam', 'l1_gal', 'p1_cam', 1)"><span>📷 Камера</span></label>
+                <label class="file-label" id="l1_gal"><input type="file" id="p1_gal" accept="image/*" onchange="updLbl('l1_cam', 'l1_gal', 'p1_gal', 1)"><span>🖼 Галерея</span></label>
             </div>
             
             <label>2. Фото деталей (Логотип/Особливості):</label>
             <div class="flex-btns">
-                <label class="file-label" id="l2_cam"><input type="file" id="p2_cam" accept="image/*" capture="environment" onchange="updLbl('l2_cam', 'l2_gal', 'p2_cam', 2)">📷 Камера</label>
-                <label class="file-label" id="l2_gal"><input type="file" id="p2_gal" accept="image/*" onchange="updLbl('l2_cam', 'l2_gal', 'p2_gal', 2)">🖼 Галерея</label>
+                <label class="file-label" id="l2_cam"><input type="file" id="p2_cam" accept="image/*" capture="environment" onchange="updLbl('l2_cam', 'l2_gal', 'p2_cam', 2)"><span>📷 Камера</span></label>
+                <label class="file-label" id="l2_gal"><input type="file" id="p2_gal" accept="image/*" onchange="updLbl('l2_cam', 'l2_gal', 'p2_gal', 2)"><span>🖼 Галерея</span></label>
             </div>
             
             <label>3. Фото маркування (Бірка/Розмір/Модель):</label>
             <div class="flex-btns">
-                <label class="file-label" id="l3_cam"><input type="file" id="p3_cam" accept="image/*" capture="environment" onchange="updLbl('l3_cam', 'l3_gal', 'p3_cam', 3)">📷 Камера</label>
-                <label class="file-label" id="l3_gal"><input type="file" id="p3_gal" accept="image/*" onchange="updLbl('l3_cam', 'l3_gal', 'p3_gal', 3)">🖼 Галерея</label>
+                <label class="file-label" id="l3_cam"><input type="file" id="p3_cam" accept="image/*" capture="environment" onchange="updLbl('l3_cam', 'l3_gal', 'p3_cam', 3)"><span>📷 Камера</span></label>
+                <label class="file-label" id="l3_gal"><input type="file" id="p3_gal" accept="image/*" onchange="updLbl('l3_cam', 'l3_gal', 'p3_gal', 3)"><span>🖼 Галерея</span></label>
             </div>
             
             <button class="btn-3d" id="mainBtn" onclick="startAI()" style="margin-top: 15px;">АНАЛІЗ ТА ПУБЛІКАЦІЯ</button>
@@ -173,7 +173,8 @@
                 </div>
 
                 <div id="tgSettingsBlock" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border);">
-                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ</button>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 0; margin-bottom: 15px;">Натисніть кнопку нижче, щоб підключити нашого бота. Він буде миттєво надсилати деталі нових замовлень.</p>
+                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573;">✈️ ПІДКЛЮЧИТИ ТЕЛЕГРАМ (для сповіщень про замовлення)</button>
                 </div>
             </div>
 
@@ -220,6 +221,7 @@
 
         function toggleTgSettings() { document.getElementById('tgSettingsBlock').style.display = document.getElementById('set_useTgNotify').checked ? 'block' : 'none'; }
 
+        // ПІДКЛЮЧЕННЯ БОТА ЧЕРЕЗ DEEP LINK
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
             const botUsername = "AI_Pilot_Notify_Bot"; // ТУТ БУДЕ ІМ'Я ТВОГО БОТА
@@ -321,7 +323,22 @@
             container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
         }
 
-        function updLbl(camId, galId, inputId, index) { const file = document.getElementById(inputId).files[0]; if(file) { selectedFiles[index - 1] = file; document.getElementById(camId).style.background = 'var(--input-bg)'; document.getElementById(galId).style.background = 'var(--input-bg)'; document.getElementById(camId).innerHTML = '📷 Камера'; document.getElementById(galId).innerHTML = '🖼 Галерея'; const active = document.getElementById(inputId.includes('cam') ? camId : galId); active.style.background = 'rgba(42, 139, 242, 0.1)'; active.innerHTML = '✅ Є фото'; } }
+        // ВИПРАВЛЕНО: Зміна тексту без видалення <input>
+        function updLbl(camId, galId, inputId, index) { 
+            const file = document.getElementById(inputId).files[0]; 
+            if(file) { 
+                selectedFiles[index - 1] = file; 
+                document.getElementById(camId).style.background = 'var(--input-bg)'; 
+                document.getElementById(galId).style.background = 'var(--input-bg)'; 
+                document.getElementById(camId).querySelector('span').innerText = '📷 Камера'; 
+                document.getElementById(galId).querySelector('span').innerText = '🖼 Галерея'; 
+                
+                const active = document.getElementById(inputId.includes('cam') ? camId : galId); 
+                active.style.background = 'rgba(107, 135, 59, 0.2)'; 
+                active.querySelector('span').innerText = '✅ Є фото'; 
+            } 
+        }
+
         function log(msg, isErr = false) { const s = document.getElementById('status'); s.style.display = 'block'; s.style.borderLeftColor = isErr ? '#ff4444' : 'var(--olive)'; s.innerText += msg + '\n'; s.scrollTop = s.scrollHeight; }
         
         async function compressImg(file) { if(!file) return null; return new Promise((resolve) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; let width = img.width; let height = img.height; if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); canvas.toBlob((blob) => { const newFile = new File([blob], file.name, { type: 'image/jpeg' }); const reader2 = new FileReader(); reader2.readAsDataURL(blob); reader2.onloadend = () => resolve({ file: newFile, b64: reader2.result.split(',')[1] }); }, 'image/jpeg', 0.7); }; }; }); }
@@ -344,7 +361,10 @@
                 const imagesArray = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ...");
-                const promptText = `Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Опис без емодзі", "rec_price": "Ціна (цифра)"}. Мова: українська. Без markdown.`;
+                
+                // ВІДНОВЛЕНО ОРИГІНАЛЬНИЙ ДЕТАЛЬНИЙ ПРОМПТ
+                const promptText = `Ти досвідчений експерт з продажу. Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Напиши об'ємний, діловий та продаючий опис. Розкажи про характеристики та переваги. Використовуй <br><br> для абзаців. УВАГА: КАТЕГОРИЧНО ЗАБОРОНЕНО використовувати будь-які емодзі (смайлики) в тексті!", "rec_price": "Ціна (тільки цифри)"}. Мова: українська. Без markdown.`;
+                
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
                 if (aiError) throw new Error(aiError.message);
                 
@@ -357,9 +377,19 @@
                 if (newProduct && newProduct[0]) await sb.from('ai_content').insert([{ product_id: newProduct[0].id, fancy_description: ai.description }]);
 
                 log("✅ Товар на вітрині!");
+                
+                // Очищення форми
                 document.getElementById('price').value = ''; document.getElementById('qty').value = '1'; selectedFiles = [null, null, null];
                 document.querySelectorAll('input[type=file]').forEach(i => i.value = '');
-                ['l1','l2','l3'].forEach(id => { document.getElementById(id+'_cam').style.background = 'var(--input-bg)'; document.getElementById(id+'_cam').innerHTML = '📷 Камера'; document.getElementById(id+'_gal').style.background = 'var(--input-bg)'; document.getElementById(id+'_gal').innerHTML = '🖼 Галерея'; });
+                
+                // Безпечне скидання кнопок (тільки span)
+                ['l1','l2','l3'].forEach(id => { 
+                    document.getElementById(id+'_cam').style.background = 'var(--input-bg)'; 
+                    document.getElementById(id+'_cam').querySelector('span').innerText = '📷 Камера'; 
+                    document.getElementById(id+'_gal').style.background = 'var(--input-bg)'; 
+                    document.getElementById(id+'_gal').querySelector('span').innerText = '🖼 Галерея'; 
+                });
+
                 loadInventory(); setTimeout(() => btn.disabled = false, 2000);
             } catch(e) { log("❌ Помилка: " + e.message, true); btn.disabled = false; }
         }
