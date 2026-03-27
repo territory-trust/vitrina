@@ -180,9 +180,12 @@
                     <label for="set_usePushNotify" style="margin: 0; cursor: pointer; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 6px;">🔔 Включити push-увідомлення</label>
                 </div>
 
-                <div style="padding-top: 10px; border-top: 1px dashed var(--border);">
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-top: 0; margin-bottom: 15px;">Натисніть кнопку нижче, щоб підключити нашого бота. Він буде миттєво надсилати деталі нових замовлень.</p>
-                    <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573; text-transform: none;">✈️ Підключити Телеграм (для повідомлень про замовлення)</button>
+                <div style="padding-top: 10px; border-top: 1px dashed var(--border); width: 100%;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; width: 100%;">
+                        <span style="font-size: 26px; color: #2AABEE; flex-shrink: 0;">✈️</span>
+                        <button class="btn-3d" onclick="connectTelegram()" style="font-size: 14px; padding: 12px 30px; width: auto; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573; text-transform: none; font-weight: 800; border-radius: 10px;">Підключити</button>
+                    </div>
+                    <p style="font-size: 14px; color: var(--text); font-weight: 600; line-height: 1.5; margin: 0; padding-left: 38px; letter-spacing: 0.3px;">Підключити Телеграм (для повідомлень про замовлення)</p>
                 </div>
             </div>
 
@@ -227,7 +230,7 @@
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
-        // ВИПРАВЛЕНО: Локальна робота Push (щоб не ламати базу даних)
+        // ПРАВИЛЬНИЙ BROWSER PUSH (Тільки для шторки, окремо від ТГ)
         function toggleBrowserPush() {
             const cb = document.getElementById('set_usePushNotify');
             if (cb.checked) {
@@ -239,7 +242,8 @@
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") {
                         localStorage.setItem('push_enabled', 'true');
-                        new Notification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg" });
+                        // Тестове сповіщення
+                        new Notification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення прямо у шторку телефона.", icon: "icon-512.jpeg" });
                     } else {
                         showAlert("Ви заборонили сповіщення у налаштуваннях браузера.");
                         cb.checked = false;
@@ -251,9 +255,10 @@
             }
         }
 
+        // КНОПКА ТЕЛЕГРАМ
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
-            const botUsername = "AI_Pilot_Notify_Bot"; 
+            const botUsername = "AI_Pilot_Notify_Bot"; // Заміни на ім'я свого бота
             window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
 
@@ -269,7 +274,7 @@
                     document.getElementById('set_description').value = shop.description || ''; 
                     document.getElementById('set_categories').value = shop.categories || ''; 
                     
-                    // Відновлюємо статус Push з пам'яті телефону
+                    // Статус Push з локальної пам'яті телефону (не з бази!)
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
 
                     if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('neutral', false); }
@@ -295,7 +300,7 @@
             const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
             const curTheme = document.getElementById('set_theme').value;
             
-            // ВІДВ'ЯЗКА PUSH ВІД БАЗИ (щоб уникнути помилок збереження)
+            // Push-сповіщення (в шторку) не зберігаємо в базу, щоб уникнути помилок через відсутність колонок
             const updateData = { 
                 shop_name: document.getElementById('set_shopName').value.trim(), 
                 description: document.getElementById('set_description').value.trim(), 
