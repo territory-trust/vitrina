@@ -25,7 +25,7 @@
         body.theme-light .dropdown-content a:hover { background: #f3f4f6; }
         body.theme-light .head-btn { background: #ffffff; color: #1f2937; border: 1px solid #d1d5db; box-shadow: 0 3px 5px rgba(0,0,0,0.05); }
         body.theme-light .head-btn.promo { color: var(--olive); border-color: var(--olive); background: rgba(107, 135, 59, 0.05); }
-        body.theme-light .cat-btn { background: #f9fafb; color: #4b5563; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        body.theme-light .cat-btn { background: #f9fafb; color: #4b5563; border: 1px solid #9ca3af; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         body.theme-light .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive) !important; box-shadow: 0 3px 6px rgba(107, 135, 59, 0.3) !important; }
         body.theme-light .cart-panel { background: #ffffff; border-left: 1px solid #e5e7eb; }
         body.theme-light .cart-header, body.theme-light .cart-item, body.theme-light .cart-footer { border-color: #e5e7eb; }
@@ -63,7 +63,7 @@
         body.theme-ocean .cart-header, body.theme-ocean .cart-item, body.theme-ocean .cart-footer { border-color: #143554; }
         body.theme-ocean .qty-btn { background: #0d2840; border-color: #1a426b; color: #e2f1ff; }
         body.theme-ocean .head-btn { background: #0d2840; color: #e2f1ff; border: 1px solid #1a426b; }
-        body.theme-ocean .cat-btn { background: #0d2840; color: #7d9cb8; border: 1px solid #1a426b; }
+        body.theme-ocean .cat-btn { background: #0d2840; color: #7d9cb8; border: 1px solid #7d9cb8; }
         body.theme-ocean .empty-state { background: #0a2235; border-color: #143554; color: #7d9cb8; }
 
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 155px; padding-bottom: 80px; font-size: 16px; transition: background 0.3s, color 0.3s; }
@@ -112,8 +112,8 @@
         
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; scrollbar-width: none; max-width: 900px; margin: auto; }
         .nav-scroll::-webkit-scrollbar { display: none; }
-        /* ЗМІНА: Рамка для категорій стала яскравішою */
-        .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid rgba(255,255,255,0.25); padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        /* ЗМІНА 1: Жорстка і видима рамка для категорій (#888) */
+        .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
         .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive) !important; box-shadow: none !important; cursor: default; }
         
         .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
@@ -133,15 +133,15 @@
         .card-actions { display: flex; gap: 6px; }
         .btn-action { flex: 1; padding: 10px 2px; border-radius: 8px; font-weight: bold; font-size: 13px; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; box-sizing: border-box; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .btn-action:active { transform: translateY(2px); }
-        /* ЗМІНА: Кнопка Опис отримала рамку та легкий фон */
-        .btn-read { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.35); color: #fff; }
+        /* ЗМІНА 2: Жорстка рамка та явний фон для кнопки Опис */
+        .btn-read { background: #2a2e35; border: 1px solid #888; color: #fff; }
         .btn-buy { background: var(--olive); color: #fff; border: 1px solid var(--olive); box-shadow: 0 2px 0 #2c3818; text-transform: uppercase; }
         .btn-buy:active { box-shadow: none; }
         
         .empty-state { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #888; background: var(--panel); border-radius: 12px; border: 1px dashed var(--border); font-size: 14px;}
 
-        /* ЗМІНА: Корзина стала більшою (32px), отримала яскраву рамку та світіння */
-        .cart-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--olive); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.5), 0 0 15px var(--olive); cursor: pointer; z-index: 900; border: 2px solid rgba(255,255,255,0.4); transition: 0.2s; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        /* ЗМІНА 3: Оновлений контейнер кошика під нову SVG-графіку */
+        .cart-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--olive); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.5), 0 0 15px var(--olive); cursor: pointer; z-index: 900; border: 2px solid rgba(255,255,255,0.6); transition: 0.2s; }
         .cart-fab:active { transform: scale(0.9); }
         .cart-badge { position: absolute; top: 0; right: 0; background: #ef4444; color: #fff; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
 
@@ -229,7 +229,10 @@
     ⚡ Створено на платформі <a href="https://ai-pilot.com.ua" target="_blank">AI-Pilot Shops</a>
 </div>
 
-<div class="cart-fab" onclick="toggleCart()" id="cartFab" style="display: none;">🛒<div class="cart-badge" id="cartBadge">0</div></div>
+<div class="cart-fab" onclick="toggleCart()" id="cartFab" style="display: none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+    <div class="cart-badge" id="cartBadge">0</div>
+</div>
 
 <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
 <div class="cart-panel" id="cartPanel">
