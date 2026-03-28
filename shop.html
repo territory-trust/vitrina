@@ -189,6 +189,12 @@
         .lb-nav:active { background: var(--olive); }
         .lb-prev { left: 10px; } .lb-next { right: 10px; }
         .lb-counter { position: absolute; bottom: 30px; color: #fff; font-size: 16px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px;}
+
+        /* СТИЛЬ ДЛЯ ФУТЕРА (AI-Pilot Shops) */
+        .powered-by { text-align: center; padding: 20px 15px; font-size: 13px; color: #888; font-weight: 500; margin-top: 10px; }
+        .powered-by a { color: var(--olive); text-decoration: none; font-weight: 700; transition: 0.2s; }
+        .powered-by a:hover { opacity: 0.8; }
+        body.theme-light .powered-by { color: #6b7280; }
     </style>
 </head>
 <body>
@@ -214,6 +220,10 @@
 
 <div class="grid" id="grid">
     <div class="empty-state">Завантаження товарів...</div>
+</div>
+
+<div class="powered-by">
+    ⚡ Створено на платформі <a href="https://ai-pilot.com.ua" target="_blank">AI-Pilot Shops</a>
 </div>
 
 <div class="cart-fab" onclick="toggleCart()" id="cartFab" style="display: none;">🛒<div class="cart-badge" id="cartBadge">0</div></div>
