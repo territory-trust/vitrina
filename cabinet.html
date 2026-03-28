@@ -503,8 +503,15 @@
 
             orders.forEach(order => {
                 totalRevenue += parseFloat(order.total_amount) || 0;
-                if (order.items && Array.isArray(order.items)) {
-                    order.items.forEach(item => {
+                
+                // Додатковий захист, якщо items зберігся як JSON-рядок
+                let orderItems = order.items;
+                if (typeof orderItems === 'string') {
+                    try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; }
+                }
+
+                if (orderItems && Array.isArray(orderItems)) {
+                    orderItems.forEach(item => {
                         if (!itemSales[item.title]) itemSales[item.title] = 0; itemSales[item.title] += item.qty;
                         let c = catMap[item.id] || 'Різне'; if (!catSales[c]) catSales[c] = 0; catSales[c] += item.qty;
                     });
@@ -515,9 +522,19 @@
             let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
             sortedCats.forEach(([cat, qty]) => { let percent = Math.round((qty / maxQtyCats) * 100); catsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600;">📁 ${cat}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; });
 
+            // ЗМІНА ТУТ: Видалили обрізання .slice(0, 5) та додали скролл
             let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]); let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
-            let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Топ товарів (шт.)</h3>';
-            sortedItems.slice(0, 5).forEach(([title, qty]) => { let percent = Math.round((qty / maxQtyItems) * 100); itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; });
+            let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продані товари (шт.)</h3>';
+            
+            // Додали обгортку зі скролом, щоб довгий список не розтягував сторінку
+            itemsHtml += '<div style="max-height: 350px; overflow-y: auto; padding-right: 5px; margin-right: -5px;">';
+            
+            sortedItems.forEach(([title, qty]) => { 
+                let percent = Math.round((qty / maxQtyItems) * 100); 
+                itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; 
+            });
+            
+            itemsHtml += '</div>'; // закриваємо обгортку
 
             container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
         }
