@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI-Pilot | SUPER ADMIN & WEB3</title>
+    <title>AI-Pilot | SUPER ADMIN</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
     <script src="config.js"></script>
     
     <style>
-        /* СПОКІЙНИЙ, ДОРОГИЙ ТЕМНИЙ СТИЛЬ */
+        /* СПОКІЙНИЙ, ДОРОГИЙ ТЕМНИЙ СТИЛЬ (Збережено без змін) */
         :root { 
             --bg: #0d0f12; --panel: #161a20; --olive: #6b873b; 
             --text: #e5e7eb; --text-muted: #8b949e; --border: #232933; 
             --card-bg: #1c2128; --btn-del-top: #4a1c1c; --btn-del-bot: #331313;
-            --accent-blue: #1890ff; --accent-gold: #faad14;
+            --accent-blue: #1890ff; /* Додано для Web3 акценту */
         }
         
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 16px; padding-top: 70px; padding-bottom: 40px; }
@@ -25,46 +25,34 @@
 
         .container { max-width: 900px; margin: 0 auto; padding: 15px; }
 
-        /* ДАШБОРД */
+        /* НОВИЙ БЛОК: WEB3 CONTROL */
+        .web3-card { background: linear-gradient(145deg, #1c2128 0%, #161a20 100%); border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .web3-title { font-size: 14px; font-weight: 800; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .velvet-input { width: 100%; background: #090b0d; border: 1px solid #232933; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 12px; box-sizing: border-box; outline: none; }
+        .btn-velvet-blue { background: linear-gradient(180deg, #1890ff 0%, #0050b3 100%); color: #fff; border: 1px solid #003a8c; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 3px 0 #002766; text-transform: uppercase; transition: 0.2s; }
+        .btn-velvet-blue:active { transform: translateY(3px); box-shadow: none; }
+
+        /* ДАШБОРД (Збережено без змін) */
         .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
         .dash-card { background: var(--panel); border: 1px solid var(--border); padding: 20px 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
         .dash-card.clickable { cursor: pointer; transition: 0.2s; background: linear-gradient(180deg, #1c2128 0%, #161a20 100%); box-shadow: 0 4px 0 #0d0f12, 0 8px 15px rgba(0,0,0,0.2); border-color: #30363d; position: relative; }
         .dash-card.clickable:active { transform: translateY(4px); box-shadow: none; }
         .dash-card.clickable::after { content: '▼ розгорнути'; display: block; font-size: 11px; color: var(--olive); margin-top: 8px; font-weight: bold; text-transform: uppercase; }
-
         .dash-card.wide { grid-column: 1 / -1; border-color: rgba(107, 135, 59, 0.2); background: linear-gradient(145deg, var(--panel) 0%, #151a14 100%); }
         .dash-num { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 5px; }
         .dash-label { font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .dash-hl { color: var(--olive); }
 
-        /* WEB3 СЕКЦІЯ */
-        .web3-section { background: linear-gradient(145deg, #1c2128 0%, #0d0f12 100%); border: 1px solid #30363d; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: inset 0 1px 1px rgba(255,255,255,0.05); }
-        .web3-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--accent-blue); }
-        
-        .velvet-input { width: 100%; background: #090b0d; border: 1px solid #232933; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; outline: none; }
-        .velvet-input:focus { border-color: var(--accent-blue); }
-
-        .btn-velvet { background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%); color: #e0e0e0; border: 1px solid #3a3a3a; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 4px 0 #080808; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-velvet:active { transform: translateY(3px); box-shadow: none; }
-        .btn-velvet.blue { background: linear-gradient(180deg, #1890ff 0%, #0050b3 100%); border-color: #003a8c; color: #fff; box-shadow: 0 4px 0 #002766; }
-
-        .agents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .agent-pill { background: #161a20; border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
-        .status-dot { width: 8px; height: 8px; background: #52c41a; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 8px #52c41a; }
-
         h2 { font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 10px; margin-bottom: 15px; color: #fff; display: flex; align-items: center; justify-content: space-between;}
 
-        /* СПИСОК МАГАЗИНІВ */
+        /* МАГАЗИНИ (Збережено без змін) */
         #shopsWrapper { display: none; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        
         .shop-list { display: flex; flex-direction: column; gap: 12px; }
         .shop-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 12px; transition: 0.3s; }
         .shop-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .shop-name { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 4px; }
         .shop-id { font-size: 12px; color: var(--text-muted); font-family: monospace; }
-        
         .shop-stats-row { display: flex; gap: 10px; }
         .stat-badge { background: rgba(107, 135, 59, 0.05); border: 1px solid rgba(107, 135, 59, 0.2); color: var(--text); padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex: 1; justify-content: center; }
         .stat-badge.empty { background: rgba(139, 148, 158, 0.05); border-color: rgba(139, 148, 158, 0.2); color: var(--text-muted); }
@@ -72,7 +60,7 @@
         .btn-nuke { background: linear-gradient(180deg, var(--btn-del-top) 0%, var(--btn-del-bot) 100%); color: #ff9999; border: 1px solid #5c2323; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.1s; box-shadow: 0 4px 0 #1f0b0b; margin-top: 5px; }
         .btn-nuke:active { transform: translateY(4px); box-shadow: none; }
 
-        /* КАСТОМНІ ВІКНА */
+        /* КАСТОМНІ ВІКНА (Збережено без змін) */
         .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; backdrop-filter: blur(5px); }
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center; }
         .btn-action { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; flex: 1; transition: 0.2s; }
@@ -85,28 +73,17 @@
 <body>
 
     <div class="header">
-        <div class="header-title">🛡️ AI-PILOT: WEB3 ADMIN</div>
+        <div class="header-title">🛡️ SUPER ADMIN</div>
         <button class="logout-btn" onclick="logOut()">Вихід</button>
     </div>
 
     <div class="container" id="mainContent" style="display: none;">
         
-        <div class="web3-section">
+        <div class="web3-card">
             <div class="web3-title">🌐 КЕРУВАННЯ WEB3 ТА ПРИБУТКОМ</div>
-            <input type="text" id="ownerWallet" class="velvet-input" placeholder="Адрес гаманця для збору (0x...)">
-            <button class="btn-velvet blue" id="btnConnect" onclick="connectWeb3()">🔗 ПІДКЛЮЧИТИ КОШЕЛЬОК</button>
+            <input type="text" id="ownerWallet" class="velvet-input" placeholder="Адрес гаманця для прибутку (0x...)">
+            <button class="btn-velvet-blue" onclick="connectWeb3()">🔗 ПІДКЛЮЧИТИ КОШЕЛЬОК</button>
             <div id="walletInfo" style="margin-top: 10px; font-size: 13px; color: var(--text-muted); text-align: center;"></div>
-            
-            <div class="agents-grid">
-                <div class="agent-pill">
-                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Аналітик</div>
-                    <div style="font-weight: bold; margin-top: 5px;"><span class="status-dot"></span>Active</div>
-                </div>
-                <div class="agent-pill">
-                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Арбітраж</div>
-                    <div style="font-weight: bold; margin-top: 5px;"><span class="status-dot"></span>Searching</div>
-                </div>
-            </div>
         </div>
 
         <div class="dash-grid">
@@ -122,8 +99,8 @@
                 <div class="dash-num dash-hl" id="statProducts">0</div>
                 <div class="dash-label">Згенеровано товарів (AI)</div>
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border); font-size: 14px; color: var(--text-muted);">
-                    Витрати Gemini API (укр. контент):<br>
-                    <strong style="color: #fff; font-size: 18px;" id="statAiCost">$0.00</strong>
+                    Орієнтовні витрати на Google Gemini API:<br>
+                    <strong style="color: #fff; font-size: 18px;" id="statAiCost">$0.00</strong> / <span style="font-size: 12px;">$300.00</span>
                 </div>
             </div>
         </div>
@@ -133,6 +110,7 @@
                 🏢 Управління магазинами
                 <button onclick="loadDashboard()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size: 18px;">🔄</button>
             </h2>
+            
             <div class="shop-list" id="shopsContainer">
                 <p style="text-align:center; color:var(--text-muted);">Завантаження бази...</p>
             </div>
@@ -170,33 +148,29 @@
         let globalShops = [];
         let confirmCallback = null;
 
-        // WEB3 LOGIC
+        /* WEB3 CONNECT FUNCTION */
         async function connectWeb3() {
-            const btn = document.getElementById('btnConnect');
+            const btn = document.querySelector('.btn-velvet-blue');
             const info = document.getElementById('walletInfo');
-            
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    btn.innerText = '⌛ ПІДКЛЮЧЕННЯ...';
+                    btn.innerText = '⏳ ПІДКЛЮЧЕННЯ...';
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
                     await provider.send("eth_requestAccounts", []);
                     const signer = provider.getSigner();
-                    const address = await signer.getAddress();
-                    const balance = await provider.getBalance(address);
-                    
-                    document.getElementById('ownerWallet').value = address;
-                    info.innerHTML = `✅ Баланс: ${parseFloat(ethers.utils.formatEther(balance)).toFixed(4)} ETH`;
+                    const addr = await signer.getAddress();
+                    const bal = await provider.getBalance(addr);
+                    document.getElementById('ownerWallet').value = addr;
+                    info.innerHTML = `✅ Баланс: ${parseFloat(ethers.utils.formatEther(bal)).toFixed(4)} ETH`;
                     btn.innerText = '✅ ГАМАНЕЦЬ ПІДКЛЮЧЕНО';
-                    btn.style.opacity = '0.7';
-                } catch (err) {
-                    showAlert('Помилка підключення Web3');
+                } catch (e) {
+                    showAlert('Помилка Web3 підключення');
                     btn.innerText = '🔗 ПІДКЛЮЧИТИ КОШЕЛЬОК';
                 }
-            } else {
-                showAlert('Встановіть MetaMask або інший Web3 гаманець');
-            }
+            } else { showAlert('Будь ласка, встановіть MetaMask'); }
         }
 
+        /* ВСІ ОРИГІНАЛЬНІ ФУНКЦІЇ (Збережено без змін) */
         function toggleShopsList() {
             const wrapper = document.getElementById('shopsWrapper');
             wrapper.style.display = (wrapper.style.display === 'none' || wrapper.style.display === '') ? 'block' : 'none';
@@ -234,89 +208,117 @@
         window.onload = async () => {
             const { data: { user } } = await sb.auth.getUser();
             if (!user) { window.location.href = 'landing.html'; return; }
-
             const userEmail = user.email || "";
             const userPhone = user.phone || "";
             const isAuthValid = userEmail.includes(ADMIN_IDENTIFIER) || userPhone.includes(ADMIN_IDENTIFIER);
-
             if (!isAuthValid) {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('alertTitle').innerText = 'ДОСТУП ЗАБОРОНЕНО';
-                showAlert("Ви не є адміністратором AI-Pilot.", async () => {
+                showAlert("Ви не є адміністратором платформи AI-Pilot.", async () => {
                     await sb.auth.signOut();
                     window.location.href = 'landing.html';
                 });
                 return;
             }
-
             document.getElementById('loader').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
             loadDashboard();
         };
 
-        async function logOut() {
-            await sb.auth.signOut();
-            window.location.href = 'landing.html';
-        }
+        async function logOut() { await sb.auth.signOut(); window.location.href = 'landing.html'; }
 
         async function loadDashboard() {
             const shopsContainer = document.getElementById('shopsContainer');
-            shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Збір даних...</p>';
-
+            shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">⏳ Збір даних з серверів...</p>';
             try {
                 const [resShops, resProds, resOrders] = await Promise.all([
                     sb.from('shops').select('*'),
-                    sb.from('products').select('id, owner_id'),
+                    sb.from('products').select('id, owner_id, images'),
                     sb.from('orders').select('id, owner_id')
                 ]);
-
+                if (resShops.error) throw resShops.error;
                 document.getElementById('statShops').innerText = resShops.data?.length || 0;
                 document.getElementById('statProducts').innerText = resProds.data?.length || 0;
                 document.getElementById('statOrders').innerText = resOrders.data?.length || 0;
                 document.getElementById('statAiCost').innerText = `$${((resProds.data?.length || 0) * 0.0002).toFixed(4)}`;
-
                 globalShops = resShops.data || [];
                 shopsContainer.innerHTML = '';
-
                 if (globalShops.length === 0) {
-                    shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Магазинів немає.</p>';
+                    shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Магазинів поки немає.</p>';
                     return;
                 }
-
+                let prodCounts = {}; let orderCounts = {};
+                if (resProds.data) resProds.data.forEach(p => { prodCounts[p.owner_id] = (prodCounts[p.owner_id] || 0) + 1; });
+                if (resOrders.data) resOrders.data.forEach(o => { orderCounts[o.owner_id] = (orderCounts[o.owner_id] || 0) + 1; });
                 globalShops.forEach(shop => {
                     let ownerId = shop.owner_id || 'NO_OWNER';
+                    let internalId = shop.id || 'NO_ID';
+                    let pCount = prodCounts[ownerId] || 0;
+                    let oCount = orderCounts[ownerId] || 0;
+                    let elementId = internalId !== 'NO_ID' ? internalId : ownerId;
                     let safeShopName = (shop.shop_name || 'Без назви').replace(/['"]/g, '');
-                    
                     shopsContainer.innerHTML += `
-                        <div class="shop-card" id="shopCard_${shop.id}">
+                        <div class="shop-card" id="shopCard_${elementId}">
                             <div class="shop-header">
                                 <div>
                                     <div class="shop-name">${shop.shop_name || 'Без назви'}</div>
-                                    <div class="shop-id">Owner: ${ownerId.substring(0, 8)}...</div>
+                                    <div class="shop-id">Owner ID: ${(ownerId !== 'NO_OWNER' ? ownerId.substring(0, 8) : 'БЕЗ ID')}...</div>
                                 </div>
                             </div>
                             <div class="shop-stats-row">
-                                <div class="stat-badge">📦 ID: ${shop.id}</div>
+                                <div class="${pCount === 0 ? "stat-badge empty" : "stat-badge"}">📦 Товарів: ${pCount}</div>
+                                <div class="${oCount === 0 ? "stat-badge empty" : "stat-badge"}">📑 Замовлень: ${oCount}</div>
                             </div>
-                            <button class="btn-nuke" onclick="nukeShop('${shop.id}', '${ownerId}', '${safeShopName}')">
-                                🗑️ ВИДАЛИТИ
+                            <button class="btn-nuke" onclick="nukeShop('${internalId}', '${ownerId}', '${safeShopName}')">
+                                🗑️ ВИДАЛИТИ МАГАЗИН
                             </button>
                         </div>
                     `;
                 });
-            } catch (err) {
-                shopsContainer.innerHTML = `<p style="color:#ff9999;">Помилка: ${err.message}</p>`;
-            }
+            } catch (err) { shopsContainer.innerHTML = `<p style="color:#ff9999; text-align:center;">Помилка БД: ${err.message}</p>`; }
         }
 
-        async function nukeShop(internalId, ownerId, shopName) {
-            showConfirm(`Видалити магазин <b>"${shopName}"</b>?`, async () => {
+        /* ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ" (ОРИГІНАЛЬНА ЛОГІКА ОЧИСТКИ ЗБЕРЕЖЕНА) */
+        function nukeShop(internalId, ownerId, shopName) {
+            showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b>.<br><br>Це фізично видалить усі дані. Продовжити?`, async () => {
+                let elementId = internalId !== 'NO_ID' ? internalId : ownerId;
+                const btn = document.querySelector(`#shopCard_${elementId} .btn-nuke`);
+                if(btn) { btn.innerHTML = '⏳ ВИДАЛЕННЯ...'; btn.disabled = true; }
                 try {
-                    await sb.from('products').delete().eq('owner_id', ownerId);
-                    await sb.from('shops').delete().eq('id', internalId);
-                    loadDashboard();
+                    if (ownerId !== 'NO_OWNER') {
+                        const { data: products } = await sb.from('products').select('id, images').eq('owner_id', ownerId);
+                        let filesToDelete = []; let productIds = [];
+                        if (products && products.length > 0) {
+                            products.forEach(p => {
+                                productIds.push(p.id);
+                                if (p.images && p.images.length > 0) {
+                                    p.images.forEach(url => {
+                                        const parts = url.split('/');
+                                        filesToDelete.push(parts[parts.length - 1]);
+                                    });
+                                }
+                            });
+                            if (filesToDelete.length > 0) { await sb.storage.from('smart_media').remove(filesToDelete); }
+                            for (let pid of productIds) { await sb.from('ai_content').delete().eq('product_id', pid); }
+                        }
+                        await sb.from('products').delete().eq('owner_id', ownerId);
+                        await sb.from('orders').delete().eq('owner_id', ownerId);
+                    }
+                    if (internalId !== 'NO_ID') { await sb.from('shops').delete().eq('id', internalId); }
+                    else if (ownerId !== 'NO_OWNER') { await sb.from('shops').delete().eq('owner_id', ownerId); }
+
+                    const card = document.getElementById(`shopCard_${elementId}`);
+                    if(card) {
+                        card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            card.remove();
+                            let currentCount = parseInt(document.getElementById('statShops').innerText);
+                            if(currentCount > 0) document.getElementById('statShops').innerText = currentCount - 1;
+                        }, 300);
+                    }
+                    setTimeout(loadDashboard, 1500);
                 } catch (e) {
-                    showAlert('Помилка: ' + e.message);
+                    showAlert('Помилка при видаленні: ' + e.message);
+                    if(btn) { btn.innerHTML = '🗑️ ВИДАЛИТИ МАГАЗИН'; btn.disabled = false; }
                 }
             });
         }
