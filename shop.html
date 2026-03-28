@@ -18,7 +18,7 @@
         body.theme-light .checkout-input:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.1); }
         
         body.theme-light .title { color: #111827; }
-        body.theme-light .btn-read { color: #4b5563; border-color: #9ca3af; }
+        body.theme-light .btn-read { background: #f3f4f6; color: #4b5563; border-color: #9ca3af; }
         body.theme-light .shop-desc { color: #4b5563; background: #ffffff; border-color: #e5e7eb; }
         body.theme-light .dropdown-content { background: #ffffff; border-color: #d1d5db; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         body.theme-light .dropdown-content a { color: #111827; border-color: #e5e7eb; }
@@ -38,7 +38,7 @@
         body.theme-neutral .search-box:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.2); }
         body.theme-neutral .checkout-input { background: #ffffff; color: #1e293b; border: 2px solid #94a3b8 !important; }
         body.theme-neutral .title { color: #1e293b; }
-        body.theme-neutral .btn-read { color: #475569; border-color: #94a3b8; }
+        body.theme-neutral .btn-read { background: #e2e8f0; color: #475569; border-color: #94a3b8; }
         body.theme-neutral .btn-buy { background: #475569; border-color: #475569; box-shadow: 0 2px 0 #334155; }
         body.theme-neutral .shop-desc { color: #475569; background: #fafafa; border-color: #cbd5e1; }
         body.theme-neutral .dropdown-content { background: #fafafa; border-color: #cbd5e1; box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
@@ -112,7 +112,8 @@
         
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; scrollbar-width: none; max-width: 900px; margin: auto; }
         .nav-scroll::-webkit-scrollbar { display: none; }
-        .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #3a414a; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        /* ЗМІНА: Рамка для категорій стала яскравішою */
+        .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid rgba(255,255,255,0.25); padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
         .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive) !important; box-shadow: none !important; cursor: default; }
         
         .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
@@ -132,13 +133,15 @@
         .card-actions { display: flex; gap: 6px; }
         .btn-action { flex: 1; padding: 10px 2px; border-radius: 8px; font-weight: bold; font-size: 13px; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; box-sizing: border-box; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .btn-action:active { transform: translateY(2px); }
-        .btn-read { background: transparent; border: 1px solid #555; color: #ccc; }
+        /* ЗМІНА: Кнопка Опис отримала рамку та легкий фон */
+        .btn-read { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.35); color: #fff; }
         .btn-buy { background: var(--olive); color: #fff; border: 1px solid var(--olive); box-shadow: 0 2px 0 #2c3818; text-transform: uppercase; }
         .btn-buy:active { box-shadow: none; }
         
         .empty-state { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #888; background: var(--panel); border-radius: 12px; border: 1px dashed var(--border); font-size: 14px;}
 
-        .cart-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--olive); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.4); cursor: pointer; z-index: 900; border: 2px solid rgba(255,255,255,0.1); transition: 0.2s; }
+        /* ЗМІНА: Корзина стала більшою (32px), отримала яскраву рамку та світіння */
+        .cart-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--olive); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.5), 0 0 15px var(--olive); cursor: pointer; z-index: 900; border: 2px solid rgba(255,255,255,0.4); transition: 0.2s; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .cart-fab:active { transform: scale(0.9); }
         .cart-badge { position: absolute; top: 0; right: 0; background: #ef4444; color: #fff; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
 
