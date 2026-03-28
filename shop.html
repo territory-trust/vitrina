@@ -442,11 +442,35 @@
         if(delivery !== 'Самовивіз') { const region = document.getElementById('order_region').value; const city = document.getElementById('order_city').value; if(delivery === 'Нова Пошта') address = `${region}, ${city}, Відділення НП №${document.getElementById('order_branch').value}`; if(delivery === 'Укрпошта') address = `${region}, ${city}, Індекс: ${document.getElementById('order_index').value}`; }
 
         const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-        const orderData = { owner_id: cart[0].owner_id, customer_name: `${name} ${document.getElementById('order_surname').value}`, phone: phone, delivery_type: delivery, delivery_address: address, payment_type: document.getElementById('order_payment').value, total_amount: total, items: cart, status: 'Нове' };
+        const surname = document.getElementById('order_surname').value.trim();
+        const payment = document.getElementById('order_payment').value;
+        const ownerId = cart[0].owner_id;
+
+        const orderData = { owner_id: ownerId, customer_name: `${name} ${surname}`.trim(), phone: phone, delivery_type: delivery, delivery_address: address, payment_type: payment, total_amount: total, items: cart, status: 'Нове' };
 
         try {
+            // 1. Записуємо в БД
             const { error } = await sb.from('orders').insert([orderData]);
             if (error) throw error;
+
+            // 2. ФОРМУЄМО ТА ВІДПРАВЛЯЄМО ЧЕК У ТЕЛЕГРАМ ПРОДАВЦЮ
+            const { data: shop } = await sb.from('shops').select('tg_chat_id').eq('owner_id', ownerId).single();
+            if (shop && shop.tg_chat_id) {
+                let itemsList = cart.map(i => `▪️ ${i.title} (${i.qty} шт.) - ${i.price * i.qty} грн`).join('\n');
+                let tgMessage = `🚨 <b>НОВЕ ЗАМОВЛЕННЯ!</b>\n\n` +
+                                `👤 <b>Клієнт:</b> ${name} ${surname}\n` +
+                                `📞 <b>Телефон:</b> ${phone}\n` +
+                                `🚚 <b>Доставка:</b> ${delivery} (${address})\n` +
+                                `💳 <b>Оплата:</b> ${payment}\n\n` +
+                                `📦 <b>Товари:</b>\n${itemsList}\n\n` +
+                                `💰 <b>Сума:</b> ${total} грн`;
+                
+                // Викликаємо нашого поштаря
+                await sb.functions.invoke('send-tg-message', {
+                    body: { chat_id: shop.tg_chat_id, text: tgMessage }
+                });
+            }
+
             alert("🎉 Замовлення успішно оформлено! Продавець зв'яжеться з вами найближчим часом."); cart = []; saveCart(); toggleCart();
         } catch (e) { console.error("Помилка БД:", e); alert("⚠️ Помилка з'єднання з базою. Перевірте таблицю 'orders' у Supabase."); }
         btn.disabled = false; btn.innerHTML = '✅ ПІДТВЕРДИТИ ЗАМОВЛЕННЯ';
