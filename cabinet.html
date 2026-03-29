@@ -59,9 +59,10 @@
         .nav-item.active { color: var(--olive); font-weight: bold; }
         .nav-icon { font-size: 22px; }
 
-        .nav-scroll { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; scrollbar-width: none; margin-bottom: 10px; }
+        /* ЗМІНА: Закріплення блоку (Sticky) та стилізація кнопок */
+        .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 10px 15px; margin: 0 -15px 15px -15px; scrollbar-width: none; position: sticky; top: 58px; background: var(--bg); z-index: 100; border-bottom: 1px dashed var(--border); }
         .nav-scroll::-webkit-scrollbar { display: none; }
-        .cat-btn { background: var(--card-bg); color: var(--text-muted); border: 1px solid var(--card-border); padding: 6px 14px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .cat-btn { background: var(--card-bg); color: var(--text); border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
         .cat-btn.active { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: none; cursor: default;}
         
         .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s;}
