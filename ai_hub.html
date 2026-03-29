@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI-Hub | Каталог</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        /* БАЗОВИЙ ТЕМНИЙ СТИЛЬ (Dark Velvet) */
+        :root { --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; --olive-dark: #465926; --text: #e5e7eb; --text-muted: #888; --border: #2a2e35; --input-bg: #050505; --input-border: #444; --user-msg: #1a2e1a; --ai-msg: #1a1e24; }
+        
+        /* СВІТЛИЙ СТИЛЬ (Light Creative) */
+        body.theme-light { --bg: #f9fafb; --panel: #ffffff; --text: #111827; --text-muted: #6b7280; --border: #e5e7eb; --input-bg: #ffffff; --input-border: #9ca3af; --user-msg: #e8f5e9; --ai-msg: #f3f4f6; }
+        
+        /* НЕЙТРАЛЬНИЙ СТИЛЬ (Neutral Classic) */
+        body.theme-neutral { --bg: #f5f5f5; --panel: #fafafa; --olive: #64748b; --text: #334155; --text-muted: #64748b; --border: #cbd5e1; --input-bg: #ffffff; --input-border: #94a3b8; --user-msg: #e2e8f0; --ai-msg: #ffffff; }
+        
+        /* ТЕМНИЙ ОКЕАН (Dark Ocean) */
+        body.theme-ocean { --bg: #051622; --panel: #0a2235; --olive: #2a8bf2; --text: #e2f1ff; --text-muted: #7d9cb8; --border: #143554; --input-bg: #020a10; --input-border: #1b456b; --user-msg: #0d2840; --ai-msg: #0a2235; }
+
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 16px; padding-top: 65px; height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; transition: background 0.3s, color 0.3s; }
+        
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: var(--panel); border-bottom: 1px solid var(--border); z-index: 1000; padding: 12px 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: var(--olive); font-size: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .back-btn { background: transparent; color: #FFEA00; border: none; font-weight: 900; font-size: 16px; cursor: pointer; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0px 3px 4px rgba(0,0,0,0.6); text-decoration: none; padding: 5px 0; letter-spacing: 1px;}
+        .back-btn:active { transform: translateX(-4px); }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; flex: 1; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* КАТАЛОГ АГЕНТІВ */
+        #hubView { display: block; animation: fadeIn 0.3s; }
+        .hub-title { font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-weight: bold; color: var(--text); }
+        
+        .agent-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; gap: 15px; align-items: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .agent-card:active { transform: scale(0.98); }
+        .agent-icon { font-size: 24px; font-weight: 900; color: var(--olive); background: var(--input-bg); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; text-transform: uppercase; letter-spacing: 1px;}
+        .agent-info h3 { margin: 0 0 6px 0; font-size: 18px; color: var(--text); }
+        .agent-info p { margin: 0; font-size: 14px; color: var(--text-muted); line-height: 1.4; }
+
+        /* ВІКНО ЧАТУ */
+        #chatView { display: none; flex-direction: column; flex: 1; overflow: hidden; animation: fadeIn 0.3s; }
+        .chat-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: var(--text); text-align: center; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px 5px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px; scrollbar-width: none; }
+        .chat-messages::-webkit-scrollbar { display: none; }
+        
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+        .msg.user { background: var(--user-msg); color: var(--text); align-self: flex-end; border-bottom-right-radius: 4px; border: 1px solid var(--border); }
+        .msg.ai { background: var(--ai-msg); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+        
+        .msg-images { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+        .msg-images img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+
+        .quick-replies { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .qr-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .qr-btn:active { background: var(--olive); color: #fff; border-color: var(--olive); }
+
+        .chat-input-area { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        
+        .img-preview-container { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; }
+        .img-preview-container::-webkit-scrollbar { display: none; }
+        .preview-box { position: relative; flex-shrink: 0; width: 60px; height: 60px; }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+        .del-img-btn { position: absolute; top: -5px; right: -5px; background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        .input-row { display: flex; gap: 10px; align-items: flex-end; }
+        
+        .attach-btns-wrapper { display: flex; gap: 5px; }
+        .attach-btn { background: var(--input-bg); color: var(--text); border: 1px solid #888; width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; flex-shrink: 0; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        .attach-btn:active { transform: translateY(2px); box-shadow: none; }
+        
+        textarea { flex: 1; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text); padding: 12px; font-size: 16px; outline: none; resize: none; min-height: 20px; max-height: 120px; font-family: inherit; border-radius: 8px; }
+        textarea:focus { border-color: var(--olive); }
+        
+        .send-btn { background: var(--olive); color: #fff; border: none; width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: 0 3px 0 var(--olive-dark); transition: 0.1s;}
+        .send-btn:active { transform: translateY(2px); box-shadow: none; }
+        .send-btn:disabled { background: var(--border); box-shadow: none; cursor: not-allowed; transform: none;}
+
+        .typing { font-size: 13px; color: var(--olive); display: none; margin-left: 10px; font-weight: bold; animation: blink 1.5s infinite; margin-bottom: 10px;}
+        @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        input[type="file"] { display: none; }
+
+        .watermark-container { text-align: center; padding-bottom: 10px; }
+        .watermark-link { font-size: 12px; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; letter-spacing: 0.5px; }
+        .watermark-link:active { color: var(--olive); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="javascript:history.back()" class="back-btn">&lt;&lt;&lt;&lt; НАЗАД</a>
+        <div class="logo">AI-HUB</div>
+    </div>
+
+    <div class="container">
+        
+        <div id="hubView">
+            <div class="hub-title">Оберіть помічника:</div>
+            
+            <div class="agent-card" onclick="openChat('analyst')">
+                <div class="agent-icon">AN</div>
+                <div class="agent-info">
+                    <h3>Shop-Аналітик</h3>
+                    <p>Підбір товарів, порівняння характеристик та поради щодо шопінгу.</p>
+                </div>
+            </div>
+
+            <div class="agent-card" onclick="openChat('lawyer')">
+                <div class="agent-icon">LA</div>
+                <div class="agent-info">
+                    <h3>AI-Юрист</h3>
+                    <p>Правовий аналіз документів по фотографії, консультації щодо прав споживачів.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatView">
+            <div class="chat-header" id="chatHeader">Агент</div>
+            
+            <div class="chat-messages" id="chatBox"></div>
+            <div class="typing" id="typingIndicator">Обробка запиту...</div>
+
+            <div class="quick-replies" id="quickReplies"></div>
+
+            <div class="chat-input-area">
+                <div class="img-preview-container" id="imgPreviewCont"></div>
+                
+                <div class="input-row">
+                    <div class="attach-btns-wrapper" id="attachBtnsWrapper" style="display: none;">
+                        <label class="attach-btn" title="Камера">📷<input type="file" accept="image/*" capture="environment" onchange="handleFile(event)"></label>
+                        <label class="attach-btn" title="Галерея">🖼<input type="file" accept="image/*" onchange="handleFile(event)"></label>
+                    </div>
+                    
+                    <textarea id="chatInput" placeholder="Напишіть повідомлення..." rows="1" oninput="autoResize(this)"></textarea>
+                    
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="watermark-container">
+                <a href="https://ai-pilot.com.ua/landing.html" target="_blank" class="watermark-link">AI-Pilot Shops</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Спроба підтягнути тему з localStorage, щоб Хаб виглядав як Вітрина
+        const savedTheme = localStorage.getItem('hub_theme') || 'dark';
+        if (savedTheme && savedTheme !== 'dark') {
+            document.body.classList.add('theme-' + savedTheme);
+        }
+
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        
+        let currentAgent = '';
+        let selectedImages = []; // Масив для зберігання до 10 фотографій
+
+        // Суворі налаштування агентів (без емодзі у текстах)
+        const agents = {
+            'analyst': {
+                name: 'Shop-Аналітик',
+                placeholder: 'Введіть запит...',
+                allowImage: false,
+                greeting: 'Вітаю. Я ваш AI-Аналітик. Опишіть товар, який ви шукаєте, або вкажіть бюджет, і я допоможу з вибором.',
+                hints: ['Підібрати подарунок', 'Що зараз у тренді?', 'Порівняти ціни']
+            },
+            'lawyer': {
+                name: 'AI-Юрист',
+                placeholder: 'Опишіть ситуацію або додайте фото...',
+                allowImage: true,
+                greeting: 'Вітаю. Я ваш AI-Юрист. Опишіть вашу ситуацію або завантажте фотографії документа для правового аналізу.',
+                hints: ['Перевірити договір', 'Правила повернення товару']
+            }
+        };
+
+        function openChat(agentId) {
+            currentAgent = agentId;
+            const agent = agents[agentId];
+            
+            document.getElementById('hubView').style.display = 'none';
+            document.getElementById('chatView').style.display = 'flex';
+            document.getElementById('chatHeader').innerText = agent.name;
+            document.getElementById('chatInput').placeholder = agent.placeholder;
+            
+            document.getElementById('attachBtnsWrapper').style.display = agent.allowImage ? 'flex' : 'none';
+            
+            document.getElementById('chatBox').innerHTML = '';
+            selectedImages = [];
+            renderPreviews();
+            
+            // Вітальне повідомлення
+            addMsg(agent.greeting, 'ai');
+
+            // Підказки
+            const qrContainer = document.getElementById('quickReplies');
+            qrContainer.innerHTML = '';
+            if (agent.hints) {
+                agent.hints.forEach(hint => {
+                    const btn = document.createElement('button');
+                    btn.className = 'qr-btn';
+                    btn.innerText = hint;
+                    btn.onclick = () => {
+                        document.getElementById('chatInput').value = hint;
+                        qrContainer.style.display = 'none';
+                    };
+                    qrContainer.appendChild(btn);
+                });
+                qrContainer.style.display = 'flex';
+            }
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight) + 'px';
+        }
+
+        // Обробка фотографій з лімітом до 10 штук
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (selectedImages.length >= 10) {
+                alert('Досягнуто ліміт. Можна завантажити не більше 10 фотографій одночасно.');
+                e.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.src = ev.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    let width = img.width; let height = img.height;
+                    if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                    else if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const base64Full = canvas.toDataURL('image/jpeg', 0.7);
+                    selectedImages.push(base64Full);
+                    renderPreviews();
+                    e.target.value = ''; // Скидаємо input
+                };
+            };
+        }
+
+        function renderPreviews() {
+            const cont = document.getElementById('imgPreviewCont');
+            cont.innerHTML = '';
+            if (selectedImages.length === 0) {
+                cont.style.display = 'none';
+                return;
+            }
+            cont.style.display = 'flex';
+            selectedImages.forEach((src, index) => {
+                const div = document.createElement('div');
+                div.className = 'preview-box';
+                div.innerHTML = `<img src="${src}"><button class="del-img-btn" onclick="removeImg(${index})">✖</button>`;
+                cont.appendChild(div);
+            });
+        }
+
+        function removeImg(index) {
+            selectedImages.splice(index, 1);
+            renderPreviews();
+        }
+
+        // Додавання повідомлення в інтерфейс
+        function addMsg(text, sender, images = []) {
+            const box = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = `msg ${sender}`;
+            
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            if (formattedText) {
+                div.innerHTML = formattedText;
+            }
+            
+            if (images.length > 0) {
+                const imgCont = document.createElement('div');
+                imgCont.className = 'msg-images';
+                images.forEach(src => {
+                    imgCont.innerHTML += `<img src="${src}">`;
+                });
+                div.appendChild(imgCont);
+            }
+            
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            const btn = document.getElementById('sendBtn');
+            const typing = document.getElementById('typingIndicator');
+
+            if (!text && selectedImages.length === 0) return;
+
+            // Приховуємо підказки при першому повідомленні
+            document.getElementById('quickReplies').style.display = 'none';
+
+            // Копіюємо масив зображень для відображення в чаті
+            const imagesToSend = [...selectedImages];
+            // Готуємо масив base64 без префікса для відправки на сервер
+            const base64Data = imagesToSend.map(src => src.split(',')[1]);
+
+            // Очищаємо інтерфейс
+            input.value = '';
+            input.style.height = 'auto';
+            btn.disabled = true;
+            selectedImages = [];
+            renderPreviews();
+            
+            addMsg(text, 'user', imagesToSend);
+            typing.style.display = 'block';
+
+            try {
+                // Відправка до Supabase Edge Function (Функцію 'chat-agent' потрібно буде створити)
+                const { data, error } = await sb.functions.invoke('chat-agent', {
+                    body: { 
+                        agent: currentAgent,
+                        message: text, 
+                        images: base64Data 
+                    }
+                });
+
+                if (error) throw error;
+                
+                typing.style.display = 'none';
+                addMsg(data.reply, 'ai');
+
+            } catch (err) {
+                console.error(err);
+                typing.style.display = 'none';
+                addMsg('Виникла технічна помилка під час обробки запиту. Будь ласка, спробуйте пізніше.', 'ai');
+            }
+
+            btn.disabled = false;
+        }
+
+        document.getElementById('chatInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
