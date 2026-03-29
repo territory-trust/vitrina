@@ -112,7 +112,6 @@
         
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 0 15px; scrollbar-width: none; max-width: 900px; margin: auto; }
         .nav-scroll::-webkit-scrollbar { display: none; }
-        /* ЗМІНА 1: Жорстка і видима рамка для категорій (#888) */
         .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
         .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive) !important; box-shadow: none !important; cursor: default; }
         
@@ -133,14 +132,12 @@
         .card-actions { display: flex; gap: 6px; }
         .btn-action { flex: 1; padding: 10px 2px; border-radius: 8px; font-weight: bold; font-size: 13px; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; box-sizing: border-box; cursor: pointer; transition: 0.1s; white-space: nowrap; }
         .btn-action:active { transform: translateY(2px); }
-        /* ЗМІНА 2: Жорстка рамка та явний фон для кнопки Опис */
         .btn-read { background: #2a2e35; border: 1px solid #888; color: #fff; }
         .btn-buy { background: var(--olive); color: #fff; border: 1px solid var(--olive); box-shadow: 0 2px 0 #2c3818; text-transform: uppercase; }
         .btn-buy:active { box-shadow: none; }
         
         .empty-state { grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #888; background: var(--panel); border-radius: 12px; border: 1px dashed var(--border); font-size: 14px;}
 
-        /* ЗМІНА 3: Оновлений контейнер кошика під нову SVG-графіку */
         .cart-fab { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: var(--olive); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.5), 0 0 15px var(--olive); cursor: pointer; z-index: 900; border: 2px solid rgba(255,255,255,0.6); transition: 0.2s; }
         .cart-fab:active { transform: scale(0.9); }
         .cart-badge { position: absolute; top: 0; right: 0; background: #ef4444; color: #fff; font-size: 12px; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
@@ -309,7 +306,8 @@
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt;&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
-            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><div class="dropdown"><button onclick="toggleDropdown()" class="head-btn dropdown-toggle">🤖 AI-Помічники ☰</button><div id="aiDropdown" class="dropdown-content"><a href="ai_hub.html">🧠 Каталог AI-Агентів</a><a href="#">📈 Зведення криптовалют</a></div></div>`;
+            // ЗМІНА: Замінено випадаюче меню на пряму кнопку-посилання
+            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><a href="ai_hub.html" class="head-btn">🤖 AI-Помічники</a>`;
         }
 
         let query;
@@ -318,7 +316,15 @@
             const { data: shopData } = await sb.from('shops').select('*').eq('owner_id', ownerId).single();
             if(shopData) {
                 if(shopData.shop_name) { document.getElementById('shopLogo').innerText = shopData.shop_name; document.title = `${shopData.shop_name} | Магазин`; }
-                if(shopData.theme_color && shopData.theme_color !== 'dark') document.body.classList.add('theme-' + shopData.theme_color);
+                
+                // ЗМІНА: Зберігаємо тему магазину в localStorage для Хабу Агентів
+                if(shopData.theme_color && shopData.theme_color !== 'dark') {
+                    document.body.classList.add('theme-' + shopData.theme_color);
+                    localStorage.setItem('hub_theme', shopData.theme_color);
+                } else {
+                    localStorage.setItem('hub_theme', 'dark');
+                }
+                
                 if(shopData.categories) shopCategories = shopData.categories.split(',').map(c => c.trim()).filter(Boolean);
                 if(shopData.description) document.getElementById('shopInfoContainer').innerHTML = `<div class="shop-info-block"><div class="shop-desc">${shopData.description}</div></div>`;
             }
