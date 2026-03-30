@@ -7,9 +7,10 @@
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ai-pilot.com.ua/shop.html">
-    <meta property="og:title" id="ogTitle" content="Смарт-Вітрина">
+    <meta property="og:title" id="ogTitle" content="Смарт-Магазин">
     <meta property="og:description" content="Заходь, обирай найкраще та спілкуйся з AI-помічником! Радий бачити тебе 🙋">
     <meta property="og:image" content="https://ai-pilot.com.ua/1000007790.jpg">
+    <meta property="og:image:secure_url" content="https://ai-pilot.com.ua/1000007790.jpg">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1000">
     <meta property="og:image:height" content="1000">
@@ -316,7 +317,7 @@
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt;&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
-            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><div class="dropdown"><button onclick="toggleDropdown()" class="head-btn dropdown-toggle">🤖 AI-Помічники ☰</button><div id="aiDropdown" class="dropdown-content"><a href="ai_hub.html">🧠 Каталог AI-Агентів</a><a href="#">📈 Зведення криптовалют</a></div></div>`;
+            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><a href="ai_hub.html" class="head-btn">🤖 AI-Помічники</a>`;
         }
 
         let query;
@@ -324,13 +325,19 @@
             query = sb.from('products').select('*').eq('owner_id', ownerId).in('status', ['В наявності', 'available']).order('created_at', { ascending: false });
             const { data: shopData } = await sb.from('shops').select('*').eq('owner_id', ownerId).single();
             if(shopData) {
+                // ІН'ЄКЦІЯ: ОНОВЛЮЄМО ЗАГОЛОВОК ДЛЯ ПРЕВ'Ю ТЕЛЕГРАМ
                 const shopName = shopData.shop_name || 'Смарт-Магазин';
                 document.getElementById('shopLogo').innerText = shopName; 
-                document.title = `${shopName} | Магазин`;
-                // ОНОВЛЮЄМО ЗАГОЛОВОК ДЛЯ ПРЕВ'Ю ТЕЛЕГРАМ
+                document.title = `${shopName} | Вітрина`;
                 document.getElementById('ogTitle').setAttribute('content', 'Завітай у ' + shopName);
+
+                if(shopData.theme_color && shopData.theme_color !== 'dark') {
+                    document.body.classList.add('theme-' + shopData.theme_color);
+                    localStorage.setItem('hub_theme', shopData.theme_color);
+                } else {
+                    localStorage.setItem('hub_theme', 'dark');
+                }
                 
-                if(shopData.theme_color && shopData.theme_color !== 'dark') document.body.classList.add('theme-' + shopData.theme_color);
                 if(shopData.categories) shopCategories = shopData.categories.split(',').map(c => c.trim()).filter(Boolean);
                 if(shopData.description) document.getElementById('shopInfoContainer').innerHTML = `<div class="shop-info-block"><div class="shop-desc">${shopData.description}</div></div>`;
             }
