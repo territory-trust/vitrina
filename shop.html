@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI-Pilot | Вітрина</title>
-    
+
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ai-pilot.com.ua/shop.html">
     <meta property="og:title" id="ogTitle" content="Смарт-Вітрина">
@@ -64,7 +64,7 @@
         body.theme-ocean .search-box:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(42, 139, 242, 0.2); }
         body.theme-ocean .checkout-input { background: #020a10; color: #e2f1ff; border: 2px solid #1b456b !important; }
         body.theme-ocean .checkout-input:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.1); }
-        body.theme-ocean .btn-buy { background: var(--olive); color: #fff; border: 1px solid var(--olive); box-shadow: 0 2px 0 #1565c0; }
+        body.theme-ocean .btn-buy { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: 0 2px 0 #1565c0; }
         body.theme-ocean .shop-desc { color: #7d9cb8; background: #0a2235; border-color: #143554; }
         body.theme-ocean .dropdown-content { background: #0a2235; border-color: #143554; }
         body.theme-ocean .dropdown-content a { color: #e2f1ff; border-color: #143554; }
@@ -316,7 +316,7 @@
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt;&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
-            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><a href="ai_hub.html" class="head-btn">🤖 AI-Помічники</a>`;
+            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><div class="dropdown"><button onclick="toggleDropdown()" class="head-btn dropdown-toggle">🤖 AI-Помічники ☰</button><div id="aiDropdown" class="dropdown-content"><a href="ai_hub.html">🧠 Каталог AI-Агентів</a><a href="#">📈 Зведення криптовалют</a></div></div>`;
         }
 
         let query;
@@ -326,16 +326,11 @@
             if(shopData) {
                 const shopName = shopData.shop_name || 'Смарт-Магазин';
                 document.getElementById('shopLogo').innerText = shopName; 
-                document.title = `${shopName} | Вітрина`;
+                document.title = `${shopName} | Магазин`;
+                // ОНОВЛЮЄМО ЗАГОЛОВОК ДЛЯ ПРЕВ'Ю ТЕЛЕГРАМ
                 document.getElementById('ogTitle').setAttribute('content', 'Завітай у ' + shopName);
                 
-                if(shopData.theme_color && shopData.theme_color !== 'dark') {
-                    document.body.classList.add('theme-' + shopData.theme_color);
-                    localStorage.setItem('hub_theme', shopData.theme_color);
-                } else {
-                    localStorage.setItem('hub_theme', 'dark');
-                }
-                
+                if(shopData.theme_color && shopData.theme_color !== 'dark') document.body.classList.add('theme-' + shopData.theme_color);
                 if(shopData.categories) shopCategories = shopData.categories.split(',').map(c => c.trim()).filter(Boolean);
                 if(shopData.description) document.getElementById('shopInfoContainer').innerHTML = `<div class="shop-info-block"><div class="shop-desc">${shopData.description}</div></div>`;
             }
