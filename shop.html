@@ -6,9 +6,11 @@
     <title>AI-Pilot | Вітрина</title>
     
     <meta property="og:type" content="website">
-    <meta property="og:title" id="ogTitle" content="Смарт-Магазин">
+    <meta property="og:url" content="https://ai-pilot.com.ua/shop.html">
+    <meta property="og:title" id="ogTitle" content="Смарт-Вітрина">
     <meta property="og:description" content="Заходь, обирай найкраще та спілкуйся з AI-помічником! Радий бачити тебе 🙋">
     <meta property="og:image" content="https://ai-pilot.com.ua/1000007790.jpg">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1000">
     <meta property="og:image:height" content="1000">
 
@@ -62,7 +64,7 @@
         body.theme-ocean .search-box:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 3px rgba(42, 139, 242, 0.2); }
         body.theme-ocean .checkout-input { background: #020a10; color: #e2f1ff; border: 2px solid #1b456b !important; }
         body.theme-ocean .checkout-input:focus { border-color: var(--olive) !important; box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.1); }
-        body.theme-ocean .btn-buy { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: 0 2px 0 #1565c0; }
+        body.theme-ocean .btn-buy { background: var(--olive); color: #fff; border: 1px solid var(--olive); box-shadow: 0 2px 0 #1565c0; }
         body.theme-ocean .shop-desc { color: #7d9cb8; background: #0a2235; border-color: #143554; }
         body.theme-ocean .dropdown-content { background: #0a2235; border-color: #143554; }
         body.theme-ocean .dropdown-content a { color: #e2f1ff; border-color: #143554; }
@@ -322,7 +324,6 @@
             query = sb.from('products').select('*').eq('owner_id', ownerId).in('status', ['В наявності', 'available']).order('created_at', { ascending: false });
             const { data: shopData } = await sb.from('shops').select('*').eq('owner_id', ownerId).single();
             if(shopData) {
-                // ДИНАМІЧНО ОНОВЛЮЄМО ЗАГОЛОВОК ДЛЯ ТЕЛЕГРАМУ
                 const shopName = shopData.shop_name || 'Смарт-Магазин';
                 document.getElementById('shopLogo').innerText = shopName; 
                 document.title = `${shopName} | Вітрина`;
@@ -503,15 +504,7 @@
     function filter() { const v = document.getElementById('search').value.toLowerCase(); render(items.filter(i => (`${i.title} ${i.category}`).toLowerCase().includes(v))); }
     function setCat(c, b) { document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active')); b.classList.add('active'); render(c === 'Все' ? items : items.filter(i => (i.category || 'Різне') === c)); }
     function toggleDropdown() { document.getElementById("aiDropdown").classList.toggle("show"); }
-    window.onclick = function(event) { 
-        if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.lightbox')) { 
-            var dropdowns = document.getElementsByClassName("dropdown-content"); 
-            for (var i = 0; i < dropdowns.length; i++) { 
-                var openDropdown = dropdowns[i]; 
-                if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } 
-            } 
-        } 
-    }
+    window.onclick = function(event) { if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.lightbox')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } } } }
 </script>
 </body>
 </html>
