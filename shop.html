@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI-Pilot | Вітрина</title>
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" id="ogTitle" content="Смарт-Магазин">
+    <meta property="og:description" content="Заходь, обирай найкраще та спілкуйся з AI-помічником! Радий бачити тебе 🙋">
+    <meta property="og:image" content="https://ai-pilot.com.ua/1000007790.png">
+    <meta property="og:image:width" content="1000">
+    <meta property="og:image:height" content="1000">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
@@ -306,7 +314,6 @@
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt;&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
-            // ЗМІНА: Замінено випадаюче меню на пряму кнопку-посилання
             headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><a href="ai_hub.html" class="head-btn">🤖 AI-Помічники</a>`;
         }
 
@@ -315,9 +322,12 @@
             query = sb.from('products').select('*').eq('owner_id', ownerId).in('status', ['В наявності', 'available']).order('created_at', { ascending: false });
             const { data: shopData } = await sb.from('shops').select('*').eq('owner_id', ownerId).single();
             if(shopData) {
-                if(shopData.shop_name) { document.getElementById('shopLogo').innerText = shopData.shop_name; document.title = `${shopData.shop_name} | Магазин`; }
+                // ДИНАМІЧНО ОНОВЛЮЄМО ЗАГОЛОВОК ДЛЯ ТЕЛЕГРАМУ ТА ВІТРИНИ
+                const shopName = shopData.shop_name || 'Смарт-Магазин';
+                document.getElementById('shopLogo').innerText = shopName; 
+                document.title = `${shopName} | Вітрина`;
+                document.getElementById('ogTitle').setAttribute('content', 'Завітай у ' + shopName);
                 
-                // ЗМІНА: Зберігаємо тему магазину в localStorage для Хабу Агентів
                 if(shopData.theme_color && shopData.theme_color !== 'dark') {
                     document.body.classList.add('theme-' + shopData.theme_color);
                     localStorage.setItem('hub_theme', shopData.theme_color);
@@ -358,7 +368,6 @@
             let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || '';
             let qty = p.quantity || 0; 
             
-            // РІВЕНЬ 1 ЗАХИСТУ: Блокуємо кнопку, якщо товару немає
             let btnHtml = '';
             if (qty > 0) {
                 btnHtml = `<button onclick="addToCart('${p.id}', this)" class="btn-action btn-buy">У кошик</button>`;
@@ -374,7 +383,6 @@
         const p = items.find(i => i.id === id); if(!p) return;
         let existing = cart.find(i => i.id === p.id); 
         
-        // РІВЕНЬ 2 ЗАХИСТУ: Блокуємо повторне натискання на вітрині, якщо досягли ліміту
         if(existing) {
             if (existing.qty < p.quantity) {
                 existing.qty += 1;
@@ -383,7 +391,6 @@
                 return;
             }
         } else { 
-            // Зберігаємо максимальний залишок у кошик для подальшої перевірки
             cart.push({ id: p.id, title: p.title, price: p.price, owner_id: p.owner_id, img: p.image_url_1 || (p.images && p.images[0]) || p.image_url, qty: 1, maxQty: p.quantity }); 
         }
         
@@ -421,10 +428,8 @@
 
     function updateQty(index, delta) { 
         let newQty = cart[index].qty + delta;
-        // Запасний варіант для старих товарів у кеші кошика, у яких не було maxQty
         let max = cart[index].maxQty !== undefined ? cart[index].maxQty : 999; 
         
-        // РІВЕНЬ 3 ЗАХИСТУ: Блокування натискання + всередині кошика
         if (delta > 0 && newQty > max) {
             alert(`На складі є лише ${max} шт. цього товару.`);
             return;
@@ -471,11 +476,9 @@
         const orderData = { owner_id: ownerId, customer_name: `${name} ${surname}`.trim(), phone: phone, delivery_type: delivery, delivery_address: address, payment_type: payment, total_amount: total, items: cart, status: 'Нове' };
 
         try {
-            // 1. Записуємо в БД
             const { error } = await sb.from('orders').insert([orderData]);
             if (error) throw error;
 
-            // 2. ФОРМУЄМО ТА ВІДПРАВЛЯЄМО ЧЕК У ТЕЛЕГРАМ ПРОДАВЦЮ
             const { data: shop } = await sb.from('shops').select('tg_chat_id').eq('owner_id', ownerId).single();
             if (shop && shop.tg_chat_id) {
                 let itemsList = cart.map(i => `▪️ ${i.title} (${i.qty} шт.) - ${i.price * i.qty} грн`).join('\n');
@@ -487,7 +490,6 @@
                                 `📦 <b>Товари:</b>\n${itemsList}\n\n` +
                                 `💰 <b>Сума:</b> ${total} грн`;
                 
-                // Викликаємо нашого поштаря
                 await sb.functions.invoke('send-tg-message', {
                     body: { chat_id: shop.tg_chat_id, text: tgMessage }
                 });
@@ -501,7 +503,15 @@
     function filter() { const v = document.getElementById('search').value.toLowerCase(); render(items.filter(i => (`${i.title} ${i.category}`).toLowerCase().includes(v))); }
     function setCat(c, b) { document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active')); b.classList.add('active'); render(c === 'Все' ? items : items.filter(i => (i.category || 'Різне') === c)); }
     function toggleDropdown() { document.getElementById("aiDropdown").classList.toggle("show"); }
-    window.onclick = function(event) { if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.lightbox')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } } } }
+    window.onclick = function(event) { 
+        if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.lightbox')) { 
+            var dropdowns = document.getElementsByClassName("dropdown-content"); 
+            for (var i = 0; i < dropdowns.length; i++) { 
+                var openDropdown = dropdowns[i]; 
+                if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } 
+            } 
+        } 
+    }
 </script>
 </body>
 </html>
