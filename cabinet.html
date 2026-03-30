@@ -59,7 +59,6 @@
         .nav-item.active { color: var(--olive); font-weight: bold; }
         .nav-icon { font-size: 22px; }
 
-        /* ЗМІНА: Збільшено відступ top до 64px, щоб рамки не ховалися під шапку */
         .nav-scroll { overflow-x: auto; white-space: nowrap; padding: 10px 15px; margin: 0 -15px 15px -15px; scrollbar-width: none; position: sticky; top: 64px; background: var(--bg); z-index: 100; border-bottom: 1px dashed var(--border); }
         .nav-scroll::-webkit-scrollbar { display: none; }
         .cat-btn { background: var(--card-bg); color: var(--text); border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
@@ -198,14 +197,15 @@
                     <input type="text" id="shopLinkInput" readonly style="color: var(--text-muted); background: var(--bg); font-size: 14px; margin-bottom: 10px;">
                     <div style="display: flex; gap: 8px;">
                         <button class="btn-3d" id="copyLinkBtn" onclick="copyShopLink()" style="flex: 1; padding: 12px 5px; font-size: 12px; margin: 0;">📋 КОПІЮВАТИ</button>
-                        <a href="tg://msg?text=Привіт! 👋 Я створив супер смарт-магазин на платформі AI-Pilot Shops. Це просто та технологічно! 👍 Оціни тут: https://ai-pilot.com.ua/landing.html Доєднуйся!" 
+                        <a id="tgInviteBtn" href="#"
                            class="btn-3d" 
                            style="flex: 1.5; padding: 12px 5px; font-size: 12px; margin: 0; background: linear-gradient(180deg, #2AABEE 0%, #1c7ba6 100%); box-shadow: 0 4px 0 #135573; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 4px; line-height: 1.2; text-transform: uppercase;">
                            🛩️ ЗАПРОШЕННЯ В МАГАЗИН
                         </a>
                     </div>
                 </div>
-                </div>
+
+            </div>
 
             <div class="settings-block">
                 <h3>🎨 Дизайн Вітрини та Кабінету</h3>
@@ -307,7 +307,6 @@
             pendingOrderId = null; pendingOrderPhone = null;
         }
 
-        // Функції для модалки PWA
         function openPwaModal() {
             document.getElementById('pwaModalOverlay').style.display = 'block';
             document.getElementById('pwaModalBox').style.display = 'block';
@@ -347,7 +346,6 @@
 
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
-            // ТУТ ВКАЗАНО ТВІЙ РЕАЛЬНИЙ БОТ
             const botUsername = "AIPilot_Shops_bot"; 
             window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
@@ -356,8 +354,14 @@
             const { data: { user } } = await sb.auth.getUser();
             if (user) {
                 currentUser = user; 
+                
+                // ВСТАВЛЯЄМО ПРАВИЛЬНУ ССИЛКУ ТА ТВОЙ НОВИЙ ТЕКСТ В ТЕЛЕГРАМ-КНОПКУ
+                const shopUrl = window.location.origin + '/shop.html?owner=' + user.id;
                 document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
-                document.getElementById('shopLinkInput').value = window.location.origin + '/shop.html?owner=' + user.id;
+                document.getElementById('shopLinkInput').value = shopUrl;
+                
+                const tgText = encodeURIComponent(`Привіт🙋 тобі сюди🫠👍👌завітай\n\n${shopUrl}`);
+                document.getElementById('tgInviteBtn').href = `tg://msg?text=${tgText}`;
 
                 const { data: shop } = await sb.from('shops').select('*').eq('owner_id', user.id).single();
                 if(shop) {
@@ -510,7 +514,6 @@
             orders.forEach(order => {
                 totalRevenue += parseFloat(order.total_amount) || 0;
                 
-                // Додатковий захист, якщо items зберігся як JSON-рядок
                 let orderItems = order.items;
                 if (typeof orderItems === 'string') {
                     try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; }
@@ -528,11 +531,9 @@
             let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
             sortedCats.forEach(([cat, qty]) => { let percent = Math.round((qty / maxQtyCats) * 100); catsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600;">📁 ${cat}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; });
 
-            // ЗМІНА ТУТ: Видалили обрізання .slice(0, 5) та додали скролл
             let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]); let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
             let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продані товари (шт.)</h3>';
             
-            // Додали обгортку зі скролом, щоб довгий список не розтягував сторінку
             itemsHtml += '<div style="max-height: 350px; overflow-y: auto; padding-right: 5px; margin-right: -5px;">';
             
             sortedItems.forEach(([title, qty]) => { 
@@ -540,7 +541,7 @@
                 itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; 
             });
             
-            itemsHtml += '</div>'; // закриваємо обгортку
+            itemsHtml += '</div>'; 
 
             container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
         }
