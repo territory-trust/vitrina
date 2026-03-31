@@ -64,13 +64,14 @@
         .cat-btn { background: var(--card-bg); color: var(--text); border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
         .cat-btn.active { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: none; cursor: default;}
         
-        .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s;}
+        /* ЗМІНИ ДЛЯ КОРЕКТНОГО ВІДОБРАЖЕННЯ МЕНЮ */
+        .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s; position: relative; z-index: 1;}
         .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; }
-        .inv-info { flex: 1; overflow: hidden; position: relative; } /* Додано position: relative для правильного позиціонування меню */
+        .inv-info { flex: 1; min-width: 0; } /* min-width: 0 замість overflow: hidden для гнучких блоків */
         .inv-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
         
-        /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК КАТЕГОРІЙ ДЛЯ ІНВЕНТАРЮ */
+        /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК КАТЕГОРІЙ */
         .custom-select-wrapper { position: relative; width: 100%; max-width: 200px; margin-bottom: 6px; user-select: none; }
         .custom-select-trigger { padding: 6px 12px; background: var(--bg); border: 2px solid var(--input-border); color: var(--olive); border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .custom-select-trigger::after { content: '▼'; font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
@@ -448,7 +449,6 @@
                 let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; 
                 let currentCat = p.category || 'Різне';
                 
-                // 1. Системний прихований select для збереження логіки
                 let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}" style="display:none;">`; 
                 let customOptionsHtml = '';
                 
@@ -460,14 +460,13 @@
                 }); 
                 selectHtml += `</select>`; 
                 
-                // 2. Наша красива UI-обгортка
-                selectHtml += `
+                let wrapperHtml = `
                 <div class="custom-select-wrapper" id="custom_wrapper_${p.id}">
                     <div class="custom-select-trigger" onclick="toggleCustomCat('${p.id}', event)">📁 ${currentCat}</div>
                     <div class="custom-select-options">${customOptionsHtml}</div>
                 </div>`;
 
-                listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; 
+                listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}${wrapperHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; 
             }); 
         }
         
@@ -705,9 +704,21 @@
         function toggleCustomCat(id, e) {
             e.stopPropagation();
             document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-                if (w.id !== `custom_wrapper_${id}`) w.classList.remove('open');
+                if (w.id !== `custom_wrapper_${id}`) {
+                    w.classList.remove('open');
+                    const parent = w.closest('.inv-item');
+                    if (parent) parent.style.zIndex = '1';
+                }
             });
-            document.getElementById(`custom_wrapper_${id}`).classList.toggle('open');
+            const wrapper = document.getElementById(`custom_wrapper_${id}`);
+            const parent = wrapper.closest('.inv-item');
+            if (wrapper.classList.contains('open')) {
+                wrapper.classList.remove('open');
+                if (parent) parent.style.zIndex = '1';
+            } else {
+                wrapper.classList.add('open');
+                if (parent) parent.style.zIndex = '50';
+            }
         }
 
         function selectCustomCat(id, value, el, e) {
@@ -718,13 +729,18 @@
             el.classList.add('selected');
             wrapper.classList.remove('open');
             
-            // ПЕРЕДАЄМО ЗНАЧЕННЯ В ПРИХОВАНИЙ СИСТЕМНИЙ SELECT
+            const parent = wrapper.closest('.inv-item');
+            if (parent) parent.style.zIndex = '1';
+            
             document.getElementById(`cat_${id}`).value = value;
         }
 
-        // Закриваємо дропдауни при кліку будь-де на сторінці
         document.addEventListener('click', () => {
-            document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+            document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+                w.classList.remove('open');
+                const parent = w.closest('.inv-item');
+                if (parent) parent.style.zIndex = '1';
+            });
         });
     </script>
 </body>
