@@ -205,6 +205,13 @@
         .powered-by a { color: var(--olive); text-decoration: none; font-weight: 700; transition: 0.2s; }
         .powered-by a:hover { opacity: 0.8; }
         body.theme-light .powered-by { color: #6b7280; }
+
+        /* НОВІ СТИЛІ ДЛЯ КРАСИВИХ МОДАЛЬНИХ ВІКОН */
+        .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; display: none; backdrop-filter: blur(4px); transition: 0.2s;}
+        .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 320px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 3001; padding: 24px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        .custom-alert-text { font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px; margin-top: 0; }
+        .btn-alert { background: var(--olive); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 3px 0 var(--olive-dark); width: 100%; transition: 0.1s; text-transform: uppercase; }
+        .btn-alert:active { transform: translateY(3px); box-shadow: none; }
     </style>
 </head>
 <body>
@@ -267,7 +274,34 @@
                 </select>
                 
                 <div id="address_fields" style="display: flex; flex-direction: column; gap: 12px;">
-                    <input type="text" id="order_region" class="checkout-input" placeholder="Область">
+                    <select id="order_region" class="checkout-input">
+                        <option value="" disabled selected>Оберіть область...</option>
+                        <option value="Вінницька область">Вінницька область</option>
+                        <option value="Волинська область">Волинська область</option>
+                        <option value="Дніпропетровська область">Дніпропетровська область</option>
+                        <option value="Донецька область">Донецька область</option>
+                        <option value="Житомирська область">Житомирська область</option>
+                        <option value="Закарпатська область">Закарпатська область</option>
+                        <option value="Запорізька область">Запорізька область</option>
+                        <option value="Івано-Франківська область">Івано-Франківська область</option>
+                        <option value="м. Київ">м. Київ</option>
+                        <option value="Київська область">Київська область</option>
+                        <option value="Кіровоградська область">Кіровоградська область</option>
+                        <option value="Луганська область">Луганська область</option>
+                        <option value="Львівська область">Львівська область</option>
+                        <option value="Миколаївська область">Миколаївська область</option>
+                        <option value="Одеська область">Одеська область</option>
+                        <option value="Полтавська область">Полтавська область</option>
+                        <option value="Рівненська область">Рівненська область</option>
+                        <option value="Сумська область">Сумська область</option>
+                        <option value="Тернопільська область">Тернопільська область</option>
+                        <option value="Харківська область">Харківська область</option>
+                        <option value="Херсонська область">Херсонська область</option>
+                        <option value="Хмельницька область">Хмельницька область</option>
+                        <option value="Черкаська область">Черкаська область</option>
+                        <option value="Чернівецька область">Чернівецька область</option>
+                        <option value="Чернігівська область">Чернігівська область</option>
+                    </select>
                     <div class="form-row">
                         <input type="text" id="order_city" class="checkout-input" placeholder="Місто">
                         <input type="text" inputmode="numeric" pattern="[0-9]*" id="order_branch" class="checkout-input" placeholder="№ Відділення">
@@ -294,9 +328,31 @@
     <div class="lb-counter" id="lb-counter"></div>
 </div>
 
+<div id="customAlertOverlay" class="custom-alert-overlay" onclick="closeAlert()"></div>
+<div id="customAlertBox" class="custom-alert-box">
+    <p id="customAlertText" class="custom-alert-text"></p>
+    <button class="btn-alert" onclick="closeAlert()">ЗРОЗУМІЛО</button>
+</div>
+
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = []; let shopCategories = []; let cart = JSON.parse(localStorage.getItem('smart_cart')) || []; let lbImages = []; let lbIndex = 0;
+
+    // ФУНКЦІЇ ДЛЯ КРАСИВОГО ALERT
+    function showAlert(msg, callback = null) {
+        document.getElementById('customAlertText').innerHTML = msg;
+        document.getElementById('customAlertOverlay').style.display = 'block';
+        document.getElementById('customAlertBox').style.display = 'block';
+        
+        // Якщо передано callback (функція, яку треба виконати після закриття), ми його зберігаємо
+        document.getElementById('customAlertOverlay').onclick = function() { closeAlert(); if(callback) callback(); };
+        document.querySelector('.btn-alert').onclick = function() { closeAlert(); if(callback) callback(); };
+    }
+    
+    function closeAlert() {
+        document.getElementById('customAlertOverlay').style.display = 'none';
+        document.getElementById('customAlertBox').style.display = 'none';
+    }
 
     function formatPhone(input) {
         let val = input.value.replace(/\D/g, ''); if (!val) { input.value = ''; return; }
@@ -324,12 +380,8 @@
             query = sb.from('products').select('*').eq('owner_id', ownerId).in('status', ['В наявності', 'available']).order('created_at', { ascending: false });
             const { data: shopData } = await sb.from('shops').select('*').eq('owner_id', ownerId).single();
             if(shopData) {
-                // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ЗАГОЛОВКА ДЛЯ TELEGRAM
-                const shopName = shopData.shop_name || 'Смарт-Магазин';
-                document.getElementById('shopLogo').innerText = shopName; 
-                document.title = `${shopName} | Вітрина`;
-                document.getElementById('ogTitle').setAttribute('content', 'Завітай у ' + shopName);
-
+                if(shopData.shop_name) { document.getElementById('shopLogo').innerText = shopData.shop_name; document.title = `${shopData.shop_name} | Магазин`; }
+                
                 if(shopData.theme_color && shopData.theme_color !== 'dark') {
                     document.body.classList.add('theme-' + shopData.theme_color);
                     localStorage.setItem('hub_theme', shopData.theme_color);
@@ -389,7 +441,7 @@
             if (existing.qty < p.quantity) {
                 existing.qty += 1;
             } else {
-                alert(`На складі є лише ${p.quantity} шт. цього товару.`);
+                showAlert(`На складі є лише <b>${p.quantity} шт.</b> цього товару.`);
                 return;
             }
         } else { 
@@ -433,7 +485,7 @@
         let max = cart[index].maxQty !== undefined ? cart[index].maxQty : 999; 
         
         if (delta > 0 && newQty > max) {
-            alert(`На складі є лише ${max} шт. цього товару.`);
+            showAlert(`На складі є лише <b>${max} шт.</b> цього товару.`);
             return;
         }
         
@@ -464,11 +516,29 @@
 
     async function submitOrder() {
         const btn = document.getElementById('btnSubmitOrder'); const name = document.getElementById('order_name').value.trim(); const phone = document.getElementById('order_phone').value.trim(); const delivery = document.getElementById('order_delivery').value;
-        if(!name || !phone) return alert("Будь ласка, введіть ім'я та телефон."); if(cart.length === 0) return alert("Кошик порожній!");
-        btn.disabled = true; btn.innerHTML = '⏳ ВІДПРАВКА...';
-
+        if(!name || !phone) return showAlert("⚠️ Будь ласка, введіть ім'я та телефон."); 
+        if(cart.length === 0) return showAlert("⚠️ Кошик порожній!");
+        
         let address = '';
-        if(delivery !== 'Самовивіз') { const region = document.getElementById('order_region').value; const city = document.getElementById('order_city').value; if(delivery === 'Нова Пошта') address = `${region}, ${city}, Відділення НП №${document.getElementById('order_branch').value}`; if(delivery === 'Укрпошта') address = `${region}, ${city}, Індекс: ${document.getElementById('order_index').value}`; }
+        if(delivery !== 'Самовивіз') { 
+            const region = document.getElementById('order_region').value; 
+            const city = document.getElementById('order_city').value.trim(); 
+            if(!region) return showAlert("⚠️ Будь ласка, оберіть область зі списку.");
+            if(!city) return showAlert("⚠️ Будь ласка, вкажіть місто.");
+            
+            if(delivery === 'Нова Пошта') {
+                const branch = document.getElementById('order_branch').value.trim();
+                if(!branch) return showAlert("⚠️ Будь ласка, вкажіть номер відділення Нової Пошти.");
+                address = `${region}, ${city}, Відділення НП №${branch}`; 
+            }
+            if(delivery === 'Укрпошта') {
+                const index = document.getElementById('order_index').value.trim();
+                if(!index) return showAlert("⚠️ Будь ласка, вкажіть поштовий індекс.");
+                address = `${region}, ${city}, Індекс: ${index}`; 
+            }
+        }
+
+        btn.disabled = true; btn.innerHTML = '⏳ ВІДПРАВКА...';
 
         const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
         const surname = document.getElementById('order_surname').value.trim();
@@ -497,8 +567,11 @@
                 });
             }
 
-            alert("🎉 Замовлення успішно оформлено! Продавець зв'яжеться з вами найближчим часом."); cart = []; saveCart(); toggleCart();
-        } catch (e) { console.error("Помилка БД:", e); alert("⚠️ Помилка з'єднання з базою. Перевірте таблицю 'orders' у Supabase."); }
+            showAlert("🎉 Замовлення успішно оформлено! Продавець зв'яжеться з вами найближчим часом.", () => {
+                cart = []; saveCart(); toggleCart();
+            });
+            
+        } catch (e) { console.error("Помилка БД:", e); showAlert("⚠️ Помилка з'єднання з базою. Спробуйте пізніше."); }
         btn.disabled = false; btn.innerHTML = '✅ ПІДТВЕРДИТИ ЗАМОВЛЕННЯ';
     }
 
