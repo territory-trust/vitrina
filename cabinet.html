@@ -67,9 +67,22 @@
         .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s;}
         .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; }
-        .inv-info { flex: 1; overflow: hidden; }
+        .inv-info { flex: 1; overflow: hidden; position: relative; } /* Додано position: relative для правильного позиціонування меню */
         .inv-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
-        .inv-select-cat { width: 100%; max-width: 200px; padding: 6px; background: var(--bg); border: 2px solid var(--input-border); color: var(--olive); border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 6px; font-weight: bold;}
+        
+        /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК КАТЕГОРІЙ ДЛЯ ІНВЕНТАРЮ */
+        .custom-select-wrapper { position: relative; width: 100%; max-width: 200px; margin-bottom: 6px; user-select: none; }
+        .custom-select-trigger { padding: 6px 12px; background: var(--bg); border: 2px solid var(--input-border); color: var(--olive); border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .custom-select-trigger::after { content: '▼'; font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+        .custom-select-wrapper.open .custom-select-trigger { border-color: var(--olive); }
+        .custom-select-wrapper.open .custom-select-trigger::after { transform: rotate(180deg); }
+        .custom-select-options { position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 100; display: none; max-height: 180px; overflow-y: auto; margin-top: 4px; }
+        .custom-select-wrapper.open .custom-select-options { display: block; animation: fadeInDropdown 0.2s ease; }
+        .custom-select-option { padding: 10px 12px; font-size: 13px; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s; font-weight: 500;}
+        .custom-select-option:last-child { border-bottom: none; }
+        .custom-select-option:hover, .custom-select-option.selected { background: rgba(107, 135, 59, 0.1); color: var(--olive); font-weight: bold; }
+        @keyframes fadeInDropdown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
         .inv-actions { display: flex; gap: 8px; align-items: flex-end; border-top: 1px solid var(--border); padding-top: 12px; }
         .inv-col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
         .inv-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -355,7 +368,6 @@
             if (user) {
                 currentUser = user; 
                 
-                // ВСТАВЛЯЄМО ПРАВИЛЬНУ ССИЛКУ ТА ТВОЙ НОВИЙ ТЕКСТ В ТЕЛЕГРАМ-КНОПКУ
                 const shopUrl = window.location.origin + '/shop.html?owner=' + user.id;
                 document.getElementById('shopLink').href = `shop.html?owner=${user.id}`;
                 document.getElementById('shopLinkInput').value = shopUrl;
@@ -423,7 +435,41 @@
         function renderInvCats() { const container = document.getElementById('inv-cat-container'); container.innerHTML = `<button class="cat-btn ${currentInvCat === 'Все' ? 'active' : ''}" onclick="setInvCat('Все')">Всі товари</button>`; let catsToRender = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsToRender.includes("Різне")) catsToRender.push("Різне"); catsToRender.forEach(c => { container.innerHTML += `<button class="cat-btn ${currentInvCat === c ? 'active' : ''}" onclick="setInvCat('${c}')">${c}</button>`; }); }
         function setInvCat(c) { currentInvCat = c; renderInvCats(); filterInventory(); }
         function filterInventory() { const q = document.getElementById('searchInv').value.toLowerCase(); let filtered = inventoryData; if (currentInvCat !== 'Все') filtered = filtered.filter(i => (i.category || 'Різне') === currentInvCat); filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || 'Різне').toLowerCase().includes(q)); renderInventory(filtered); }
-        function renderInventory(list) { const listEl = document.getElementById('inventoryList'); listEl.innerHTML = ''; if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Товарів не знайдено.</p>'; return; } let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsOpts.includes("Різне")) catsOpts.push("Різне"); list.forEach(p => { let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}">`; catsOpts.forEach(c => { let sel = (p.category || 'Різне') === c ? 'selected' : ''; selectHtml += `<option value="${c}" ${sel}>📁 ${c}</option>`; }); selectHtml += `</select>`; listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; }); }
+        
+        function renderInventory(list) { 
+            const listEl = document.getElementById('inventoryList'); 
+            listEl.innerHTML = ''; 
+            if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Товарів не знайдено.</p>'; return; } 
+            
+            let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; 
+            if (!catsOpts.includes("Різне")) catsOpts.push("Різне"); 
+            
+            list.forEach(p => { 
+                let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; 
+                let currentCat = p.category || 'Різне';
+                
+                // 1. Системний прихований select для збереження логіки
+                let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}" style="display:none;">`; 
+                let customOptionsHtml = '';
+                
+                catsOpts.forEach(c => { 
+                    let sel = currentCat === c ? 'selected' : ''; 
+                    selectHtml += `<option value="${c}" ${sel}>${c}</option>`; 
+                    let activeClass = currentCat === c ? 'selected' : '';
+                    customOptionsHtml += `<div class="custom-select-option ${activeClass}" onclick="selectCustomCat('${p.id}', '${c}', this, event)">📁 ${c}</div>`;
+                }); 
+                selectHtml += `</select>`; 
+                
+                // 2. Наша красива UI-обгортка
+                selectHtml += `
+                <div class="custom-select-wrapper" id="custom_wrapper_${p.id}">
+                    <div class="custom-select-trigger" onclick="toggleCustomCat('${p.id}', event)">📁 ${currentCat}</div>
+                    <div class="custom-select-options">${customOptionsHtml}</div>
+                </div>`;
+
+                listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; 
+            }); 
+        }
         
         async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; const oldText = btn.innerText; btn.innerText = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerText = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerText = oldText; btn.disabled = false; }, 1000); } }
         async function deleteItemDb(id) { 
@@ -654,6 +700,32 @@
                 pendingAiData = null;
             }
         }
+
+        // --- НОВІ ФУНКЦІЇ ДЛЯ КАСТОМНОГО ДРОПДАУНУ ---
+        function toggleCustomCat(id, e) {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+                if (w.id !== `custom_wrapper_${id}`) w.classList.remove('open');
+            });
+            document.getElementById(`custom_wrapper_${id}`).classList.toggle('open');
+        }
+
+        function selectCustomCat(id, value, el, e) {
+            e.stopPropagation();
+            const wrapper = document.getElementById(`custom_wrapper_${id}`);
+            wrapper.querySelector('.custom-select-trigger').innerHTML = `📁 ${value}`;
+            wrapper.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            wrapper.classList.remove('open');
+            
+            // ПЕРЕДАЄМО ЗНАЧЕННЯ В ПРИХОВАНИЙ СИСТЕМНИЙ SELECT
+            document.getElementById(`cat_${id}`).value = value;
+        }
+
+        // Закриваємо дропдауни при кліку будь-де на сторінці
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+        });
     </script>
 </body>
 </html>
