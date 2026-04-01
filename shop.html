@@ -76,7 +76,7 @@
         body.theme-ocean .cat-btn { background: #0d2840; color: #7d9cb8; border: 1px solid #7d9cb8; }
         body.theme-ocean .empty-state { background: #0a2235; border-color: #143554; color: #7d9cb8; }
 
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 155px; padding-bottom: 80px; font-size: 16px; transition: background 0.3s, color 0.3s; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding-top: 175px; padding-bottom: 80px; font-size: 16px; transition: background 0.3s, color 0.3s; }
         
         .sticky-header { position: fixed; top: 0; left: 0; width: 100%; background: var(--header-bg); z-index: 100; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); padding-bottom: 8px; transition: background 0.3s; }
         
@@ -124,7 +124,16 @@
         .nav-scroll::-webkit-scrollbar { display: none; }
         .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
         .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive) !important; box-shadow: none !important; cursor: default; }
-        
+
+        /* НОВА СТРІЧКА ПІДКАТЕГОРІЙ */
+        .sub-nav-scroll { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: none; animation: fadeIn 0.2s ease; }
+        .subcat-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 5px 12px; border-radius: 12px; margin-right: 6px; font-size: 12px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.1); }
+        body.theme-light .subcat-btn { border-color: #d1d5db; color: #6b7280; }
+        body.theme-light .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.05); }
+        body.theme-ocean .subcat-btn { border-color: #1a426b; color: #7d9cb8; }
+        body.theme-ocean .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(42, 139, 242, 0.1); }
+
         .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
         .shop-desc { font-size: 14px; color: #aaa; line-height: 1.4; background: var(--panel); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
 
@@ -220,7 +229,7 @@
     <div class="header-main">
         <div class="logo" id="shopLogo">SmartMarket</div>
         <div class="search-container">
-            <input type="text" id="search" class="search-box" placeholder="Пошук товарів..." oninput="filter()" autocomplete="off">
+            <input type="text" id="search" class="search-box" placeholder="Пошук товарів..." oninput="handleSearch()" autocomplete="off">
         </div>
     </div>
     
@@ -229,8 +238,9 @@
     </div>
     
     <div class="nav-scroll" id="cat-container">
-        <button class="cat-btn active" onclick="setCat('Все', this)">Всі товари</button>
+        <button class="cat-btn active" onclick="setMainCat('Все')">Всі товари</button>
     </div>
+    <div class="nav-scroll sub-nav-scroll" id="subcat-container"></div>
 </div>
 
 <div id="shopInfoContainer"></div>
@@ -336,7 +346,12 @@
 
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-    let items = []; let shopCategories = []; let cart = JSON.parse(localStorage.getItem('smart_cart')) || []; let lbImages = []; let lbIndex = 0;
+    let items = []; 
+    let categoryTree = []; // Нова глобальна змінна для дерева категорій
+    let currentMainCat = 'Все';
+    let currentSubCat = null;
+    let cart = JSON.parse(localStorage.getItem('smart_cart')) || []; 
+    let lbImages = []; let lbIndex = 0;
 
     // ФУНКЦІЇ ДЛЯ КРАСИВОГО ALERT
     function showAlert(msg, callback = null) {
@@ -344,7 +359,6 @@
         document.getElementById('customAlertOverlay').style.display = 'block';
         document.getElementById('customAlertBox').style.display = 'block';
         
-        // Якщо передано callback (функція, яку треба виконати після закриття), ми його зберігаємо
         document.getElementById('customAlertOverlay').onclick = function() { closeAlert(); if(callback) callback(); };
         document.querySelector('.btn-alert').onclick = function() { closeAlert(); if(callback) callback(); };
     }
@@ -372,7 +386,7 @@
             headerBtns.innerHTML = `<a href="cabinet.html" class="head-btn back-btn">&lt;&lt;&lt;&lt; НАЗАД У КАБІНЕТ</a>`;
         } else {
             document.getElementById('cartFab').style.display = 'flex'; 
-            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a><a href="ai_hub.html" class="head-btn">🤖 AI-Помічники</a>`;
+            headerBtns.innerHTML = `<a href="landing.html" class="head-btn promo">🚀 Створити магазин</a><a href="https://ai-pilot.com.ua/" class="head-btn smart">🌐 SmartMarket</a>`;
         }
 
         let query;
@@ -389,7 +403,17 @@
                     localStorage.setItem('hub_theme', 'dark');
                 }
                 
-                if(shopData.categories) shopCategories = shopData.categories.split(',').map(c => c.trim()).filter(Boolean);
+                // УМНИЙ ПАРСЕР КАТЕГОРІЙ (JSON або Текст)
+                if(shopData.categories) {
+                    try {
+                        let parsed = JSON.parse(shopData.categories);
+                        if(Array.isArray(parsed)) categoryTree = parsed;
+                    } catch(e) {
+                        let oldCats = shopData.categories.split(',').map(c => c.trim()).filter(Boolean);
+                        categoryTree = oldCats.map(c => ({ name: c, subs: [] }));
+                    }
+                }
+
                 if(shopData.description) document.getElementById('shopInfoContainer').innerHTML = `<div class="shop-info-block"><div class="shop-desc">${shopData.description}</div></div>`;
             }
         } else { query = sb.from('products').select('*').in('status', ['В наявності', 'available']).order('created_at', { ascending: false }); }
@@ -408,12 +432,99 @@
     function lbPrev() { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; updateLightboxView(); }
     function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
 
+    // --- ЛОГІКА ДВОРІВНЕВОЇ ЛЕНТИ КАТЕГОРІЙ ---
     function renderCats() {
-        const container = document.getElementById('cat-container'); container.innerHTML = `<button class="cat-btn active" onclick="setCat('Все', this)">Всі товари</button>`;
-        let catsToRender = shopCategories.length > 0 ? shopCategories : [...new Set(items.map(i => i.category).filter(Boolean))];
-        if (!catsToRender.includes("Різне")) catsToRender.push("Різне");
-        catsToRender.forEach(c => container.innerHTML += `<button class="cat-btn" onclick="setCat('${c}', this)">${c}</button>`);
+        const container = document.getElementById('cat-container'); 
+        container.innerHTML = `<button class="cat-btn ${currentMainCat === 'Все' ? 'active' : ''}" onclick="setMainCat('Все')">Всі товари</button>`;
+        
+        let existingNames = categoryTree.map(c => c.name);
+        
+        // Додаємо категорії з товарів, якщо їх забули вказати в налаштуваннях
+        items.forEach(i => {
+            let catName = i.category || 'Різне';
+            if (!existingNames.includes(catName)) {
+                existingNames.push(catName);
+                categoryTree.push({ name: catName, subs: [] });
+            }
+        });
+        if (!existingNames.includes('Різне')) categoryTree.push({ name: 'Різне', subs: [] });
+
+        categoryTree.forEach(c => {
+            container.innerHTML += `<button class="cat-btn" onclick="setMainCat('${c.name}')">${c.name}</button>`;
+        });
     }
+
+    function setMainCat(catName) {
+        currentMainCat = catName;
+        currentSubCat = null;
+        
+        // Оновлюємо активну кнопку в першій стрічці
+        const buttons = document.getElementById('cat-container').querySelectorAll('.cat-btn');
+        buttons.forEach(b => {
+            if (b.innerText === catName || (catName === 'Все' && b.innerText === 'Всі товари')) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        // Управління другою стрічкою (Підкатегорії)
+        const subContainer = document.getElementById('subcat-container');
+        if (catName === 'Все') {
+            subContainer.style.display = 'none';
+        } else {
+            let selectedCatTree = categoryTree.find(c => c.name === catName);
+            if (selectedCatTree && selectedCatTree.subs && selectedCatTree.subs.length > 0) {
+                subContainer.style.display = 'block';
+                subContainer.innerHTML = `<button class="subcat-btn active" onclick="setSubCat(null)">Всі</button>`;
+                selectedCatTree.subs.forEach(s => {
+                    let sName = typeof s === 'string' ? s : s.name;
+                    subContainer.innerHTML += `<button class="subcat-btn" onclick="setSubCat('${sName}')">${sName}</button>`;
+                });
+            } else {
+                subContainer.style.display = 'none';
+            }
+        }
+        applyFilters();
+    }
+
+    function setSubCat(subName) {
+        currentSubCat = subName;
+        const buttons = document.getElementById('subcat-container').querySelectorAll('.subcat-btn');
+        buttons.forEach(b => {
+            if (b.innerText === subName || (subName === null && b.innerText === 'Всі')) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+        applyFilters();
+    }
+
+    function handleSearch() {
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchQ = document.getElementById('search').value.toLowerCase();
+        let filtered = items;
+
+        if (currentMainCat !== 'Все') {
+            filtered = filtered.filter(i => (i.category || 'Різне') === currentMainCat);
+            
+            // Якщо обрана підкатегорія (для майбутньої підтримки поля subcategory)
+            if (currentSubCat) {
+                filtered = filtered.filter(i => i.subcategory === currentSubCat);
+            }
+        }
+
+        if (searchQ) {
+            filtered = filtered.filter(i => (`${i.title} ${i.category} ${i.subcategory || ''}`).toLowerCase().includes(searchQ));
+        }
+
+        render(filtered);
+    }
+    // ----------------------------------------
 
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
@@ -575,8 +686,6 @@
         btn.disabled = false; btn.innerHTML = '✅ ПІДТВЕРДИТИ ЗАМОВЛЕННЯ';
     }
 
-    function filter() { const v = document.getElementById('search').value.toLowerCase(); render(items.filter(i => (`${i.title} ${i.category}`).toLowerCase().includes(v))); }
-    function setCat(c, b) { document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active')); b.classList.add('active'); render(c === 'Все' ? items : items.filter(i => (i.category || 'Різне') === c)); }
     function toggleDropdown() { document.getElementById("aiDropdown").classList.toggle("show"); }
     window.onclick = function(event) { if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.lightbox')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } } } }
 </script>
