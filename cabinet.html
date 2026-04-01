@@ -64,15 +64,23 @@
         .cat-btn { background: var(--card-bg); color: var(--text); border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
         .cat-btn.active { background: var(--olive); color: #fff; border-color: var(--olive); box-shadow: none; cursor: default;}
         
-        /* ЗМІНИ ДЛЯ КОРЕКТНОГО ВІДОБРАЖЕННЯ МЕНЮ */
+        /* НОВА СТРІЧКА ПІДКАТЕГОРІЙ НА СКЛАДІ */
+        .sub-nav-scroll { margin-top: -5px; padding-top: 8px; border-top: 1px dashed var(--border); display: none; animation: fadeIn 0.2s ease; margin-bottom: 15px; }
+        .subcat-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 5px 12px; border-radius: 12px; margin-right: 6px; font-size: 12px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.1); }
+        body.theme-light .subcat-btn { border-color: #d1d5db; color: #6b7280; }
+        body.theme-light .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.05); }
+        body.theme-ocean .subcat-btn { border-color: #1a426b; color: #7d9cb8; }
+        body.theme-ocean .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(42, 139, 242, 0.1); }
+
         .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s; position: relative; z-index: 1;}
-        .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
-        .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; }
+        .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+        .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; margin-top: 4px; }
         .inv-info { flex: 1; min-width: 0; } 
-        .inv-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+        .inv-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
         
         /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК КАТЕГОРІЙ */
-        .custom-select-wrapper { position: relative; width: 100%; max-width: 200px; margin-bottom: 6px; user-select: none; }
+        .custom-select-wrapper { position: relative; width: 100%; max-width: 200px; user-select: none; }
         .custom-select-trigger { padding: 6px 12px; background: var(--bg); border: 2px solid var(--input-border); color: var(--olive); border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .custom-select-trigger::after { content: '▼'; font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
         .custom-select-wrapper.open .custom-select-trigger { border-color: var(--olive); }
@@ -158,6 +166,7 @@
         <div id="tab-inventory" class="section">
             <h2>📦 Склад та Керування</h2>
             <div class="nav-scroll" id="inv-cat-container"></div>
+            <div class="nav-scroll sub-nav-scroll" id="inv-subcat-container"></div>
             <div class="input-group"><input type="text" id="searchInv" placeholder="🔎 Пошук по складу..." oninput="filterInventory()" autocomplete="new-password"></div>
             <div id="inventoryList" style="margin-top: 15px;"><p style="text-align:center; color:var(--text-muted);">Завантаження...</p></div>
         </div>
@@ -319,13 +328,14 @@
         }
 
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let currentInvCat = 'Все'; let currentOrders = []; 
+        let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let currentOrders = []; 
         let pendingAiData = null;
         let pendingOrderId = null; let pendingOrderPhone = null;
         
-        // ЗМІННІ ДЛЯ КАТЕГОРІЙ
-        let shopCategories = []; // Старий формат (тільки назви головних) для сумісності зі Складом
-        let categoryTree = [];   // Новий формат: [{ id: 1, name: 'Взуття', subs: [{id: 11, name: 'Кросівки'}] }]
+        let shopCategories = []; 
+        let categoryTree = [];   
+        let currentInvCat = 'Все';
+        let currentInvSubCat = null;
 
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
@@ -384,7 +394,6 @@
             window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
 
-        // --- ВІЗУАЛЬНИЙ КОНСТРУКТОР КАТЕГОРІЙ ---
         function renderCategoryBuilder() {
             const container = document.getElementById('categoryBuilderContainer');
             container.innerHTML = '';
@@ -417,11 +426,9 @@
         function addBuilderCategory() { categoryTree.push({ id: Date.now(), name: '', subs: [] }); renderCategoryBuilder(); }
         function delBuilderCat(id) { categoryTree = categoryTree.filter(c => c.id !== id); renderCategoryBuilder(); }
         function updateBuilderCat(id, val) { let c = categoryTree.find(c => c.id === id); if(c) c.name = val; }
-
         function addBuilderSub(catId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs.push({ id: Date.now(), name: '' }); renderCategoryBuilder(); }
         function delBuilderSub(catId, subId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs = c.subs.filter(s => s.id !== subId); renderCategoryBuilder(); }
         function updateBuilderSub(catId, subId, val) { let c = categoryTree.find(c => c.id === catId); if(c) { let s = c.subs.find(s => s.id === subId); if(s) s.name = val; } }
-        // ----------------------------------------
 
         window.onload = async () => {
             const { data: { user } } = await sb.auth.getUser();
@@ -443,17 +450,14 @@
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
                     if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('neutral', false); }
                     
-                    // УМНИЙ ПАРСЕР КАТЕГОРІЙ (Сумісність старих і нових даних)
                     if(shop.categories) {
                         try {
-                            // Пробуємо прочитати як новий формат (JSON)
                             let parsed = JSON.parse(shop.categories);
                             if(Array.isArray(parsed)) {
                                 categoryTree = parsed.map((c, i) => ({ id: Date.now()+i, name: c.name, subs: (c.subs||[]).map((s, j) => ({id: Date.now()+100+j, name: s})) }));
-                                shopCategories = parsed.map(c => c.name); // Для старого складу
+                                shopCategories = parsed.map(c => c.name);
                             }
                         } catch(e) {
-                            // Читаємо старий формат (через кому) і автоматично конвертуємо
                             let oldCats = shop.categories.split(',').map(c => c.trim()).filter(Boolean);
                             categoryTree = oldCats.map((c, i) => ({ id: Date.now()+i, name: c, subs: [] }));
                             shopCategories = oldCats;
@@ -499,70 +503,184 @@
             const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
             const curTheme = document.getElementById('set_theme').value;
             
-            // Збираємо і чистимо дерево категорій перед збереженням
             const cleanTree = categoryTree
                 .map(c => ({ name: c.name.trim(), subs: c.subs.map(s => s.name.trim()).filter(Boolean) }))
                 .filter(c => c.name !== '');
                 
             const jsonCategories = JSON.stringify(cleanTree);
-            
-            const updateData = { 
-                shop_name: document.getElementById('set_shopName').value.trim(), 
-                description: document.getElementById('set_description').value.trim(), 
-                categories: jsonCategories, 
-                theme_color: curTheme 
-            };
+            const updateData = { shop_name: document.getElementById('set_shopName').value.trim(), description: document.getElementById('set_description').value.trim(), categories: jsonCategories, theme_color: curTheme };
             
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
             if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
                 if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = updateData.shop_name;
-                
-                // Оновлюємо старий масив для сумісності складу під час Етапу 1
                 shopCategories = cleanTree.map(c => c.name);
-                
                 btn.innerHTML = '✅ УСПІШНО ЗБЕРЕЖЕНО'; btn.style.background = 'var(--olive-dark)'; setTimeout(() => { btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.style.background = ''; btn.disabled = false; }, 2000);
             }
         }
 
         async function loadInventory() { const { data } = await sb.from('products').select('*').eq('owner_id', currentUser.id).order('created_at', { ascending: false }); if(data) { inventoryData = data; renderInvCats(); filterInventory(); } }
-        function renderInvCats() { const container = document.getElementById('inv-cat-container'); container.innerHTML = `<button class="cat-btn ${currentInvCat === 'Все' ? 'active' : ''}" onclick="setInvCat('Все')">Всі товари</button>`; let catsToRender = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; if (!catsToRender.includes("Різне")) catsToRender.push("Різне"); catsToRender.forEach(c => { container.innerHTML += `<button class="cat-btn ${currentInvCat === c ? 'active' : ''}" onclick="setInvCat('${c}')">${c}</button>`; }); }
-        function setInvCat(c) { currentInvCat = c; renderInvCats(); filterInventory(); }
-        function filterInventory() { const q = document.getElementById('searchInv').value.toLowerCase(); let filtered = inventoryData; if (currentInvCat !== 'Все') filtered = filtered.filter(i => (i.category || 'Різне') === currentInvCat); filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || 'Різне').toLowerCase().includes(q)); renderInventory(filtered); }
         
+        function renderInvCats() { 
+            const container = document.getElementById('inv-cat-container'); 
+            container.innerHTML = `<button class="cat-btn ${currentInvCat === 'Все' ? 'active' : ''}" onclick="setInvCat('Все')">Всі товари</button>`; 
+            
+            categoryTree.forEach(c => { 
+                container.innerHTML += `<button class="cat-btn ${currentInvCat === c.name ? 'active' : ''}" onclick="setInvCat('${c.name}')">${c.name}</button>`; 
+            }); 
+            
+            let hasOther = inventoryData.some(i => { let cat = i.category || 'Різне'; return !categoryTree.find(c => c.name === cat); });
+            if (hasOther && !categoryTree.find(c => c.name === 'Різне')) {
+                container.innerHTML += `<button class="cat-btn ${currentInvCat === 'Різне' ? 'active' : ''}" onclick="setInvCat('Різне')">Різне</button>`;
+            }
+        }
+        
+        function setInvCat(c) { 
+            currentInvCat = c; 
+            currentInvSubCat = null;
+            renderInvCats(); 
+            
+            const subContainer = document.getElementById('inv-subcat-container');
+            if (c === 'Все' || c === 'Різне') {
+                subContainer.style.display = 'none';
+            } else {
+                let selectedCatTree = categoryTree.find(cat => cat.name === c);
+                if (selectedCatTree && selectedCatTree.subs && selectedCatTree.subs.length > 0) {
+                    subContainer.style.display = 'block';
+                    subContainer.innerHTML = `<button class="subcat-btn active" onclick="setInvSubCat(null)">Всі</button>`;
+                    selectedCatTree.subs.forEach(s => {
+                        subContainer.innerHTML += `<button class="subcat-btn" onclick="setInvSubCat('${s.name}')">${s.name}</button>`;
+                    });
+                } else {
+                    subContainer.style.display = 'none';
+                }
+            }
+            filterInventory(); 
+        }
+
+        function setInvSubCat(subName) {
+            currentInvSubCat = subName;
+            const buttons = document.getElementById('inv-subcat-container').querySelectorAll('.subcat-btn');
+            buttons.forEach(b => {
+                if (b.innerText === subName || (subName === null && b.innerText === 'Всі')) { b.classList.add('active'); } 
+                else { b.classList.remove('active'); }
+            });
+            filterInventory();
+        }
+
+        function filterInventory() { 
+            const q = document.getElementById('searchInv').value.toLowerCase(); 
+            let filtered = inventoryData; 
+            if (currentInvCat !== 'Все') {
+                filtered = filtered.filter(i => (i.category || 'Різне') === currentInvCat);
+                if (currentInvSubCat) {
+                    filtered = filtered.filter(i => i.subcategory === currentInvSubCat);
+                }
+            } 
+            filtered = filtered.filter(i => (i.title || '').toLowerCase().includes(q) || (i.category || 'Різне').toLowerCase().includes(q) || (i.subcategory || '').toLowerCase().includes(q)); 
+            renderInventory(filtered); 
+        }
+        
+        function renderSubcatDropdownForProduct(pId, catName, selectedSub) {
+            const wrapper = document.getElementById(`custom_sub_wrapper_${pId}`);
+            const input = document.getElementById(`subcat_${pId}`);
+            const catObj = categoryTree.find(c => c.name === catName);
+
+            if (catObj && catObj.subs && catObj.subs.length > 0) {
+                wrapper.style.display = 'block';
+                let validSub = catObj.subs.find(s => s.name === selectedSub) ? selectedSub : '';
+                input.value = validSub;
+
+                let optsHtml = `<div class="custom-select-option ${validSub === '' ? 'selected' : ''}" onclick="selectCustomSub('${pId}', '', this, event)">Не обрано</div>`;
+                catObj.subs.forEach(s => {
+                    let sel = validSub === s.name ? 'selected' : '';
+                    optsHtml += `<div class="custom-select-option ${sel}" onclick="selectCustomSub('${pId}', '${s.name}', this, event)">↳ ${s.name}</div>`;
+                });
+
+                wrapper.innerHTML = `
+                    <div class="custom-select-trigger" onclick="toggleDropdownCustom('custom_sub_wrapper_${pId}', event)">↳ ${validSub || 'Оберіть підкатегорію'}</div>
+                    <div class="custom-select-options">${optsHtml}</div>
+                `;
+            } else {
+                wrapper.style.display = 'none';
+                input.value = '';
+                wrapper.innerHTML = '';
+            }
+        }
+
         function renderInventory(list) { 
             const listEl = document.getElementById('inventoryList'); 
             listEl.innerHTML = ''; 
             if(list.length === 0) { listEl.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Товарів не знайдено.</p>'; return; } 
             
-            let catsOpts = shopCategories.length > 0 ? [...shopCategories] : [...new Set(inventoryData.map(i => i.category).filter(Boolean))]; 
-            if (!catsOpts.includes("Різне")) catsOpts.push("Різне"); 
-            
             list.forEach(p => { 
                 let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || ''; 
                 let currentCat = p.category || 'Різне';
+                let currentSub = p.subcategory || '';
                 
-                let selectHtml = `<select class="inv-select-cat" id="cat_${p.id}" style="display:none;">`; 
                 let customOptionsHtml = '';
-                
-                catsOpts.forEach(c => { 
-                    let sel = currentCat === c ? 'selected' : ''; 
-                    selectHtml += `<option value="${c}" ${sel}>${c}</option>`; 
-                    let activeClass = currentCat === c ? 'selected' : '';
-                    customOptionsHtml += `<div class="custom-select-option ${activeClass}" onclick="selectCustomCat('${p.id}', '${c}', this, event)">📁 ${c}</div>`;
+                categoryTree.forEach(c => { 
+                    let activeClass = currentCat === c.name ? 'selected' : '';
+                    customOptionsHtml += `<div class="custom-select-option ${activeClass}" onclick="selectCustomCat('${p.id}', '${c.name}', this, event)">📁 ${c.name}</div>`;
                 }); 
-                selectHtml += `</select>`; 
+                let hasOther = categoryTree.find(c => c.name === 'Різне');
+                if(!hasOther) {
+                    let activeClass = currentCat === 'Різне' ? 'selected' : '';
+                    customOptionsHtml += `<div class="custom-select-option ${activeClass}" onclick="selectCustomCat('${p.id}', 'Різне', this, event)">📁 Різне</div>`;
+                }
                 
-                let wrapperHtml = `
+                let catWrapperHtml = `
                 <div class="custom-select-wrapper" id="custom_wrapper_${p.id}">
-                    <div class="custom-select-trigger" onclick="toggleCustomCat('${p.id}', event)">📁 ${currentCat}</div>
+                    <div class="custom-select-trigger" onclick="toggleDropdownCustom('custom_wrapper_${p.id}', event)">📁 ${currentCat}</div>
                     <div class="custom-select-options">${customOptionsHtml}</div>
                 </div>`;
+                
+                let subWrapperHtml = `<div class="custom-select-wrapper" id="custom_sub_wrapper_${p.id}" style="display:none;"></div>`;
 
-                listEl.innerHTML += `<div class="inv-item" id="item_${p.id}"><div class="inv-top"><img src="${imgUrl}" class="inv-img"><div class="inv-info"><div class="inv-title">${p.title || 'Без назви'}</div>${selectHtml}${wrapperHtml}</div></div><div class="inv-actions"><div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div><div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div><button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button><button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button></div></div>`; 
+                listEl.innerHTML += `
+                <div class="inv-item" id="item_${p.id}">
+                    <div class="inv-top">
+                        <img src="${imgUrl}" class="inv-img">
+                        <div class="inv-info">
+                            <div class="inv-title">${p.title || 'Без назви'}</div>
+                            <div style="display:flex; flex-direction:column; gap:4px; max-width:200px;">
+                                ${catWrapperHtml}
+                                ${subWrapperHtml}
+                            </div>
+                            <input type="hidden" id="cat_${p.id}" value="${currentCat}">
+                            <input type="hidden" id="subcat_${p.id}" value="${currentSub}">
+                        </div>
+                    </div>
+                    <div class="inv-actions">
+                        <div class="inv-col"><span class="inv-label">Ціна</span><input type="number" class="inv-input" id="price_${p.id}" value="${p.price}"></div>
+                        <div class="inv-col"><span class="inv-label">Залишок</span><input type="number" class="inv-input" id="qty_${p.id}" value="${p.quantity || 0}"></div>
+                        <button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button>
+                        <button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button>
+                    </div>
+                </div>`; 
             }); 
+            
+            // Ініціалізуємо підкатегорії після рендеру
+            list.forEach(p => { renderSubcatDropdownForProduct(p.id, p.category || 'Різне', p.subcategory || ''); });
         }
         
-        async function saveItemDb(id) { const btn = document.getElementById(`btn_${id}`); const pr = document.getElementById(`price_${id}`).value; const qt = document.getElementById(`qty_${id}`).value; const cat = document.getElementById(`cat_${id}`).value; const oldText = btn.innerText; btn.innerText = '⏳'; btn.disabled = true; const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat }).eq('id', id); if(!error) { btn.innerText = '✅'; const item = inventoryData.find(i => i.id === id); if(item) { item.price = pr; item.quantity = qt; item.category = cat; } setTimeout(() => { btn.innerText = oldText; btn.disabled = false; }, 1000); } }
+        async function saveItemDb(id) { 
+            const btn = document.getElementById(`btn_${id}`); 
+            const pr = document.getElementById(`price_${id}`).value; 
+            const qt = document.getElementById(`qty_${id}`).value; 
+            const cat = document.getElementById(`cat_${id}`).value; 
+            const subcat = document.getElementById(`subcat_${id}`).value; 
+            
+            const oldText = btn.innerText; btn.innerText = '⏳'; btn.disabled = true; 
+            const { error } = await sb.from('products').update({ price: parseFloat(pr), quantity: parseInt(qt), category: cat, subcategory: subcat }).eq('id', id); 
+            
+            if(!error) { 
+                btn.innerText = '✅'; 
+                const item = inventoryData.find(i => i.id === id); 
+                if(item) { item.price = pr; item.quantity = qt; item.category = cat; item.subcategory = subcat; } 
+                setTimeout(() => { btn.innerText = oldText; btn.disabled = false; }, 1000); 
+            } 
+        }
+
         async function deleteItemDb(id) { 
             if(!confirm("Ви дійсно хочете видалити цей товар зі складу?")) return;
             const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); 
@@ -642,8 +760,9 @@
             if (error) { container.innerHTML = '<p style="color:#ff4444; text-align:center;">Помилка завантаження.</p>'; return; }
             if (!orders || orders.length === 0) { container.innerHTML = '<div style="text-align:center; padding: 40px; color:var(--text-muted); border: 1px dashed var(--card-border); border-radius: 12px;">Немає виконаних замовлень.</div>'; return; }
 
-            const { data: prods } = await sb.from('products').select('id, category').eq('owner_id', currentUser.id);
-            let catMap = {}; if (prods) prods.forEach(p => catMap[p.id] = p.category || 'Різне');
+            const { data: prods } = await sb.from('products').select('id, category, subcategory').eq('owner_id', currentUser.id);
+            let catMap = {}; 
+            if (prods) prods.forEach(p => catMap[p.id] = { cat: p.category || 'Різне', sub: p.subcategory || '' });
 
             let totalRevenue = 0; let totalOrders = orders.length; 
             let itemSales = {}; let catSales = {};
@@ -659,14 +778,40 @@
                 if (orderItems && Array.isArray(orderItems)) {
                     orderItems.forEach(item => {
                         if (!itemSales[item.title]) itemSales[item.title] = 0; itemSales[item.title] += item.qty;
-                        let c = catMap[item.id] || 'Різне'; if (!catSales[c]) catSales[c] = 0; catSales[c] += item.qty;
+                        
+                        let cData = catMap[item.id] || { cat: 'Різне', sub: '' };
+                        if (!catSales[cData.cat]) catSales[cData.cat] = { total: 0, subs: {} };
+                        catSales[cData.cat].total += item.qty;
+
+                        if (cData.sub) {
+                            if (!catSales[cData.cat].subs[cData.sub]) catSales[cData.cat].subs[cData.sub] = 0;
+                            catSales[cData.cat].subs[cData.sub] += item.qty;
+                        }
                     });
                 }
             });
 
-            let sortedCats = Object.entries(catSales).sort((a, b) => b[1] - a[1]); let maxQtyCats = sortedCats.length > 0 ? sortedCats[0][1] : 1;
+            let sortedCats = Object.entries(catSales).sort((a, b) => b[1].total - a[1].total); 
+            let maxQtyCats = sortedCats.length > 0 ? sortedCats[0][1].total : 1;
             let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
-            sortedCats.forEach(([cat, qty]) => { let percent = Math.round((qty / maxQtyCats) * 100); catsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600;">📁 ${cat}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; });
+            
+            sortedCats.forEach(([cat, data]) => { 
+                let percent = Math.round((data.total / maxQtyCats) * 100); 
+                catsHtml += `<div style="margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;">
+                        <span style="color:var(--text); font-weight:600;">📁 ${cat}</span>
+                        <span style="color:var(--olive); font-weight:bold;">${data.total} шт.</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden; margin-bottom: 6px;">
+                        <div style="width:${percent}%; height:100%; background:var(--olive);"></div>
+                    </div>`;
+                    
+                let sortedSubs = Object.entries(data.subs).sort((a,b)=> b[1] - a[1]);
+                sortedSubs.forEach(([sub, subQty]) => {
+                    catsHtml += `<div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-muted); margin-top:4px; padding-left: 15px;"><span>↳ ${sub}</span><span>${subQty} шт.</span></div>`;
+                });
+                catsHtml += `</div>`;
+            });
 
             let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]); let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
             let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продані товари (шт.)</h3>';
@@ -720,7 +865,7 @@
                     let finalQty = parseInt(qtInput.value) || 1;
 
                     const { data: newProduct, error: dbErr } = await sb.from('products').insert([{ 
-                        title: pendingAiData.title, category: pendingAiData.category, price: finalPrice, 
+                        title: pendingAiData.title, category: pendingAiData.category, subcategory: pendingAiData.subcategory || null, price: finalPrice, 
                         quantity: finalQty, images: uploadedImageUrls, status: 'available', owner_id: currentUser.id 
                     }]).select();
                     
@@ -756,9 +901,7 @@
             btn.disabled = true; document.getElementById('status').innerText = '';
             
             try {
-                let catInstruction = "Визнач категорію";
-                // На Етапі 1 ми передаємо ІІ тільки головні категорії для простоти, підкатегорію ми налаштуємо на Етапі 2
-                if (shopCategories.length > 0) catInstruction = `ОБОВ'ЯЗКОВО вибери ОДНУ категорію суворо з цього списку: [${shopCategories.join(', ')}]. Якщо не підходить, пиши "Різне".`;
+                let treeContext = categoryTree.map(c => `${c.name} (Підкатегорії: ${c.subs.map(s => s.name).join(', ') || 'немає'})`).join(' | ');
 
                 log("⏳ Оптимізація фотографій...");
                 const c1 = await compressImg(selectedFiles[0]); const c2 = await compressImg(selectedFiles[1]); const c3 = await compressImg(selectedFiles[2]);
@@ -767,7 +910,7 @@
                 uploadedImageUrls = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ...");
-                const promptText = `Ти досвідчений експерт з продажу. Проаналізуй фото та поверни JSON: {"title": "Назва", "category": "${catInstruction}", "description": "Напиши об'ємний, діловий та продаючий опис. Розкажи про характеристики та переваги. Використовуй <br><br> для абзаців. УВАГА: КАТЕГОРИЧНО ЗАБОРОНЕНО використовувати будь-які емодзі (смайлики) в тексті!", "rec_price": "Ціна (тільки цифри)"}. Мова: українська. Без markdown.`;
+                const promptText = `Ти експерт з продажу. Структура: [${treeContext}].\nПоверни JSON: {"title": "Назва", "category": "Головна категорія зі структури (або 'Різне')", "subcategory": "Підкатегорія зі структури (або порожньо)", "description": "Продаючий опис без емодзі. Використовуй <br><br> для абзаців.", "rec_price": "Ціна (тільки цифри)"}. Мова: українська. Без markdown.`;
                 
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
                 if (aiError) throw new Error(aiError.message);
@@ -777,10 +920,10 @@
                 
                 let finalAiPrice = prInput.value ? parseFloat(prInput.value) : (parseFloat(ai.rec_price) || 0);
                 
-                pendingAiData = { title: ai.title, category: ai.category, description: ai.description, price: finalAiPrice };
+                pendingAiData = { title: ai.title, category: ai.category, subcategory: ai.subcategory || '', description: ai.description, price: finalAiPrice };
                 prInput.value = finalAiPrice; 
 
-                log(`✅ Аналіз завершено!\n\nНазва: ${ai.title}\nКатегорія: ${ai.category}\nЦіна: ${finalAiPrice} грн.\n\n⚠️ Перевірте ціну у полі вище. Якщо згодні — натисніть кнопку "Підтвердити".`);
+                log(`✅ Аналіз завершено!\n\nНазва: ${ai.title}\nКатегорія: ${ai.category} ${ai.subcategory ? '-> ' + ai.subcategory : ''}\nЦіна: ${finalAiPrice} грн.\n\n⚠️ Перевірте ціну у полі вище. Якщо згодні — натисніть кнопку "Підтвердити".`);
                 
                 btn.innerHTML = '✅ ПІДТВЕРДИТИ ТА ОПУБЛІКУВАТИ';
                 btn.style.background = '#8bb34d';
@@ -793,16 +936,17 @@
             }
         }
 
-        function toggleCustomCat(id, e) {
+        // --- УПРАВЛІННЯ КАСТОМНИМИ ДРОПДАУНАМИ НА СКЛАДІ ---
+        function toggleDropdownCustom(wrapperId, e) {
             e.stopPropagation();
             document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-                if (w.id !== `custom_wrapper_${id}`) {
+                if (w.id !== wrapperId) {
                     w.classList.remove('open');
                     const parent = w.closest('.inv-item');
                     if (parent) parent.style.zIndex = '1';
                 }
             });
-            const wrapper = document.getElementById(`custom_wrapper_${id}`);
+            const wrapper = document.getElementById(wrapperId);
             const parent = wrapper.closest('.inv-item');
             if (wrapper.classList.contains('open')) {
                 wrapper.classList.remove('open');
@@ -825,6 +969,21 @@
             if (parent) parent.style.zIndex = '1';
             
             document.getElementById(`cat_${id}`).value = value;
+            renderSubcatDropdownForProduct(id, value, '');
+        }
+
+        function selectCustomSub(id, value, el, e) {
+            e.stopPropagation();
+            const wrapper = document.getElementById(`custom_sub_wrapper_${id}`);
+            wrapper.querySelector('.custom-select-trigger').innerHTML = `↳ ${value || 'Оберіть підкатегорію'}`;
+            wrapper.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            wrapper.classList.remove('open');
+            
+            const parent = wrapper.closest('.inv-item');
+            if (parent) parent.style.zIndex = '1';
+            
+            document.getElementById(`subcat_${id}`).value = value;
         }
 
         document.addEventListener('click', () => {
