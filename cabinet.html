@@ -68,7 +68,7 @@
         .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s; position: relative; z-index: 1;}
         .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
         .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; }
-        .inv-info { flex: 1; min-width: 0; } /* min-width: 0 замість overflow: hidden для гнучких блоків */
+        .inv-info { flex: 1; min-width: 0; } 
         .inv-title { font-weight: bold; font-size: 14px; margin-bottom: 6px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
         
         /* КАСТОМНИЙ ВИПАДАЮЧИЙ СПИСОК КАТЕГОРІЙ */
@@ -131,6 +131,20 @@
         .pwa-text { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; line-height: 1.3; flex: 1; min-width: 180px; }
         .pwa-btn { background: transparent; border: 1px solid var(--pwa-accent); color: var(--pwa-accent); padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.2s; }
         .pwa-btn:active { opacity: 0.7; }
+
+        /* КОНСТРУКТОР КАТЕГОРІЙ */
+        .cat-builder-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
+        .cat-builder-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .cat-builder-header input { flex: 1; font-weight: bold; font-size: 16px; border-color: var(--olive) !important; background: rgba(107,135,59,0.05); box-shadow: none;}
+        .cat-del-btn { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); border-radius: 8px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; transition: 0.2s;}
+        .cat-del-btn:active { transform: scale(0.95); }
+        .subcat-list { display: flex; flex-direction: column; gap: 8px; padding-left: 20px; border-left: 2px dashed var(--border); margin-left: 10px; margin-bottom: 10px; }
+        .subcat-item { display: flex; gap: 10px; align-items: center; }
+        .subcat-item input { flex: 1; font-size: 14px; padding: 10px; box-shadow: none;}
+        .subcat-del-btn { background: transparent; color: #ff4444; border: none; font-size: 18px; cursor: pointer; padding: 5px; transition: 0.2s;}
+        .subcat-del-btn:active { transform: scale(0.9); }
+        .btn-add-sub { background: transparent; border: 1px dashed var(--olive); color: var(--olive); font-size: 13px; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; width: fit-content; transition: 0.2s; margin-top: 5px;}
+        .btn-add-sub:active { background: rgba(107,135,59,0.1); }
     </style>
 </head>
 <body>
@@ -199,9 +213,11 @@
                 <div class="input-group"><label>Назва магазину:</label><input type="text" id="set_shopName" placeholder="Наприклад: КАНЦЛЕР"></div>
                 
                 <div class="input-group">
-                    <label style="font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 5px;">Категорії Товарів (відображаються на Вашій Вітрині):</label>
-                    <div class="cat-instruction-box">Впишіть назви категорій через кому, наприклад: зошити, ручки, папки і т.д. (можна доповнити, виправити в будь-який момент).</div>
-                    <textarea id="set_categories" placeholder="Електроніка, Взуття, Інше..."></textarea>
+                    <label style="font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 5px;">Категорії та Підкатегорії:</label>
+                    <div class="cat-instruction-box">Створіть зручну структуру для покупців. Додавайте головні категорії (наприклад: Взуття) та підкатегорії до них (Кросівки, Черевики).</div>
+                    
+                    <div id="categoryBuilderContainer"></div>
+                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 10px; background: transparent; border: 2px dashed var(--olive); color: var(--olive); box-shadow: none; padding: 12px;">➕ ДОДАТИ ГОЛОВНУ КАТЕГОРІЮ</button>
                 </div>
                 
                 <div class="input-group"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
@@ -303,9 +319,13 @@
         }
 
         const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
-        let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let shopCategories = []; let currentInvCat = 'Все'; let currentOrders = []; 
+        let selectedFiles = [null, null, null]; let currentUser = null; let inventoryData = []; let currentInvCat = 'Все'; let currentOrders = []; 
         let pendingAiData = null;
         let pendingOrderId = null; let pendingOrderPhone = null;
+        
+        // ЗМІННІ ДЛЯ КАТЕГОРІЙ
+        let shopCategories = []; // Старий формат (тільки назви головних) для сумісності зі Складом
+        let categoryTree = [];   // Новий формат: [{ id: 1, name: 'Взуття', subs: [{id: 11, name: 'Кросівки'}] }]
 
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
@@ -364,6 +384,45 @@
             window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
 
+        // --- ВІЗУАЛЬНИЙ КОНСТРУКТОР КАТЕГОРІЙ ---
+        function renderCategoryBuilder() {
+            const container = document.getElementById('categoryBuilderContainer');
+            container.innerHTML = '';
+            
+            categoryTree.forEach(cat => {
+                let subsHtml = '';
+                cat.subs.forEach(sub => {
+                    subsHtml += `
+                    <div class="subcat-item">
+                        <span style="color:var(--text-muted); font-size:20px; margin-top:-5px;">↳</span>
+                        <input type="text" value="${sub.name}" placeholder="Назва підкатегорії" oninput="updateBuilderSub(${cat.id}, ${sub.id}, this.value)">
+                        <button class="subcat-del-btn" onclick="delBuilderSub(${cat.id}, ${sub.id})">🗑️</button>
+                    </div>`;
+                });
+
+                container.innerHTML += `
+                <div class="cat-builder-card">
+                    <div class="cat-builder-header">
+                        <input type="text" value="${cat.name}" placeholder="Головна категорія (напр. Взуття)" oninput="updateBuilderCat(${cat.id}, this.value)">
+                        <button class="cat-del-btn" onclick="delBuilderCat(${cat.id})">🗑️</button>
+                    </div>
+                    <div class="subcat-list" id="sublist_${cat.id}">
+                        ${subsHtml}
+                        <button class="btn-add-sub" onclick="addBuilderSub(${cat.id})">➕ Додати підкатегорію</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function addBuilderCategory() { categoryTree.push({ id: Date.now(), name: '', subs: [] }); renderCategoryBuilder(); }
+        function delBuilderCat(id) { categoryTree = categoryTree.filter(c => c.id !== id); renderCategoryBuilder(); }
+        function updateBuilderCat(id, val) { let c = categoryTree.find(c => c.id === id); if(c) c.name = val; }
+
+        function addBuilderSub(catId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs.push({ id: Date.now(), name: '' }); renderCategoryBuilder(); }
+        function delBuilderSub(catId, subId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs = c.subs.filter(s => s.id !== subId); renderCategoryBuilder(); }
+        function updateBuilderSub(catId, subId, val) { let c = categoryTree.find(c => c.id === catId); if(c) { let s = c.subs.find(s => s.id === subId); if(s) s.name = val; } }
+        // ----------------------------------------
+
         window.onload = async () => {
             const { data: { user } } = await sb.auth.getUser();
             if (user) {
@@ -379,12 +438,28 @@
                 const { data: shop } = await sb.from('shops').select('*').eq('owner_id', user.id).single();
                 if(shop) {
                     if(shop.shop_name) document.getElementById('cabinetTitle').innerText = shop.shop_name;
-                    if(shop.categories) shopCategories = shop.categories.split(',').map(c => c.trim()).filter(Boolean);
                     document.getElementById('set_shopName').value = shop.shop_name || ''; 
                     document.getElementById('set_description').value = shop.description || ''; 
-                    document.getElementById('set_categories').value = shop.categories || ''; 
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
                     if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('neutral', false); }
+                    
+                    // УМНИЙ ПАРСЕР КАТЕГОРІЙ (Сумісність старих і нових даних)
+                    if(shop.categories) {
+                        try {
+                            // Пробуємо прочитати як новий формат (JSON)
+                            let parsed = JSON.parse(shop.categories);
+                            if(Array.isArray(parsed)) {
+                                categoryTree = parsed.map((c, i) => ({ id: Date.now()+i, name: c.name, subs: (c.subs||[]).map((s, j) => ({id: Date.now()+100+j, name: s})) }));
+                                shopCategories = parsed.map(c => c.name); // Для старого складу
+                            }
+                        } catch(e) {
+                            // Читаємо старий формат (через кому) і автоматично конвертуємо
+                            let oldCats = shop.categories.split(',').map(c => c.trim()).filter(Boolean);
+                            categoryTree = oldCats.map((c, i) => ({ id: Date.now()+i, name: c, subs: [] }));
+                            shopCategories = oldCats;
+                        }
+                    }
+                    renderCategoryBuilder();
                 } else { selectTheme('neutral', false); }
                 
                 loadInventory();
@@ -423,11 +498,28 @@
         async function saveSettings() {
             const btn = document.getElementById('saveSettingsBtn'); btn.innerHTML = '⏳ ЗБЕРЕЖЕННЯ...'; btn.disabled = true;
             const curTheme = document.getElementById('set_theme').value;
-            const updateData = { shop_name: document.getElementById('set_shopName').value.trim(), description: document.getElementById('set_description').value.trim(), categories: document.getElementById('set_categories').value.trim(), theme_color: curTheme };
+            
+            // Збираємо і чистимо дерево категорій перед збереженням
+            const cleanTree = categoryTree
+                .map(c => ({ name: c.name.trim(), subs: c.subs.map(s => s.name.trim()).filter(Boolean) }))
+                .filter(c => c.name !== '');
+                
+            const jsonCategories = JSON.stringify(cleanTree);
+            
+            const updateData = { 
+                shop_name: document.getElementById('set_shopName').value.trim(), 
+                description: document.getElementById('set_description').value.trim(), 
+                categories: jsonCategories, 
+                theme_color: curTheme 
+            };
+            
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
             if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
                 if(updateData.shop_name) document.getElementById('cabinetTitle').innerText = updateData.shop_name;
-                if(updateData.categories) shopCategories = updateData.categories.split(',').map(c => c.trim()).filter(Boolean);
+                
+                // Оновлюємо старий масив для сумісності складу під час Етапу 1
+                shopCategories = cleanTree.map(c => c.name);
+                
                 btn.innerHTML = '✅ УСПІШНО ЗБЕРЕЖЕНО'; btn.style.background = 'var(--olive-dark)'; setTimeout(() => { btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.style.background = ''; btn.disabled = false; }, 2000);
             }
         }
@@ -665,6 +757,7 @@
             
             try {
                 let catInstruction = "Визнач категорію";
+                // На Етапі 1 ми передаємо ІІ тільки головні категорії для простоти, підкатегорію ми налаштуємо на Етапі 2
                 if (shopCategories.length > 0) catInstruction = `ОБОВ'ЯЗКОВО вибери ОДНУ категорію суворо з цього списку: [${shopCategories.join(', ')}]. Якщо не підходить, пиши "Різне".`;
 
                 log("⏳ Оптимізація фотографій...");
@@ -700,7 +793,6 @@
             }
         }
 
-        // --- НОВІ ФУНКЦІЇ ДЛЯ КАСТОМНОГО ДРОПДАУНУ ---
         function toggleCustomCat(id, e) {
             e.stopPropagation();
             document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
