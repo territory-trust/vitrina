@@ -127,11 +127,13 @@
 
         /* ЗМІНИ: КОНТРАСТНІ КНОПКИ ПІДКАТЕГОРІЙ НА ВІТРИНІ */
         .sub-nav-scroll { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: none; animation: fadeIn 0.2s ease; }
-        .subcat-btn { background: transparent; color: #bbb; border: 2px solid #555; padding: 5px 12px; border-radius: 12px; margin-right: 6px; font-size: 12px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .subcat-btn { background: transparent; color: #e5e7eb; border: 2px solid #777; padding: 5px 12px; border-radius: 12px; margin-right: 6px; font-size: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.1); }
-        body.theme-light .subcat-btn { border-color: #888; color: #333; }
+        body.theme-light .subcat-btn { border-color: #999; color: #111; }
         body.theme-light .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.05); }
-        body.theme-ocean .subcat-btn { border-color: #2a5a8a; color: #a2c5e5; }
+        body.theme-neutral .subcat-btn { border-color: #94a3b8; color: #1e293b; }
+        body.theme-neutral .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.05); }
+        body.theme-ocean .subcat-btn { border-color: #4a8bc0; color: #e2f1ff; }
         body.theme-ocean .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(42, 139, 242, 0.1); }
 
         .shop-info-block { padding: 5px 15px 15px; max-width: 900px; margin: auto; }
@@ -310,7 +312,6 @@
                         <option value="Хмельницька область">Хмельницька область</option>
                         <option value="Черкаська область">Черкаська область</option>
                         <option value="Чернівецька область">Чернівецька область</option>
-                        <option value="Чернігівська область">Чернігівська область</option>
                     </select>
                     <div class="form-row">
                         <input type="text" id="order_city" class="checkout-input" placeholder="Місто">
