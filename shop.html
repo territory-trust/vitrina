@@ -125,9 +125,8 @@
         .cat-btn { background: #1a1e24; color: #f3f4f6; border: 1px solid #888; padding: 7px 16px; border-radius: 15px; margin-right: 6px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(0,0,0,0.3); }
         .cat-btn.active { background: var(--olive) !important; color: #ffffff !important; border-color: var(--olive) !important; box-shadow: none !important; cursor: default; }
 
-        /* ЗМІНИ: КОНТРАСТНІ КНОПКИ ПІДКАТЕГОРІЙ НА ВІТРИНІ */
         .sub-nav-scroll { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); display: none; animation: fadeIn 0.2s ease; }
-        .subcat-btn { background: transparent; color: #e5e7eb; border: 2px solid #777; padding: 5px 12px; border-radius: 12px; margin-right: 6px; font-size: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .subcat-btn { background: transparent; color: #bbb; border: 2px solid #555; padding: 5px 12px; border-radius: 12px; margin-right: 6px; font-size: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
         .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.1); }
         body.theme-light .subcat-btn { border-color: #999; color: #111; }
         body.theme-light .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(107, 135, 59, 0.05); }
@@ -194,8 +193,22 @@
         .checkout-input { width: 100%; padding: 12px 14px; border-radius: 8px; background: #000; color: #fff; border: 2px solid #555 !important; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
         .checkout-input:focus { border-color: var(--olive) !important; }
         
+        /* ЗМІНИ: КАСТОМНІ СЕЛЕКТИ ДЛЯ ОФОРМЛЕННЯ ЗАМОВЛЕННЯ */
+        .custom-select-wrapper { position: relative; width: 100%; user-select: none; }
+        .custom-select-trigger { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .custom-select-wrapper.open .custom-select-trigger { border-color: var(--olive) !important; }
+        .dd-arrow { font-size: 10px; color: #888; transition: transform 0.2s; }
+        .custom-select-wrapper.open .dd-arrow { transform: rotate(180deg); }
+        .custom-select-options { position: absolute; top: 100%; left: 0; right: 0; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 100; display: none; max-height: 200px; overflow-y: auto; margin-top: 4px; }
+        .custom-select-wrapper.open .custom-select-options { display: block; animation: fadeInDropdown 0.2s ease; }
+        .custom-select-option { padding: 12px 14px; font-size: 14px; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+        .custom-select-option:last-child { border-bottom: none; }
+        .custom-select-option:hover, .custom-select-option.selected { background: rgba(107, 135, 59, 0.1); color: var(--olive); font-weight: bold; }
+        @keyframes fadeInDropdown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
         .form-row { display: flex; gap: 10px; }
         .form-row .checkout-input { flex: 1; }
+        .form-row .custom-select-wrapper { flex: 1; }
         .checkout-label { font-size: 13px; color: #888; font-weight: bold; margin-bottom: -8px; display: block;}
 
         .btn-large { width: 100%; background: var(--olive); color: #fff; border: none; padding: 16px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0 #2c3818; transition: 0.1s; text-transform: uppercase; }
@@ -278,15 +291,26 @@
                     <input type="text" id="order_surname" class="checkout-input" placeholder="Прізвище">
                 </div>
                 <input type="tel" id="order_phone" class="checkout-input" placeholder="+380 XX XXX XX XX" oninput="formatPhone(this)">
+                
                 <span class="checkout-label">Доставка:</span>
-                <select id="order_delivery" class="checkout-input" onchange="toggleDelivery()">
+                <select id="order_delivery" class="checkout-input" style="display:none;" onchange="toggleDelivery()">
                     <option value="Нова Пошта">Нова Пошта</option>
                     <option value="Укрпошта">Укрпошта</option>
                     <option value="Самовивіз">Самовивіз</option>
                 </select>
+                <div class="custom-select-wrapper" id="custom_wrapper_delivery">
+                    <div class="custom-select-trigger checkout-input" onclick="toggleDropdownCustom('custom_wrapper_delivery', event)">
+                        <span id="custom_text_delivery">Нова Пошта</span><span class="dd-arrow">▼</span>
+                    </div>
+                    <div class="custom-select-options">
+                        <div class="custom-select-option selected" onclick="selectCustomCheckout('delivery', 'Нова Пошта', 'Нова Пошта', this, event)">Нова Пошта</div>
+                        <div class="custom-select-option" onclick="selectCustomCheckout('delivery', 'Укрпошта', 'Укрпошта', this, event)">Укрпошта</div>
+                        <div class="custom-select-option" onclick="selectCustomCheckout('delivery', 'Самовивіз', 'Самовивіз', this, event)">Самовивіз</div>
+                    </div>
+                </div>
                 
                 <div id="address_fields" style="display: flex; flex-direction: column; gap: 12px;">
-                    <select id="order_region" class="checkout-input">
+                    <select id="order_region" class="checkout-input" style="display:none;">
                         <option value="" disabled selected>Оберіть область...</option>
                         <option value="Вінницька область">Вінницька область</option>
                         <option value="Волинська область">Волинська область</option>
@@ -312,7 +336,41 @@
                         <option value="Хмельницька область">Хмельницька область</option>
                         <option value="Черкаська область">Черкаська область</option>
                         <option value="Чернівецька область">Чернівецька область</option>
+                        <option value="Чернігівська область">Чернігівська область</option>
                     </select>
+                    <div class="custom-select-wrapper" id="custom_wrapper_region">
+                        <div class="custom-select-trigger checkout-input" onclick="toggleDropdownCustom('custom_wrapper_region', event)">
+                            <span id="custom_text_region" style="color: #888;">Оберіть область...</span><span class="dd-arrow">▼</span>
+                        </div>
+                        <div class="custom-select-options">
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Вінницька область', 'Вінницька область', this, event)">Вінницька область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Волинська область', 'Волинська область', this, event)">Волинська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Дніпропетровська область', 'Дніпропетровська область', this, event)">Дніпропетровська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Донецька область', 'Донецька область', this, event)">Донецька область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Житомирська область', 'Житомирська область', this, event)">Житомирська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Закарпатська область', 'Закарпатська область', this, event)">Закарпатська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Запорізька область', 'Запорізька область', this, event)">Запорізька область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Івано-Франківська область', 'Івано-Франківська область', this, event)">Івано-Франківська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'м. Київ', 'м. Київ', this, event)">м. Київ</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Київська область', 'Київська область', this, event)">Київська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Кіровоградська область', 'Кіровоградська область', this, event)">Кіровоградська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Луганська область', 'Луганська область', this, event)">Луганська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Львівська область', 'Львівська область', this, event)">Львівська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Миколаївська область', 'Миколаївська область', this, event)">Миколаївська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Одеська область', 'Одеська область', this, event)">Одеська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Полтавська область', 'Полтавська область', this, event)">Полтавська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Рівненська область', 'Рівненська область', this, event)">Рівненська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Сумська область', 'Сумська область', this, event)">Сумська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Тернопільська область', 'Тернопільська область', this, event)">Тернопільська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Харківська область', 'Харківська область', this, event)">Харківська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Херсонська область', 'Херсонська область', this, event)">Херсонська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Хмельницька область', 'Хмельницька область', this, event)">Хмельницька область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Черкаська область', 'Черкаська область', this, event)">Черкаська область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Чернівецька область', 'Чернівецька область', this, event)">Чернівецька область</div>
+                            <div class="custom-select-option" onclick="selectCustomCheckout('region', 'Чернігівська область', 'Чернігівська область', this, event)">Чернігівська область</div>
+                        </div>
+                    </div>
+                    
                     <div class="form-row">
                         <input type="text" id="order_city" class="checkout-input" placeholder="Місто">
                         <input type="text" inputmode="numeric" pattern="[0-9]*" id="order_branch" class="checkout-input" placeholder="№ Відділення">
@@ -321,10 +379,20 @@
                 </div>
                 
                 <span class="checkout-label">Оплата:</span>
-                <select id="order_payment" class="checkout-input">
+                <select id="order_payment" class="checkout-input" style="display:none;">
                     <option value="При отриманні">Оплата при отриманні (Накладений платіж)</option>
                     <option value="На картку">Оплата на картку</option>
                 </select>
+                <div class="custom-select-wrapper" id="custom_wrapper_payment">
+                    <div class="custom-select-trigger checkout-input" onclick="toggleDropdownCustom('custom_wrapper_payment', event)">
+                        <span id="custom_text_payment">Оплата при отриманні (Накладений платіж)</span><span class="dd-arrow">▼</span>
+                    </div>
+                    <div class="custom-select-options">
+                        <div class="custom-select-option selected" onclick="selectCustomCheckout('payment', 'При отриманні', 'Оплата при отриманні (Накладений платіж)', this, event)">Оплата при отриманні (Накладений платіж)</div>
+                        <div class="custom-select-option" onclick="selectCustomCheckout('payment', 'На картку', 'Оплата на картку', this, event)">Оплата на картку</div>
+                    </div>
+                </div>
+                
                 <button class="btn-large" id="btnSubmitOrder" onclick="submitOrder()" style="margin-top: 10px;">✅ ПІДТВЕРДИТИ ЗАМОВЛЕННЯ</button>
             </div>
         </div>
@@ -348,13 +416,12 @@
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = []; 
-    let categoryTree = []; // Нова глобальна змінна для дерева категорій
+    let categoryTree = []; 
     let currentMainCat = 'Все';
     let currentSubCat = null;
     let cart = JSON.parse(localStorage.getItem('smart_cart')) || []; 
     let lbImages = []; let lbIndex = 0;
 
-    // ФУНКЦІЇ ДЛЯ КРАСИВОГО ALERT
     function showAlert(msg, callback = null) {
         document.getElementById('customAlertText').innerHTML = msg;
         document.getElementById('customAlertOverlay').style.display = 'block';
@@ -404,7 +471,6 @@
                     localStorage.setItem('hub_theme', 'dark');
                 }
                 
-                // УМНИЙ ПАРСЕР КАТЕГОРІЙ (JSON або Текст)
                 if(shopData.categories) {
                     try {
                         let parsed = JSON.parse(shopData.categories);
@@ -433,14 +499,12 @@
     function lbPrev() { lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length; updateLightboxView(); }
     function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
 
-    // --- ЛОГІКА ДВОРІВНЕВОЇ ЛЕНТИ КАТЕГОРІЙ ---
     function renderCats() {
         const container = document.getElementById('cat-container'); 
         container.innerHTML = `<button class="cat-btn ${currentMainCat === 'Все' ? 'active' : ''}" onclick="setMainCat('Все')">Всі товари</button>`;
         
         let existingNames = categoryTree.map(c => c.name);
         
-        // Додаємо категорії з товарів, якщо їх забули вказати в налаштуваннях
         items.forEach(i => {
             let catName = i.category || 'Різне';
             if (!existingNames.includes(catName)) {
@@ -459,17 +523,12 @@
         currentMainCat = catName;
         currentSubCat = null;
         
-        // Оновлюємо активну кнопку в першій стрічці
         const buttons = document.getElementById('cat-container').querySelectorAll('.cat-btn');
         buttons.forEach(b => {
-            if (b.innerText === catName || (catName === 'Все' && b.innerText === 'Всі товари')) {
-                b.classList.add('active');
-            } else {
-                b.classList.remove('active');
-            }
+            if (b.innerText === catName || (catName === 'Все' && b.innerText === 'Всі товари')) { b.classList.add('active'); } 
+            else { b.classList.remove('active'); }
         });
 
-        // Управління другою стрічкою (Підкатегорії)
         const subContainer = document.getElementById('subcat-container');
         if (catName === 'Все') {
             subContainer.style.display = 'none';
@@ -493,18 +552,13 @@
         currentSubCat = subName;
         const buttons = document.getElementById('subcat-container').querySelectorAll('.subcat-btn');
         buttons.forEach(b => {
-            if (b.innerText === subName || (subName === null && b.innerText === 'Всі')) {
-                b.classList.add('active');
-            } else {
-                b.classList.remove('active');
-            }
+            if (b.innerText === subName || (subName === null && b.innerText === 'Всі')) { b.classList.add('active'); } 
+            else { b.classList.remove('active'); }
         });
         applyFilters();
     }
 
-    function handleSearch() {
-        applyFilters();
-    }
+    function handleSearch() { applyFilters(); }
 
     function applyFilters() {
         const searchQ = document.getElementById('search').value.toLowerCase();
@@ -512,11 +566,7 @@
 
         if (currentMainCat !== 'Все') {
             filtered = filtered.filter(i => (i.category || 'Різне') === currentMainCat);
-            
-            // Якщо обрана підкатегорія (для майбутньої підтримки поля subcategory)
-            if (currentSubCat) {
-                filtered = filtered.filter(i => i.subcategory === currentSubCat);
-            }
+            if (currentSubCat) { filtered = filtered.filter(i => i.subcategory === currentSubCat); }
         }
 
         if (searchQ) {
@@ -525,7 +575,6 @@
 
         render(filtered);
     }
-    // ----------------------------------------
 
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
@@ -615,6 +664,42 @@
         }, 100);
     }
 
+    // --- ЛОГІКА КАСТОМНИХ ДРОПДАУНІВ ДЛЯ ОФОРМЛЕННЯ ЗАМОВЛЕННЯ ---
+    function toggleDropdownCustom(wrapperId, e) {
+        e.stopPropagation();
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w.id !== wrapperId) w.classList.remove('open');
+        });
+        document.getElementById(wrapperId).classList.toggle('open');
+    }
+
+    function selectCustomCheckout(idSuffix, value, text, el, e) {
+        e.stopPropagation();
+        const wrapper = document.getElementById(`custom_wrapper_${idSuffix}`);
+        const textSpan = document.getElementById(`custom_text_${idSuffix}`);
+        
+        textSpan.innerHTML = text;
+        textSpan.style.color = ''; // Прибираємо сірий колір плейсхолдера (якщо він був)
+        
+        wrapper.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+        wrapper.classList.remove('open');
+        
+        // Оновлюємо системний прихований select
+        const realSelect = document.getElementById(`order_${idSuffix}`);
+        realSelect.value = value;
+        
+        // Якщо це меню доставки, викликаємо функцію оновлення полів
+        if (idSuffix === 'delivery') {
+            toggleDelivery();
+        }
+    }
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    });
+    // ----------------------------------------
+
     function toggleDelivery() {
         const method = document.getElementById('order_delivery').value; const addressFields = document.getElementById('address_fields'); const branchInput = document.getElementById('order_branch'); const indexInput = document.getElementById('order_index');
         if(method === 'Самовивіз') { 
@@ -686,9 +771,6 @@
         } catch (e) { console.error("Помилка БД:", e); showAlert("⚠️ Помилка з'єднання з базою. Спробуйте пізніше."); }
         btn.disabled = false; btn.innerHTML = '✅ ПІДТВЕРДИТИ ЗАМОВЛЕННЯ';
     }
-
-    function toggleDropdown() { document.getElementById("aiDropdown").classList.toggle("show"); }
-    window.onclick = function(event) { if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.lightbox')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } } } }
 </script>
 </body>
 </html>
