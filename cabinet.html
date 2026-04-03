@@ -107,8 +107,8 @@
         .inv-del-btn { background: #ef4444; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 0 #b91c1c; }
         .inv-del-btn:active { transform: translateY(2px); box-shadow: none; }
         
-        /* ЗМІНИ: Об'ємна, відцентрована, яскрава 3D кнопка опису */
-        .inv-desc-btn { background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 900; transition: 0.1s; box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 14px; text-transform: uppercase; box-shadow: 0 4px 0 #1d4ed8; letter-spacing: 0.5px; }
+        /* ЗМІНИ: Кнопка опису використовує системні кольори теми і не містить іконок */
+        .inv-desc-btn { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 900; transition: 0.1s; box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 14px; text-transform: uppercase; box-shadow: 0 4px 0 var(--olive-dark); letter-spacing: 0.5px; }
         .inv-desc-btn:active { transform: translateY(4px); box-shadow: none; }
 
         .btn-refresh { background: var(--input-bg); color: var(--olive); border: 2px solid var(--olive); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; transition: 0.2s; }
@@ -272,10 +272,10 @@
                 <div class="theme-grid">
                     <div class="theme-card" id="theme_dark" onclick="selectTheme('dark')"><div class="theme-color-box t-dark"></div>Dark Velvet</div>
                     <div class="theme-card" id="theme_ocean" onclick="selectTheme('ocean')"><div class="theme-color-box t-ocean"></div>Dark Ocean</div>
-                    <div class="theme-card" id="theme_light" onclick="selectTheme('light')"><div class="theme-color-box t-light"></div>Light Creative</div>
-                    <div class="theme-card active" id="theme_neutral" onclick="selectTheme('neutral')"><div class="theme-color-box t-neutral"></div>Neutral Classic</div>
+                    <div class="theme-card active" id="theme_light" onclick="selectTheme('light')"><div class="theme-color-box t-light"></div>Light Creative</div>
+                    <div class="theme-card" id="theme_neutral" onclick="selectTheme('neutral')"><div class="theme-color-box t-neutral"></div>Neutral Classic</div>
                 </div>
-                <input type="hidden" id="set_theme" value="neutral">
+                <input type="hidden" id="set_theme" value="light">
             </div>
             
             <div class="settings-block">
@@ -480,7 +480,13 @@
                     document.getElementById('set_shopName').value = shop.shop_name || ''; 
                     document.getElementById('set_description').value = shop.description || ''; 
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
-                    if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('neutral', false); }
+                    
+                    // ЗМІНИ: Light Creative по замовчуванню, якщо тема не обрана
+                    if(shop.theme_color) { 
+                        selectTheme(shop.theme_color, false); 
+                    } else { 
+                        selectTheme('light', false); 
+                    }
                     
                     if(shop.categories) {
                         try {
@@ -496,7 +502,7 @@
                         }
                     }
                     renderCategoryBuilder();
-                } else { selectTheme('neutral', false); }
+                } else { selectTheme('light', false); }
                 
                 loadInventory();
                 
@@ -688,7 +694,7 @@
                         <button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button>
                         <button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button>
                     </div>
-                    <button class="inv-desc-btn" onclick="openDescModal('${p.id}')">📝 Редагувати опис (без емодзі)</button>
+                    <button class="inv-desc-btn" onclick="openDescModal('${p.id}')">РЕДАГУВАТИ ОПИС</button>
                 </div>`; 
             }); 
             
