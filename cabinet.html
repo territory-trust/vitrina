@@ -78,7 +78,10 @@
         body.theme-ocean .subcat-btn { border-color: #4a8bc0; color: #e2f1ff; }
         body.theme-ocean .subcat-btn.active { border-color: var(--olive); color: var(--olive); background: rgba(42, 139, 242, 0.1); }
 
-        .inv-item { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 12px; transition: 0.3s; position: relative; z-index: 1;}
+        /* ЗМІНИ: Контрастні та об'ємні картки на складі */
+        .inv-item { background: var(--input-bg); border: 2px solid var(--card-border); border-radius: 12px; padding: 12px; margin-bottom: 15px; transition: 0.3s; position: relative; z-index: 1; box-shadow: 0 4px 8px rgba(0,0,0,0.15);}
+        body.theme-light .inv-item, body.theme-neutral .inv-item { box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
+        
         .inv-top { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
         .inv-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: var(--bg); border: 1px solid var(--card-border); flex-shrink: 0; margin-top: 4px; }
         .inv-info { flex: 1; min-width: 0; } 
@@ -101,9 +104,14 @@
         .inv-label { font-size: 12px; color: var(--text); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
         .inv-input { width: 100%; padding: 10px 5px; background: var(--bg); border: 2px solid var(--input-border); color: var(--text); font-weight: bold; border-radius: 6px; text-align: center; font-size: 15px; outline: none; box-sizing: border-box; }
         .inv-save-btn { flex: 1.5; background: var(--olive); color: #fff; border: none; padding: 10px 0; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; text-align: center; transition: 0.2s; box-shadow: 0 2px 0 var(--olive-dark); box-sizing: border-box; height: 41px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .inv-del-btn { background: rgba(255,68,68,0.1); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; }
-        .inv-desc-btn { background: transparent; color: var(--olive); border: 1px dashed var(--olive); padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 4px; text-transform: uppercase;}
-        .inv-desc-btn:active { background: rgba(107,135,59,0.1); }
+        
+        /* ЗМІНИ: Яскрава кнопка видалення */
+        .inv-del-btn { background: #ef4444; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 0 #b91c1c; }
+        .inv-del-btn:active { transform: translateY(2px); box-shadow: none; }
+        
+        /* ЗМІНИ: Контрастна кнопка редагування опису */
+        .inv-desc-btn { background: var(--panel); color: var(--olive); border: 2px solid var(--border); padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 900; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 4px; text-transform: uppercase; box-shadow: 0 2px 0 var(--border);}
+        .inv-desc-btn:active { transform: translateY(2px); box-shadow: none; }
 
         .btn-refresh { background: var(--input-bg); color: var(--olive); border: 2px solid var(--olive); width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; transition: 0.2s; }
         .order-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: 0.3s;}
@@ -146,7 +154,6 @@
         .pwa-btn { background: transparent; border: 1px solid var(--pwa-accent); color: var(--pwa-accent); padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.2s; }
         .pwa-btn:active { opacity: 0.7; }
 
-        /* ЗМІНИ: КОНСТРУКТОР КАТЕГОРІЙ В НАЛАШТУВАННЯХ */
         .cat-builder-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
         .cat-builder-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
         .cat-builder-header input { flex: 1; font-weight: bold; font-size: 16px; border-color: var(--olive) !important; background: rgba(107,135,59,0.05); box-shadow: none;}
@@ -160,7 +167,6 @@
         .btn-add-sub { background: transparent; border: 1px dashed var(--olive); color: var(--olive); font-size: 13px; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; width: fit-content; transition: 0.2s; margin-top: 5px;}
         .btn-add-sub:active { background: rgba(107,135,59,0.1); }
         
-        /* ЗМІНИ: Модальне вікно редагування опису */
         #descModalBox { width: 90%; max-width: 500px; padding: 20px; }
         #descModalBox textarea { width: 100%; height: 300px; padding: 15px; font-size: 14px; line-height: 1.5; border-radius: 8px; border: 2px solid var(--border) !important; background: var(--input-bg); color: var(--text); resize: none; margin-bottom: 15px; }
         #descModalBox textarea:focus { border-color: var(--olive) !important; }
@@ -243,7 +249,7 @@
                     <div class="cat-instruction-box">Створіть зручну структуру для покупців. Додавайте головні категорії (наприклад: Взуття) та підкатегорії до них (Кросівки, Черевики).</div>
                     
                     <div id="categoryBuilderContainer"></div>
-                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 10px; background: var(--olive); color: #fff; box-shadow: 0 3px 0 var(--olive-dark); padding: 12px;">➕ ДОДАТИ ГОЛОВНУ КАТЕГОРІЮ</button>
+                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 10px; background: var(--olive); color: #fff; box-shadow: 0 3px 0 var(--olive-dark); padding: 12px; font-size: 14px;"><span style="color: #FFEA00; font-size: 18px; margin-right: 6px; font-weight: 900;">➕</span>ДОДАТИ КАТЕГОРІЮ ТОВАРУ</button>
                 </div>
                 
                 <div class="input-group"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
@@ -684,7 +690,7 @@
                         <button class="inv-save-btn" id="btn_${p.id}" onclick="saveItemDb('${p.id}')">ЗБЕРЕГТИ</button>
                         <button class="inv-del-btn" id="delbtn_${p.id}" onclick="deleteItemDb('${p.id}')">🗑️</button>
                     </div>
-                    <button class="inv-desc-btn" onclick="openDescModal('${p.id}')">📝 Редагувати опис</button>
+                    <button class="inv-desc-btn" onclick="openDescModal('${p.id}')">📝 Опис</button>
                 </div>`; 
             }); 
             
@@ -714,7 +720,6 @@
             const btn = document.getElementById(`delbtn_${id}`); btn.innerHTML = '⏳'; btn.disabled = true; await sb.from('products').delete().eq('id', id); inventoryData = inventoryData.filter(i => i.id !== id); filterInventory(); 
         }
 
-        // --- ЗМІНИ: Логіка редагування опису товару ---
         async function openDescModal(id) {
             currentEditDescId = id;
             document.getElementById('descModalOverlay').style.display = 'block';
@@ -724,7 +729,6 @@
             
             const { data, error } = await sb.from('ai_content').select('fancy_description').eq('product_id', id).single();
             if(data && data.fancy_description) {
-                // Конвертуємо <br><br> назад у звичайні перенесення рядків для зручності в textarea
                 document.getElementById('editDescArea').value = data.fancy_description.replace(/<br><br>/g, '\n\n').replace(/<br>/g, '\n');
             } else {
                 document.getElementById('editDescArea').value = '';
@@ -744,10 +748,8 @@
             btn.innerText = '⏳...'; btn.disabled = true;
             
             let newText = document.getElementById('editDescArea').value;
-            // Конвертуємо перенесення рядків назад у <br><br> для витрини
             newText = newText.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
             
-            // Перевіряємо, чи є запис, якщо ні - створюємо, якщо є - оновлюємо
             const { data: existing } = await sb.from('ai_content').select('id').eq('product_id', currentEditDescId).single();
             let error;
             if(existing) {
@@ -769,7 +771,6 @@
                 }, 1000);
             }
         }
-        // -----------------------------------------------
 
         function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
         function saveCardToLocal(val) { localStorage.setItem('saved_card_number', val); }
@@ -995,7 +996,6 @@
                 uploadedImageUrls = [u1, u2, u3].filter(url => url !== null);
 
                 log("🧠 Аналіз ІІ...");
-                // ЗМІНИ: Оновлено промпт для більш детального технічного опису
                 const promptText = `Ти експерт з продажу. Структура: [${treeContext}].\nПоверни JSON: {"title": "Назва", "category": "Головна категорія зі структури (або 'Різне')", "subcategory": "Підкатегорія зі структури (або порожньо)", "description": "Продаючий опис без емодзі. Якщо це технічний пристрій, електроніка, гаджет або інструмент – ОБОВ'ЯЗКОВО додай детальний технічний опис (характеристики). Використовуй <br><br> для абзаців.", "rec_price": "Ціна (тільки цифри)"}. Мова: українська. Без markdown.`;
                 
                 const { data: aiResponse, error: aiError } = await sb.functions.invoke('gemini-agent', { body: { prompt: promptText, imageBase64: c1.b64 } });
