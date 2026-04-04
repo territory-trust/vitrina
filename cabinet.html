@@ -9,7 +9,7 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d0f12">
-    <link rel="apple-touch-icon" href="icon-512.jpeg">
+    <link rel="apple-touch-icon" href="app-icon-v2.jpg?v=4">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -107,7 +107,6 @@
         .inv-del-btn { background: #ef4444; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; box-sizing: border-box; height: 41px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 0 #b91c1c; }
         .inv-del-btn:active { transform: translateY(2px); box-shadow: none; }
         
-        /* ЗМІНИ: Кнопка опису використовує системні кольори теми і не містить іконок */
         .inv-desc-btn { background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 900; transition: 0.1s; box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 14px; text-transform: uppercase; box-shadow: 0 4px 0 var(--olive-dark); letter-spacing: 0.5px; }
         .inv-desc-btn:active { transform: translateY(4px); box-shadow: none; }
 
@@ -409,9 +408,11 @@
                     if (permission === "granted") {
                         localStorage.setItem('push_enabled', 'true');
                         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                            navigator.serviceWorker.ready.then(reg => { reg.showNotification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg", vibrate: [100, 50, 100] }); });
+                            // Хірургічна заміна іконки для Push-повідомлень
+                            navigator.serviceWorker.ready.then(reg => { reg.showNotification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "app-icon-v2.jpg", vibrate: [100, 50, 100] }); });
                         } else {
-                            new Notification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "icon-512.jpeg" });
+                            // Хірургічна заміна іконки для Push-повідомлень
+                            new Notification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "app-icon-v2.jpg" });
                         }
                     } else {
                         showAlert("Ви заборонили сповіщення у налаштуваннях браузера."); cb.checked = false; localStorage.setItem('push_enabled', 'false');
@@ -480,13 +481,7 @@
                     document.getElementById('set_shopName').value = shop.shop_name || ''; 
                     document.getElementById('set_description').value = shop.description || ''; 
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
-                    
-                    // ЗМІНИ: Light Creative по замовчуванню, якщо тема не обрана
-                    if(shop.theme_color) { 
-                        selectTheme(shop.theme_color, false); 
-                    } else { 
-                        selectTheme('light', false); 
-                    }
+                    if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('light', false); }
                     
                     if(shop.categories) {
                         try {
@@ -511,10 +506,12 @@
                       if (localStorage.getItem('push_enabled') === 'true' && Notification.permission === "granted") {
                           if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                               navigator.serviceWorker.ready.then(reg => {
-                                  reg.showNotification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "icon-512.jpeg", vibrate: [200, 100, 200] });
+                                  // Хірургічна заміна іконки для Push-повідомлень
+                                  reg.showNotification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "app-icon-v2.jpg", vibrate: [200, 100, 200] });
                               });
                           } else {
-                              new Notification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "icon-512.jpeg" });
+                              // Хірургічна заміна іконки для Push-повідомлень
+                              new Notification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "app-icon-v2.jpg" });
                           }
                       }
                       if(document.getElementById('tab-orders').classList.contains('active')) { loadOrders(); }
