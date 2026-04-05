@@ -27,56 +27,51 @@
             --input-bg: rgba(2, 10, 16, 0.7);
         }
         
-        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Жорстка фіксація фону для Android та висоти екрану */
+        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Фікс світлої системної панелі навігації Android */
         html {
-            background-color: #01050a; /* Використовуємо прямий HEX для 100% сумісності з Android панеллю */
-            height: 100%;
+            background-color: var(--bg-ocean-bottom);
         }
 
         body { 
             background-color: var(--bg-ocean-bottom);
             background-image: linear-gradient(180deg, var(--bg-ocean-top) 0%, var(--bg-ocean-bottom) 100%); 
-            background-attachment: fixed;
             color: var(--text-main); 
             font-family: 'Segoe UI', system-ui, sans-serif; 
             margin: 0; 
-            padding: 15px; 
-            box-sizing: border-box; 
-            /* Ідеальне центрування */
             display: flex; 
             justify-content: center; 
-            align-items: center; 
-            min-height: 100dvh; 
+            align-items: center; /* Ідеальне центрування */
+            min-height: 100dvh; /* Займає рівно 1 екран мобільного */
+            padding: 15px; 
+            box-sizing: border-box; 
         }
         
         .card { 
             background: var(--panel-bg); 
-            padding: 25px 20px; 
+            padding: 25px 20px; /* Компактніші відступы для вміщення в 1 екран */
             border-radius: 20px; 
             border: 1px solid var(--border-neon); 
-            width: 100%; 
-            max-width: 440px; 
+            width: 100%; max-width: 440px; 
             box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(42, 139, 242, 0.1); 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            margin: auto; /* Додаткова гарантія центрування */
         }
         
         .logo-img {
-            max-width: 55%; 
+            max-width: 55%; /* Зменшено для компактності */
             height: auto;
             display: block;
-            margin: 0 auto 10px auto; 
-            filter: drop-shadow(0 0 15px rgba(42, 139, 242, 0.4)); 
+            margin: 0 auto 10px auto; /* Менше "повітря" */
+            filter: drop-shadow(0 0 15px rgba(42, 139, 242, 0.4)); /* Неонове світіння навколо лого */
             border-radius: 12px;
         }
         
         p { 
             text-align: center; 
-            color: var(--text-muted); 
+            color: #fff; /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Зробили білим */
             font-size: 15px; 
             font-weight: 500;
             margin-top: 0;
@@ -106,7 +101,7 @@
         }
         
         input::placeholder {
-            color: rgba(226, 241, 255, 0.3);
+            color: rgba(226, 241, 255, 0.6); /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Зробили яскравіше (збільшили непрозорість до 0.6) */
             font-weight: normal;
         }
         
