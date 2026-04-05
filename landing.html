@@ -6,107 +6,165 @@
     <title>AI-Pilot | Створення магазину</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#051622">
+    <link rel="apple-touch-icon" href="app-icon-v2.jpg?v=4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         :root { 
-            --bg: #0d0f12; --panel: #14171c; --olive: #6b873b; 
-            --olive-light: rgba(107, 135, 59, 0.7); 
-            --text: #e5e7eb; --border: #2a2e35; 
+            /* Палітра Dark Ocean */
+            --bg-ocean-top: #051622;
+            --bg-ocean-bottom: #01050a;
+            --panel-bg: rgba(10, 34, 53, 0.85);
+            --border-neon: rgba(42, 139, 242, 0.4);
+            --accent-neon: #2a8bf2;
+            --accent-hover: #1565c0;
+            --text-main: #e2f1ff;
+            --text-muted: #7d9cb8;
+            --input-bg: rgba(2, 10, 16, 0.7);
         }
         
+        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Жорстка фіксація фону для Android та висоти екрану */
+        html {
+            background-color: #01050a; /* Використовуємо прямий HEX для 100% сумісності з Android панеллю */
+            height: 100%;
+        }
+
         body { 
-            background: var(--bg); color: var(--text); 
+            background-color: var(--bg-ocean-bottom);
+            background-image: linear-gradient(180deg, var(--bg-ocean-top) 0%, var(--bg-ocean-bottom) 100%); 
+            background-attachment: fixed;
+            color: var(--text-main); 
             font-family: 'Segoe UI', system-ui, sans-serif; 
             margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; /* Идеальное центрирование по вертикали */
-            min-height: 100dvh; /* Занимает ровно 1 экран на мобильном */
             padding: 15px; 
             box-sizing: border-box; 
+            /* Ідеальне центрування */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100dvh; 
         }
         
         .card { 
-            background: var(--panel); 
-            padding: 30px 20px; /* Равномерные симметричные отступы внутри */
+            background: var(--panel-bg); 
+            padding: 25px 20px; 
             border-radius: 20px; 
-            border: 1px solid var(--border); 
-            width: 100%; max-width: 440px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6); 
+            border: 1px solid var(--border-neon); 
+            width: 100%; 
+            max-width: 440px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(42, 139, 242, 0.1); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             box-sizing: border-box;
-            /* Убрал высоту 100% и flex-direction, которые ломали верстку */
+            display: flex;
+            flex-direction: column;
+            margin: auto; /* Додаткова гарантія центрування */
         }
         
         .logo-img {
-            max-width: 65%; 
+            max-width: 55%; 
             height: auto;
             display: block;
-            margin: 0 auto 15px auto; /* Аккуратный отступ до текста */
-            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6)); 
+            margin: 0 auto 10px auto; 
+            filter: drop-shadow(0 0 15px rgba(42, 139, 242, 0.4)); 
+            border-radius: 12px;
         }
         
         p { 
             text-align: center; 
-            color: #d1d5db; 
-            font-size: 16px; 
+            color: var(--text-muted); 
+            font-size: 15px; 
             font-weight: 500;
             margin-top: 0;
-            margin-bottom: 25px; /* Воздух до начала полей ввода */
+            margin-bottom: 20px; 
             line-height: 1.3; 
         }
         
         label { 
             display: block; 
-            margin-bottom: 6px; 
-            color: #e5e7eb; 
-            font-weight: 600; 
-            font-size: 16px; 
+            margin-bottom: 4px; 
+            color: var(--accent-neon); 
+            font-weight: 700; 
+            font-size: 14px; 
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         
         input { 
-            width: 100%; padding: 14px; background: #000; 
-            border: 1px solid var(--olive-light); 
-            color: #fff; border-radius: 12px; font-size: 16px; 
-            margin-bottom: 16px; outline: none; box-sizing: border-box; 
+            width: 100%; padding: 12px 14px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--border-neon); 
+            color: #fff; border-radius: 10px; font-size: 15px; 
+            margin-bottom: 14px; outline: none; box-sizing: border-box; 
             transition: 0.3s ease; 
+            font-weight: 600;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        input::placeholder {
+            color: rgba(226, 241, 255, 0.3);
+            font-weight: normal;
         }
         
         input:focus { 
-            border-color: var(--olive); 
-            box-shadow: 0 0 0 2px rgba(107, 135, 59, 0.3); 
+            border-color: var(--accent-neon); 
+            box-shadow: 0 0 0 2px rgba(42, 139, 242, 0.3), inset 0 2px 4px rgba(0,0,0,0.3); 
+            background: rgba(0,0,0,0.6);
         }
         
-        /* Богатая бархатная 3D-кнопка */
+        /* Кнопка Dark Ocean */
         .btn-3d { 
-            background: linear-gradient(180deg, var(--olive) 0%, #465926 100%); 
-            color: #fff; padding: 16px; border-radius: 12px; 
-            font-weight: bold; font-size: 18px; border: none; cursor: pointer; 
-            box-shadow: 0 4px 0 #2c3818; width: 100%; display: block; 
+            background: linear-gradient(180deg, var(--accent-neon) 0%, var(--accent-hover) 100%); 
+            color: #fff; 
+            padding: 14px; border-radius: 10px; 
+            font-weight: 900; font-size: 16px; border: none; cursor: pointer; 
+            box-shadow: 0 4px 0 #0d3d73, 0 8px 15px rgba(0,0,0,0.4); 
+            width: 100%; display: block; 
             text-align: center; transition: 0.1s ease; 
-            margin-top: 10px; /* Вернул стандартный отступ сверху */
+            margin-top: 5px; 
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
-        .btn-3d:active { transform: translateY(4px); box-shadow: none; }
+        .btn-3d:active { 
+            transform: translateY(4px); 
+            box-shadow: 0 0 0 #0d3d73, 0 2px 4px rgba(0,0,0,0.4); 
+        }
         .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
         
-        .switch-mode { text-align: center; margin-top: 25px; color: #888; font-size: 15px; }
-        .switch-mode span { color: var(--olive); font-weight: bold; cursor: pointer; text-decoration: underline;}
+        .switch-mode { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 14px; }
+        .switch-mode span { color: var(--accent-neon); font-weight: bold; cursor: pointer; text-decoration: underline; transition: 0.2s;}
+        .switch-mode span:active { opacity: 0.7; }
         
         #errorMsg { 
-            color: #ff4444; text-align: center; margin-top: 15px; 
-            display: none; font-size: 14px; background: rgba(255, 68, 68, 0.1); 
-            padding: 10px; border-radius: 10px; border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #fca5a5; text-align: center; margin-top: 12px; 
+            display: none; font-size: 13px; background: rgba(239, 68, 68, 0.15); 
+            padding: 10px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);
+            font-weight: 600;
+        }
+
+        /* Адаптація для дуже маленьких екранів, щоб не обрізало при відкритті клавіатури */
+        @media (max-height: 600px) {
+            .logo-img { max-width: 40%; margin-bottom: 5px; }
+            .card { padding: 15px; }
+            input { padding: 10px; margin-bottom: 10px; }
+            p { margin-bottom: 15px; font-size: 14px; }
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <img src="logo.jpg" alt="AI-Pilot Shops" class="logo-img">
+    <img src="1000007790.jpg" alt="AI-Pilot Shops" class="logo-img">
     
     <p id="subtitle">Створіть розумний інтернет-магазин<br>за 1 хвилину.</p>
 
     <div id="registerFields">
         <label>Назва вашого магазину:</label>
-        <input type="text" id="shopName" placeholder="Наприклад: КАНЦЛЕР">
+        <input type="text" id="shopName" placeholder="Наприклад: Мото-запчастини">
         
         <label>Ваше Ім'я:</label>
         <input type="text" id="userName" placeholder="Наприклад: Вадим">
@@ -188,7 +246,7 @@
                         owner_id: authData.user.id,
                         name: shopName,
                         shop_name: shopName,
-                        theme_color: 'dark',
+                        theme_color: 'ocean',
                         is_demo: false
                     }]);
                     if (dbErr) throw dbErr;
