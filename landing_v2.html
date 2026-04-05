@@ -27,39 +27,50 @@
             --input-bg: rgba(2, 10, 16, 0.7);
         }
         
+        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Жорстка фіксація фону для Android та висоти екрану */
+        html {
+            background-color: #01050a; /* Використовуємо прямий HEX для 100% сумісності з Android панеллю */
+            height: 100%;
+        }
+
         body { 
-            background: linear-gradient(180deg, var(--bg-ocean-top) 0%, var(--bg-ocean-bottom) 100%); 
+            background-color: var(--bg-ocean-bottom);
+            background-image: linear-gradient(180deg, var(--bg-ocean-top) 0%, var(--bg-ocean-bottom) 100%); 
+            background-attachment: fixed;
             color: var(--text-main); 
             font-family: 'Segoe UI', system-ui, sans-serif; 
             margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; /* Ідеальне центрування */
-            min-height: 100dvh; /* Займає рівно 1 екран мобільного */
             padding: 15px; 
             box-sizing: border-box; 
+            /* Ідеальне центрування */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100dvh; 
         }
         
         .card { 
             background: var(--panel-bg); 
-            padding: 25px 20px; /* Компактніші відступи для вміщення в 1 екран */
+            padding: 25px 20px; 
             border-radius: 20px; 
             border: 1px solid var(--border-neon); 
-            width: 100%; max-width: 440px; 
+            width: 100%; 
+            max-width: 440px; 
             box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(42, 139, 242, 0.1); 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            margin: auto; /* Додаткова гарантія центрування */
         }
         
         .logo-img {
-            max-width: 55%; /* Зменшено для компактності */
+            max-width: 55%; 
             height: auto;
             display: block;
-            margin: 0 auto 10px auto; /* Менше "повітря" */
-            filter: drop-shadow(0 0 15px rgba(42, 139, 242, 0.4)); /* Неонове світіння навколо лого */
+            margin: 0 auto 10px auto; 
+            filter: drop-shadow(0 0 15px rgba(42, 139, 242, 0.4)); 
             border-radius: 12px;
         }
         
