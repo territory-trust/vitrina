@@ -151,6 +151,10 @@
         .pwa-btn { background: transparent; border: 1px solid var(--pwa-accent); color: var(--pwa-accent); padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.2s; }
         .pwa-btn:active { opacity: 0.7; }
 
+        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Стиль для кнопки згортання/розгортання підкатегорій */
+        .cat-toggle-btn { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); height: 45px; box-sizing: border-box; }
+        .cat-toggle-btn:active { transform: scale(0.95); }
+
         .cat-builder-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
         .cat-builder-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
         .cat-builder-header input { flex: 1; font-weight: bold; font-size: 16px; border-color: var(--olive) !important; background: rgba(107,135,59,0.05); box-shadow: none;}
@@ -372,6 +376,9 @@
         let currentInvSubCat = null;
         let currentEditDescId = null;
 
+        // ХІРУРГІЧНЕ ВТРУЧАННЯ: Змінна для відстеження відкритих категорій
+        let expandedBuilderCats = new Set();
+
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
         function closeAlert() { document.getElementById('customAlertOverlay').style.display = 'none'; document.getElementById('customAlertBox').style.display = 'none'; }
 
@@ -412,10 +419,8 @@
                     if (permission === "granted") {
                         localStorage.setItem('push_enabled', 'true');
                         if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                            // Хірургічна заміна іконки для Push-повідомлень
                             navigator.serviceWorker.ready.then(reg => { reg.showNotification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "app-icon-v2.jpg", vibrate: [100, 50, 100] }); });
                         } else {
-                            // Хірургічна заміна іконки для Push-повідомлень
                             new Notification("✅ Сповіщення увімкнено!", { body: "Ви будете отримувати повідомлення про нові замовлення.", icon: "app-icon-v2.jpg" });
                         }
                     } else {
@@ -446,13 +451,21 @@
                     </div>`;
                 });
 
+                // ХІРУРГІЧНЕ ВТРУЧАННЯ: Логіка згортання
+                let isExpanded = expandedBuilderCats.has(cat.id);
+                let displayStyle = isExpanded ? 'display: flex;' : 'display: none;';
+                let arrow = isExpanded ? '🔽' : '▶️';
+
                 container.innerHTML += `
                 <div class="cat-builder-card">
                     <div class="cat-builder-header">
+                        <button id="togglebtn_${cat.id}" class="cat-toggle-btn" onclick="toggleBuilderCat(${cat.id})" title="Підкатегорії">
+                            ${arrow} <span style="font-size:14px; font-weight:900; color: var(--olive);">${cat.subs.length}</span>
+                        </button>
                         <input type="text" value="${cat.name}" placeholder="Головна категорія (напр. Взуття)" oninput="updateBuilderCat(${cat.id}, this.value)">
                         <button class="cat-del-btn" onclick="delBuilderCat(${cat.id})">🗑️</button>
                     </div>
-                    <div class="subcat-list" id="sublist_${cat.id}">
+                    <div class="subcat-list" id="sublist_${cat.id}" style="${displayStyle}">
                         ${subsHtml}
                         <button class="btn-add-sub" onclick="addBuilderSub(${cat.id})">➕ Додати підкатегорію</button>
                     </div>
@@ -460,10 +473,39 @@
             });
         }
 
-        function addBuilderCategory() { categoryTree.push({ id: Date.now(), name: '', subs: [] }); renderCategoryBuilder(); }
+        // ХІРУРГІЧНЕ ВТРУЧАННЯ: Функція перемикання гармошки без перезавантаження
+        function toggleBuilderCat(id) {
+            const list = document.getElementById(`sublist_${id}`);
+            const btn = document.getElementById(`togglebtn_${id}`);
+            let c = categoryTree.find(c => c.id === id);
+            let subsCount = c ? c.subs.length : 0;
+
+            if (expandedBuilderCats.has(id)) {
+                expandedBuilderCats.delete(id);
+                list.style.display = 'none';
+                btn.innerHTML = `▶️ <span style="font-size:14px; font-weight:900; color: var(--olive);">${subsCount}</span>`;
+            } else {
+                expandedBuilderCats.add(id);
+                list.style.display = 'flex';
+                btn.innerHTML = `🔽 <span style="font-size:14px; font-weight:900; color: var(--olive);">${subsCount}</span>`;
+            }
+        }
+
+        function addBuilderCategory() { 
+            const newId = Date.now();
+            categoryTree.push({ id: newId, name: '', subs: [] }); 
+            expandedBuilderCats.add(newId); // Авто-відкриття нової категорії
+            renderCategoryBuilder(); 
+        }
         function delBuilderCat(id) { categoryTree = categoryTree.filter(c => c.id !== id); renderCategoryBuilder(); }
         function updateBuilderCat(id, val) { let c = categoryTree.find(c => c.id === id); if(c) c.name = val; }
-        function addBuilderSub(catId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs.push({ id: Date.now(), name: '' }); renderCategoryBuilder(); }
+        
+        function addBuilderSub(catId) { 
+            let c = categoryTree.find(c => c.id === catId); 
+            if(c) c.subs.push({ id: Date.now(), name: '' }); 
+            expandedBuilderCats.add(catId); // Зберігаємо категорію відкритою
+            renderCategoryBuilder(); 
+        }
         function delBuilderSub(catId, subId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs = c.subs.filter(s => s.id !== subId); renderCategoryBuilder(); }
         function updateBuilderSub(catId, subId, val) { let c = categoryTree.find(c => c.id === catId); if(c) { let s = c.subs.find(s => s.id === subId); if(s) s.name = val; } }
 
@@ -510,11 +552,9 @@
                       if (localStorage.getItem('push_enabled') === 'true' && Notification.permission === "granted") {
                           if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                               navigator.serviceWorker.ready.then(reg => {
-                                  // Хірургічна заміна іконки для Push-повідомлень
                                   reg.showNotification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "app-icon-v2.jpg", vibrate: [200, 100, 200] });
                               });
                           } else {
-                              // Хірургічна заміна іконки для Push-повідомлень
                               new Notification("🆕 Нове замовлення!", { body: `Клієнт ${payload.new.customer_name} оформив замовлення на суму ${payload.new.total_amount} грн.`, icon: "app-icon-v2.jpg" });
                           }
                       }
