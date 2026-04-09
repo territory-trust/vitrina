@@ -89,6 +89,16 @@
             text-transform: uppercase;
         }
         
+        /* Додано захист від зміни фону автозаповненням браузера */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #081b2c inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
         input { 
             width: 100%; padding: 12px 14px; 
             background: var(--input-bg); 
@@ -101,7 +111,7 @@
         }
         
         input::placeholder {
-            color: rgba(226, 241, 255, 0.6); /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Зробили яскравіше (збільшили непрозорість до 0.6) */
+            color: rgba(226, 241, 255, 0.6); 
             font-weight: normal;
         }
         
@@ -166,7 +176,7 @@
     </div>
 
     <label>Ваш телефон:</label>
-    <input type="tel" id="phone" placeholder="098 555 44 22" maxlength="17" oninput="formatPhone(this)">
+    <input type="tel" id="phone" placeholder="098 555 44 22" maxlength="25" oninput="formatPhone(this)">
 
     <button class="btn-3d" id="mainBtn" onclick="handleAuth()">🚀 СТВОРИТИ МАГАЗИН</button>
     <div id="errorMsg"></div>
@@ -181,7 +191,6 @@
     let isLogin = false;
 
     // --- РОЗУМНИЙ АВТОВХІД ---
-    // Якщо користувач вже входив раніше, миттєво перекидаємо його в кабінет
     sb.auth.getSession().then(({ data: { session } }) => {
         if (session) {
             window.location.replace('cabinet.html');
@@ -189,24 +198,27 @@
     });
 
     function formatPhone(input) {
+        // 1. Беремо тільки цифри з того, що вставила система
         let val = input.value.replace(/\D/g, '');
         
-        // Відрізаємо код країни, якщо телефон намагається його підставити
+        // 2. Якщо система вставила номер з кодом країни, жорстко відрізаємо
         if (val.startsWith('380')) {
-            val = val.substring(2);
+            val = val.substring(2); // залишається '0...'
         } else if (val.startsWith('80')) {
-            val = val.substring(1);
+            val = val.substring(1); // залишається '0...'
+        } else if (val.startsWith('38')) {
+            val = '0' + val.substring(2); // якщо вставило 38 без нуля
         }
         
-        // ЖЕЛЕЗОБЕТОННИЙ ФІЛЬТР: Якщо номер не починається з нуля, примусово додаємо нуль
-        if (val.length > 0 && !val.startsWith('0')) {
+        // 3. БРОНЕБІЙНА ПЕРЕВІРКА НА НУЛЬ: Якщо після всіх чисток номер не починається з нуля (наприклад 985...), ставимо нуль примусово
+        if (val.length > 0 && val[0] !== '0') {
             val = '0' + val;
         }
 
-        // Залишаємо рівно 10 цифр
+        // 4. Залишаємо рівно 10 цифр українського формату
         val = val.substring(0, 10);
 
-        // Красиво форматуємо
+        // 5. Красиво розставляємо пробіли
         let res = '';
         if (val.length > 0) res += val.substring(0, 3);
         if (val.length > 3) res += ' ' + val.substring(3, 6);
