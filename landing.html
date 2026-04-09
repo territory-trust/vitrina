@@ -180,17 +180,33 @@
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let isLogin = false;
 
+    // --- РОЗУМНИЙ АВТОВХІД ---
+    // Якщо користувач вже входив раніше, миттєво перекидаємо його в кабінет
+    sb.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+            window.location.replace('cabinet.html');
+        }
+    });
+
     function formatPhone(input) {
         let val = input.value.replace(/\D/g, '');
         
-        // Перехоплюємо системне автозаповнення: якщо номер починається з "380", відрізаємо "38"
+        // Відрізаємо код країни, якщо телефон намагається його підставити
         if (val.startsWith('380')) {
             val = val.substring(2);
+        } else if (val.startsWith('80')) {
+            val = val.substring(1);
         }
         
-        // Обмежуємо до 10 цифр (код оператора + номер)
+        // ЖЕЛЕЗОБЕТОННИЙ ФІЛЬТР: Якщо номер не починається з нуля, примусово додаємо нуль
+        if (val.length > 0 && !val.startsWith('0')) {
+            val = '0' + val;
+        }
+
+        // Залишаємо рівно 10 цифр
         val = val.substring(0, 10);
 
+        // Красиво форматуємо
         let res = '';
         if (val.length > 0) res += val.substring(0, 3);
         if (val.length > 3) res += ' ' + val.substring(3, 6);
