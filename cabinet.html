@@ -263,8 +263,9 @@
                     <label style="font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 5px;">Категорії та Підкатегорії:</label>
                     <div class="cat-instruction-box">Створіть зручну структуру для покупців. Додавайте головні категорії (наприклад: Взуття) та підкатегорії до них (Кросівки, Черевики).</div>
                     
+                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 5px; margin-bottom: 15px; background: var(--olive); color: #fff; box-shadow: 0 3px 0 var(--olive-dark); padding: 12px; font-size: 14px;"><span style="color: #FFEA00; font-size: 18px; margin-right: 6px; font-weight: 900;">➕</span>ДОДАТИ КАТЕГОРІЮ ТОВАРУ</button>
+                    
                     <div id="categoryBuilderContainer"></div>
-                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 10px; background: var(--olive); color: #fff; box-shadow: 0 3px 0 var(--olive-dark); padding: 12px; font-size: 14px;"><span style="color: #FFEA00; font-size: 18px; margin-right: 6px; font-weight: 900;">➕</span>ДОДАТИ КАТЕГОРІЮ ТОВАРУ</button>
                 </div>
 
                 <div class="settings-block" style="margin-top: 25px; border-color: var(--olive); background: var(--input-bg);">
@@ -561,7 +562,6 @@
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
                     if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('light', false); }
                     
-                    // ХІРУРГІЧНЕ ВТРУЧАННЯ: Завантаження стану Маркетингових тумблерів
                     if(shop.marketing_tools) {
                         try {
                             let mTools = typeof shop.marketing_tools === 'string' ? JSON.parse(shop.marketing_tools) : shop.marketing_tools;
@@ -631,7 +631,6 @@
                 
             const jsonCategories = JSON.stringify(cleanTree);
 
-            // ХІРУРГІЧНЕ ВТРУЧАННЯ: Збираємо дані з тумблерів маркетингу
             const marketingTools = {
                 fake_discount: document.getElementById('m_fake_discount').checked,
                 stickers: document.getElementById('m_stickers').checked,
@@ -644,7 +643,7 @@
                 description: document.getElementById('set_description').value.trim(), 
                 categories: jsonCategories, 
                 theme_color: curTheme,
-                marketing_tools: JSON.stringify(marketingTools) // Відправляємо JSON в нову колонку
+                marketing_tools: JSON.stringify(marketingTools)
             };
             
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
