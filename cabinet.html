@@ -151,7 +151,6 @@
         .pwa-btn { background: transparent; border: 1px solid var(--pwa-accent); color: var(--pwa-accent); padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.2s; }
         .pwa-btn:active { opacity: 0.7; }
 
-        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Стиль для кнопки згортання/розгортання підкатегорій */
         .cat-toggle-btn { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); height: 45px; box-sizing: border-box; }
         .cat-toggle-btn:active { transform: scale(0.95); }
 
@@ -376,7 +375,6 @@
         let currentInvSubCat = null;
         let currentEditDescId = null;
 
-        // ХІРУРГІЧНЕ ВТРУЧАННЯ: Змінна для відстеження відкритих категорій
         let expandedBuilderCats = new Set();
 
         function showAlert(msg) { document.getElementById('customAlertText').innerHTML = msg; document.getElementById('customAlertOverlay').style.display = 'block'; document.getElementById('customAlertBox').style.display = 'block'; }
@@ -451,7 +449,6 @@
                     </div>`;
                 });
 
-                // ХІРУРГІЧНЕ ВТРУЧАННЯ: Логіка згортання
                 let isExpanded = expandedBuilderCats.has(cat.id);
                 let displayStyle = isExpanded ? 'display: flex;' : 'display: none;';
                 let arrow = isExpanded ? '🔽' : '▶️';
@@ -473,7 +470,6 @@
             });
         }
 
-        // ХІРУРГІЧНЕ ВТРУЧАННЯ: Функція перемикання гармошки без перезавантаження
         function toggleBuilderCat(id) {
             const list = document.getElementById(`sublist_${id}`);
             const btn = document.getElementById(`togglebtn_${id}`);
@@ -494,7 +490,7 @@
         function addBuilderCategory() { 
             const newId = Date.now();
             categoryTree.push({ id: newId, name: '', subs: [] }); 
-            expandedBuilderCats.add(newId); // Авто-відкриття нової категорії
+            expandedBuilderCats.add(newId); 
             renderCategoryBuilder(); 
         }
         function delBuilderCat(id) { categoryTree = categoryTree.filter(c => c.id !== id); renderCategoryBuilder(); }
@@ -503,7 +499,7 @@
         function addBuilderSub(catId) { 
             let c = categoryTree.find(c => c.id === catId); 
             if(c) c.subs.push({ id: Date.now(), name: '' }); 
-            expandedBuilderCats.add(catId); // Зберігаємо категорію відкритою
+            expandedBuilderCats.add(catId); 
             renderCategoryBuilder(); 
         }
         function delBuilderSub(catId, subId) { let c = categoryTree.find(c => c.id === catId); if(c) c.subs = c.subs.filter(s => s.id !== subId); renderCategoryBuilder(); }
@@ -875,6 +871,7 @@
             }
         }
 
+        // ХІРУРГІЧНЕ ВТРУЧАННЯ: Повністю переписана функція loadStats для бізнес-дашборду
         async function loadStats() {
             if (!currentUser) return;
             const container = document.getElementById('statsContainer');
@@ -897,6 +894,7 @@
 
             let totalRevenue = 0; let totalOrders = orders.length; 
             let itemSales = {}; let catSales = {};
+            let totalItemsSold = 0;
 
             orders.forEach(order => {
                 totalRevenue += parseFloat(order.total_amount) || 0;
@@ -908,55 +906,132 @@
 
                 if (orderItems && Array.isArray(orderItems)) {
                     orderItems.forEach(item => {
-                        if (!itemSales[item.title]) itemSales[item.title] = 0; itemSales[item.title] += item.qty;
+                        let qty = parseInt(item.qty) || 0;
+                        if (!itemSales[item.title]) itemSales[item.title] = 0; itemSales[item.title] += qty;
+                        totalItemsSold += qty;
                         
                         let cData = catMap[item.id] || { cat: 'Різне', sub: '' };
                         if (!catSales[cData.cat]) catSales[cData.cat] = { total: 0, subs: {} };
-                        catSales[cData.cat].total += item.qty;
+                        catSales[cData.cat].total += qty;
 
                         if (cData.sub) {
                             if (!catSales[cData.cat].subs[cData.sub]) catSales[cData.cat].subs[cData.sub] = 0;
-                            catSales[cData.cat].subs[cData.sub] += item.qty;
+                            catSales[cData.cat].subs[cData.sub] += qty;
                         }
                     });
                 }
             });
 
+            let avgCheck = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+
+            // 1. БЛОК: Тройной Дашборд
+            let dashHtml = `
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 15px 5px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size: 17px; font-weight: 900; color: var(--olive); margin-bottom: 5px; white-space: nowrap;">${totalRevenue.toLocaleString()}<span style="font-size:12px;"> ₴</span></div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Виручка</div>
+                </div>
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 15px 5px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size: 17px; font-weight: 900; color: #2AABEE; margin-bottom: 5px;">${totalOrders}</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Чеки</div>
+                </div>
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 15px 5px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size: 17px; font-weight: 900; color: #FF9800; margin-bottom: 5px; white-space: nowrap;">${avgCheck.toLocaleString()}<span style="font-size:12px;"> ₴</span></div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Сер. Чек</div>
+                </div>
+            </div>`;
+
+            // 2. БЛОК: График Пончик и умная гармошка
+            const chartColors = ['#6b873b', '#2AABEE', '#FF9800', '#E91E63', '#9C27B0', '#00BCD4', '#FFC107'];
             let sortedCats = Object.entries(catSales).sort((a, b) => b[1].total - a[1].total); 
-            let maxQtyCats = sortedCats.length > 0 ? sortedCats[0][1].total : 1;
-            let catsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продажі за категоріями (шт.)</h3>';
             
-            sortedCats.forEach(([cat, data]) => { 
-                let percent = Math.round((data.total / maxQtyCats) * 100); 
-                catsHtml += `<div style="margin-bottom: 12px;">
-                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;">
-                        <span style="color:var(--text); font-weight:600;">📁 ${cat}</span>
-                        <span style="color:var(--olive); font-weight:bold;">${data.total} шт.</span>
-                    </div>
-                    <div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden; margin-bottom: 6px;">
-                        <div style="width:${percent}%; height:100%; background:var(--olive);"></div>
-                    </div>`;
+            let conicGradients = [];
+            let currentAngle = 0;
+            let legendHtml = '';
+            let catAccordionHtml = '';
+
+            if (totalItemsSold > 0) {
+                sortedCats.forEach(([cat, data], index) => {
+                    let color = chartColors[index % chartColors.length];
+                    let percent = (data.total / totalItemsSold) * 100;
+                    let angle = (percent / 100) * 360;
                     
-                let sortedSubs = Object.entries(data.subs).sort((a,b)=> b[1] - a[1]);
-                sortedSubs.forEach(([sub, subQty]) => {
-                    catsHtml += `<div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-muted); margin-top:4px; padding-left: 15px;"><span>↳ ${sub}</span><span>${subQty} шт.</span></div>`;
+                    conicGradients.push(`${color} ${currentAngle}deg ${currentAngle + angle}deg`);
+                    currentAngle += angle;
+
+                    let sortedSubs = Object.entries(data.subs).sort((a,b)=> b[1] - a[1]);
+                    let subsHtml = '';
+                    sortedSubs.forEach(([sub, subQty]) => {
+                        subsHtml += `<div style="display:flex; justify-content:space-between; font-size:13px; color:var(--text-muted); margin-top:8px; padding-left: 15px; border-left: 2px solid ${color}60; margin-left: 5px;"><span>↳ ${sub}</span><span style="font-weight:600; color:var(--text);">${subQty} шт.</span></div>`;
+                    });
+
+                    catAccordionHtml += `
+                    <div style="margin-bottom: 10px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 5px solid ${color};" onclick="const body = this.nextElementSibling; const arr = this.querySelector('.arr'); if(body.style.display==='none'){body.style.display='block'; arr.innerText='🔼';}else{body.style.display='none'; arr.innerText='🔽';}">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width:14px; height:14px; border-radius:4px; background:${color};"></div>
+                                <span style="font-weight: 700; color: var(--text); font-size: 15px;">${cat}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-weight: 900; color: var(--text); font-size: 15px;">${data.total} <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">шт.</span></span>
+                                <span class="arr" style="font-size: 12px; color: var(--text-muted); opacity: 0.7;">🔽</span>
+                            </div>
+                        </div>
+                        <div style="padding: 0 15px 15px 15px; display: none; background: rgba(0,0,0,0.2);">
+                            ${subsHtml || '<div style="font-size:13px; color:var(--text-muted); margin-top:10px; padding-left:22px;">Немає підкатегорій</div>'}
+                        </div>
+                    </div>`;
                 });
-                catsHtml += `</div>`;
-            });
+            }
 
-            let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]); let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
-            let itemsHtml = '<h3 style="margin-top:0; margin-bottom:15px; color: var(--text); font-size:18px;">Продані товари (шт.)</h3>';
+            let pieCss = conicGradients.length > 0 ? `conic-gradient(${conicGradients.join(', ')})` : 'var(--input-bg)';
+            let pieChartHtml = `
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin-top:0; margin-bottom:20px; color: var(--text); font-size:18px; text-align:center;">Продажі за категоріями</h3>
+                <div style="display: flex; justify-content: center; margin-bottom: 25px;">
+                    <div style="width: 170px; height: 170px; border-radius: 50%; background: ${pieCss}; box-shadow: 0 8px 20px rgba(0,0,0,0.3); position: relative;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);">
+                            <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Всього</span>
+                            <span style="font-size: 22px; color: var(--text); font-weight: 900;">${totalItemsSold}</span>
+                        </div>
+                    </div>
+                </div>
+                ${catAccordionHtml}
+            </div>`;
+
+            // 3. БЛОК: Топ-5 зірок продажів
+            let sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]); 
+            let top5 = sortedItems.slice(0, 5);
+            let restItems = sortedItems.slice(5);
+            let maxQtyItems = sortedItems.length > 0 ? sortedItems[0][1] : 1;
+
+            let itemsHtml = `<div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin-top:0; margin-bottom:20px; color: var(--text); font-size:18px; display: flex; align-items: center; gap: 8px;">🏆 Топ Продажів</h3>`;
             
-            itemsHtml += '<div style="max-height: 350px; overflow-y: auto; padding-right: 5px; margin-right: -5px;">';
-            
-            sortedItems.forEach(([title, qty]) => { 
+            const renderItemLine = ([title, qty]) => {
                 let percent = Math.round((qty / maxQtyItems) * 100); 
-                itemsHtml += `<div style="margin-bottom: 12px;"><div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:4px;"><span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span><span style="color:var(--olive); font-weight:bold;">${qty} шт.</span></div><div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden;"><div style="width:${percent}%; height:100%; background:var(--olive);"></div></div></div>`; 
-            });
-            
-            itemsHtml += '</div>'; 
+                return `<div style="margin-bottom: 15px;">
+                    <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:6px;">
+                        <span style="color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;">${title}</span>
+                        <span style="color:var(--olive); font-weight:bold;">${qty} шт.</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:var(--input-bg); border-radius:4px; overflow:hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);">
+                        <div style="width:${percent}%; height:100%; background:linear-gradient(90deg, var(--olive) 0%, #8bb34d 100%); border-radius:4px;"></div>
+                    </div>
+                </div>`;
+            };
 
-            container.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;"><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--olive); margin-bottom: 5px;">${totalRevenue} <span style="font-size:14px;">грн</span></div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Продажі на суму</div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px 10px; border-radius: 12px; text-align: center;"><div style="font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 5px;">${totalOrders}</div><div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Кількість чеків</div></div></div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px; margin-bottom: 20px;">${catsHtml}</div><div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 12px;">${itemsHtml}</div>`;
+            itemsHtml += top5.map(renderItemLine).join('');
+
+            if (restItems.length > 0) {
+                itemsHtml += `<div id="hiddenItemsStats" style="display:none; margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px;">${restItems.map(renderItemLine).join('')}</div>`;
+                itemsHtml += `<button onclick="const h = document.getElementById('hiddenItemsStats'); if(h.style.display==='none'){h.style.display='block'; this.innerText='СХОВАТИ СПИСОК';}else{h.style.display='none'; this.innerText='ПОКАЗАТИ ВСІ (${restItems.length})';}" style="width:100%; padding: 14px; background: var(--input-bg); border: 2px dashed var(--olive); color: var(--olive); border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); font-size: 14px;">ПОКАЗАТИ ВСІ (${restItems.length})</button>`;
+            }
+            
+            itemsHtml += `</div>`; 
+
+            // Фінальна збірка HTML
+            container.innerHTML = dashHtml + pieChartHtml + itemsHtml;
         }
 
         function updLbl(camId, galId, inputId, index) { 
