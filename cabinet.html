@@ -170,6 +170,17 @@
         #descModalBox { width: 90%; max-width: 500px; padding: 20px; }
         #descModalBox textarea { width: 100%; height: 300px; padding: 15px; font-size: 14px; line-height: 1.5; border-radius: 8px; border: 2px solid var(--border) !important; background: var(--input-bg); color: var(--text); resize: none; margin-bottom: 15px; }
         #descModalBox textarea:focus { border-color: var(--olive) !important; }
+
+        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Стилі для iOS-перемикачів (тумблерів) маркетингу */
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0;}
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .3s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        input:checked + .slider { background-color: var(--olive); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .marketing-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
+        .marketing-row:last-child { border-bottom: none; }
+        .marketing-text { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.3; padding-right: 15px;}
     </style>
 </head>
 <body>
@@ -252,9 +263,33 @@
                     <label style="font-size: 16px; font-weight: bold; color: var(--text); margin-bottom: 5px;">Категорії та Підкатегорії:</label>
                     <div class="cat-instruction-box">Створіть зручну структуру для покупців. Додавайте головні категорії (наприклад: Взуття) та підкатегорії до них (Кросівки, Черевики).</div>
                     
-                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 5px; margin-bottom: 15px; background: var(--olive); color: #fff; box-shadow: 0 3px 0 var(--olive-dark); padding: 12px; font-size: 14px;"><span style="color: #FFEA00; font-size: 18px; margin-right: 6px; font-weight: 900;">➕</span>ДОДАТИ КАТЕГОРІЮ ТОВАРУ</button>
-                    
                     <div id="categoryBuilderContainer"></div>
+                    <button class="btn-3d" onclick="addBuilderCategory()" style="margin-top: 10px; background: var(--olive); color: #fff; box-shadow: 0 3px 0 var(--olive-dark); padding: 12px; font-size: 14px;"><span style="color: #FFEA00; font-size: 18px; margin-right: 6px; font-weight: 900;">➕</span>ДОДАТИ КАТЕГОРІЮ ТОВАРУ</button>
+                </div>
+
+                <div class="settings-block" style="margin-top: 25px; border-color: var(--olive); background: var(--input-bg);">
+                    <h3 style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; margin-bottom: 0; border-bottom: none;" onclick="const b=document.getElementById('marketingBody'); const a=this.querySelector('.arr'); if(b.style.display==='none'){b.style.display='block'; a.innerText='🔼'; this.style.borderBottom='1px solid var(--card-border)'; this.style.paddingBottom='10px'; this.style.marginBottom='10px';}else{b.style.display='none'; a.innerText='🔽'; this.style.borderBottom='none'; this.style.paddingBottom='0'; this.style.marginBottom='0';}">
+                        <span style="color: var(--olive); font-weight: 900;">🚀 МАРКЕТИНГОВІ ФІШКИ</span> <span class="arr" style="font-size:14px; color:var(--text-muted);">🔽</span>
+                    </h3>
+                    
+                    <div id="marketingBody" style="display:none;">
+                        <div class="marketing-row">
+                            <div class="marketing-text"><b>Ілюзія знижки</b><br><span style="font-size:12px; color:var(--text-muted);">Авто-генерація перекресленої старої ціни (+25-30%)</span></div>
+                            <label class="switch"><input type="checkbox" id="m_fake_discount"><span class="slider"></span></label>
+                        </div>
+                        <div class="marketing-row">
+                            <div class="marketing-text"><b>Динамічні стікери</b><br><span style="font-size:12px; color:var(--text-muted);">Випадкові яскраві бейджі: Хіт, Акція, Товар дня</span></div>
+                            <label class="switch"><input type="checkbox" id="m_stickers"><span class="slider"></span></label>
+                        </div>
+                        <div class="marketing-row">
+                            <div class="marketing-text"><b>Тригер дефіциту</b><br><span style="font-size:12px; color:var(--text-muted);">Показувати "Залишилось 2 шт", коли товару мало</span></div>
+                            <label class="switch"><input type="checkbox" id="m_scarcity"><span class="slider"></span></label>
+                        </div>
+                        <div class="marketing-row">
+                            <div class="marketing-text"><b>Імітація покупок</b><br><span style="font-size:12px; color:var(--text-muted);">Спливаюче вікно "Щойно замовили..." раз на хвилину</span></div>
+                            <label class="switch"><input type="checkbox" id="m_social_proof"><span class="slider"></span></label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="input-group"><label>Короткий опис:</label><textarea id="set_description" placeholder="Розкажіть покупцям про ваші переваги..."></textarea></div>
@@ -432,7 +467,7 @@
         function connectTelegram() {
             if(!currentUser) return showAlert("Помилка авторизації");
             const botUsername = "AIPilot_Shops_bot"; 
-            window.location.href = `tg://resolve?domain=${botUsername}&start=${currentUser.id}`;
+            window.open(`https://t.me/${botUsername}?start=${currentUser.id}`, '_blank');
         }
 
         function renderCategoryBuilder() {
@@ -526,6 +561,17 @@
                     document.getElementById('set_usePushNotify').checked = localStorage.getItem('push_enabled') === 'true';
                     if(shop.theme_color) { selectTheme(shop.theme_color, false); } else { selectTheme('light', false); }
                     
+                    // ХІРУРГІЧНЕ ВТРУЧАННЯ: Завантаження стану Маркетингових тумблерів
+                    if(shop.marketing_tools) {
+                        try {
+                            let mTools = typeof shop.marketing_tools === 'string' ? JSON.parse(shop.marketing_tools) : shop.marketing_tools;
+                            if(mTools.fake_discount) document.getElementById('m_fake_discount').checked = true;
+                            if(mTools.stickers) document.getElementById('m_stickers').checked = true;
+                            if(mTools.scarcity) document.getElementById('m_scarcity').checked = true;
+                            if(mTools.social_proof) document.getElementById('m_social_proof').checked = true;
+                        } catch(e) {}
+                    }
+
                     if(shop.categories) {
                         try {
                             let parsed = JSON.parse(shop.categories);
@@ -584,7 +630,22 @@
                 .filter(c => c.name !== '');
                 
             const jsonCategories = JSON.stringify(cleanTree);
-            const updateData = { shop_name: document.getElementById('set_shopName').value.trim(), description: document.getElementById('set_description').value.trim(), categories: jsonCategories, theme_color: curTheme };
+
+            // ХІРУРГІЧНЕ ВТРУЧАННЯ: Збираємо дані з тумблерів маркетингу
+            const marketingTools = {
+                fake_discount: document.getElementById('m_fake_discount').checked,
+                stickers: document.getElementById('m_stickers').checked,
+                scarcity: document.getElementById('m_scarcity').checked,
+                social_proof: document.getElementById('m_social_proof').checked
+            };
+
+            const updateData = { 
+                shop_name: document.getElementById('set_shopName').value.trim(), 
+                description: document.getElementById('set_description').value.trim(), 
+                categories: jsonCategories, 
+                theme_color: curTheme,
+                marketing_tools: JSON.stringify(marketingTools) // Відправляємо JSON в нову колонку
+            };
             
             const { error } = await sb.from('shops').update(updateData).eq('owner_id', currentUser.id);
             if(error) { showAlert('Помилка: ' + error.message); btn.innerHTML = '💾 ЗБЕРЕГТИ НАЛАШТУВАННЯ'; btn.disabled = false; } else {
@@ -816,14 +877,7 @@
 
         function formatCardInput(input) { let val = input.value.replace(/\D/g, ''); let res = ''; for(let i=0; i<val.length; i++) { if(i > 0 && i % 4 === 0) res += ' '; res += val[i]; } input.value = res.substring(0, 19); }
         function saveCardToLocal(val) { localStorage.setItem('saved_card_number', val); }
-        
-        function sendToTelegram(phone, amount, inputId) { 
-            const cardInput = document.getElementById(inputId); 
-            const cardValue = cardInput.value.trim() || 'картку не вказано'; 
-            let tgMessage = encodeURIComponent(`Вітаю! Дякуємо за замовлення. 🛒\nСума до оплати: ${amount} грн.\nРеквізити картки: ${cardValue}`); 
-            let cp = phone.replace(/\D/g, ''); 
-            window.location.href = `tg://resolve?phone=${cp}&text=${tgMessage}`; 
-        }
+        function sendToTelegram(phone, amount, inputId) { const cardInput = document.getElementById(inputId); const cardValue = cardInput.value.trim() || 'картку не вказано'; let tgMessage = encodeURIComponent(`Вітаю! Дякуємо за замовлення. 🛒\nСума до оплати: ${amount} грн.\nРеквізити картки: ${cardValue}`); window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank'); }
 
         async function loadOrders() { 
             if(!currentUser) return; 
@@ -875,8 +929,7 @@
 
             if (phone) {
                 let tgMessage = encodeURIComponent(`Вітаю! Ваше замовлення відправлено. Дякуємо за покупку! 📦`);
-                let cp = phone.replace(/\D/g, '');
-                window.location.href = `tg://resolve?phone=${cp}&text=${tgMessage}`;
+                window.open(`https://t.me/${phone}?text=${tgMessage}`, '_blank');
             }
         }
 
