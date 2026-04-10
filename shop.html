@@ -141,13 +141,13 @@
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 15px 20px; max-width: 900px; margin: auto; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
         
-        .card { background: var(--panel); border-radius: 14px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; transition: 0.3s; }
+        .card { background: var(--panel); border-radius: 14px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; transition: 0.3s; position: relative; }
         .main-p { width: 100%; padding-top: 100%; position: relative; background: #000; border-bottom: 1px solid var(--border); cursor: zoom-in;}
         .main-p img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         
         .card-body { padding: 12px; display: flex; flex-direction: column; flex: 1; }
         .title { font-weight: 600; font-size: 14px; color: #fff; line-height: 1.3; margin-bottom: 8px; height: 36px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: 0.3s; }
-        .price { color: var(--olive); font-size: 16px; font-weight: 900; margin-bottom: 12px; margin-top: auto; }
+        .price { color: var(--olive); font-size: 16px; font-weight: 900; margin-bottom: 12px; margin-top: auto; display: flex; align-items: center; gap: 8px; }
         
         .card-actions { display: flex; gap: 6px; }
         .btn-action { flex: 1; padding: 10px 2px; border-radius: 8px; font-weight: bold; font-size: 13px; text-align: center; text-decoration: none; display: flex; justify-content: center; align-items: center; box-sizing: border-box; cursor: pointer; transition: 0.1s; white-space: nowrap; }
@@ -236,6 +236,19 @@
         .custom-alert-text { font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 25px; margin-top: 0; }
         .btn-alert { background: var(--olive); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 3px 0 var(--olive-dark); width: 100%; transition: 0.1s; text-transform: uppercase; }
         .btn-alert:active { transform: translateY(3px); box-shadow: none; }
+
+        /* ХІРУРГІЧНЕ ВТРУЧАННЯ: Стилі для Маркетингових Фішок */
+        .old-price { text-decoration: line-through; color: #888; font-size: 13px; font-weight: normal; margin-left: 8px; }
+        body.theme-light .old-price { color: #9ca3af; }
+        .m-sticker { position: absolute; top: 8px; left: 8px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 900; color: #fff; text-transform: uppercase; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .m-scarcity { font-size: 12px; color: #ef4444; font-weight: bold; margin-bottom: 8px; animation: pulse 2s infinite; display: flex; align-items: center; gap: 4px;}
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        
+        .social-proof-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--olive); padding: 12px 18px; border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 2500; display: flex; align-items: center; gap: 10px; transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); width: 90%; max-width: 350px; }
+        .social-proof-toast.show { bottom: 20px; }
+        .sp-icon { width: 30px; height: 30px; background: rgba(107, 135, 59, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;}
+        .sp-text { font-size: 13px; color: var(--text); line-height: 1.3; }
+        .sp-text b { color: var(--olive); }
     </style>
 </head>
 <body>
@@ -413,6 +426,11 @@
     <button class="btn-alert" onclick="closeAlert()">ЗРОЗУМІЛО</button>
 </div>
 
+<div id="socialProofToast" class="social-proof-toast">
+    <div class="sp-icon">🛍️</div>
+    <div class="sp-text" id="spText"></div>
+</div>
+
 <script>
     const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
     let items = []; 
@@ -421,6 +439,10 @@
     let currentSubCat = null;
     let cart = JSON.parse(localStorage.getItem('smart_cart')) || []; 
     let lbImages = []; let lbIndex = 0;
+
+    // ХІРУРГІЧНЕ ВТРУЧАННЯ: Змінні для маркетингових фішок
+    let mTools = { fake_discount: false, stickers: false, scarcity: false, social_proof: false };
+    let spInterval = null;
 
     function showAlert(msg, callback = null) {
         document.getElementById('customAlertText').innerHTML = msg;
@@ -470,6 +492,11 @@
                 } else {
                     localStorage.setItem('hub_theme', 'dark');
                 }
+
+                // ХІРУРГІЧНЕ ВТРУЧАННЯ: Зчитування маркетингових налаштувань
+                if(shopData.marketing_tools) {
+                    try { mTools = typeof shopData.marketing_tools === 'string' ? JSON.parse(shopData.marketing_tools) : shopData.marketing_tools; } catch(e) {}
+                }
                 
                 if(shopData.categories) {
                     try {
@@ -486,7 +513,16 @@
         } else { query = sb.from('products').select('*').in('status', ['В наявності', 'available']).order('created_at', { ascending: false }); }
 
         const { data } = await query;
-        if(data) { items = data; renderCats(); render(items); }
+        if(data) { 
+            items = data; 
+            renderCats(); 
+            render(items); 
+            
+            // Запуск соціального доказу, якщо увімкнено та є товари
+            if (mTools.social_proof && items.length > 0) {
+                startSocialProof();
+            }
+        }
     };
 
     function openLightbox(productId) {
@@ -576,13 +612,43 @@
         render(filtered);
     }
 
+    // ХІРУРГІЧНЕ ВТРУЧАННЯ: Генерація маркетингових фішок у рендері
     function render(list) {
         const g = document.getElementById('grid'); g.innerHTML = '';
         if(list.length === 0) return g.innerHTML = `<div class="empty-state">😕 У цій категорії поки немає товарів</div>`;
+        
+        const stickers = [
+            { text: '🔥 Хіт продажу', bg: '#ef4444' },
+            { text: '💎 Товар дня', bg: '#8b5cf6' },
+            { text: '% Знижка', bg: '#f59e0b' }
+        ];
+
         list.forEach(p => {
             let imgUrl = p.image_url_1 || (p.images && p.images[0]) || p.image_url || '';
             let qty = p.quantity || 0; 
             
+            // Маркетинг: Ілюзія знижки
+            let priceHtml = `${p.price} грн`;
+            if (mTools.fake_discount && p.price > 0) {
+                // Випадкова надбавка від 15% до 30%
+                let markup = 1.15 + (Math.random() * 0.15);
+                let oldPrice = Math.round(p.price * markup);
+                priceHtml = `${p.price} грн <span class="old-price">${oldPrice} грн</span>`;
+            }
+
+            // Маркетинг: Стікери (вішаємо на ~30% товарів)
+            let stickerHtml = '';
+            if (mTools.stickers && Math.random() > 0.7) {
+                let st = stickers[Math.floor(Math.random() * stickers.length)];
+                stickerHtml = `<div class="m-sticker" style="background: ${st.bg};">${st.text}</div>`;
+            }
+
+            // Маркетинг: Тригер дефіциту
+            let scarcityHtml = '';
+            if (mTools.scarcity && qty > 0 && qty < 4) {
+                scarcityHtml = `<div class="m-scarcity">⏳ Залишилося лише ${qty} шт!</div>`;
+            }
+
             let btnHtml = '';
             if (qty > 0) {
                 btnHtml = `<button onclick="addToCart('${p.id}', this)" class="btn-action btn-buy">У кошик</button>`;
@@ -590,8 +656,39 @@
                 btnHtml = `<button class="btn-action" style="background: var(--panel); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none; cursor: not-allowed;" disabled>Немає</button>`;
             }
 
-            g.innerHTML += `<div class="card"><div class="main-p" onclick="openLightbox('${p.id}')"><img src="${imgUrl}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"></div><div class="card-body"><div class="title">${p.title || 'Без назви'}</div><div class="price">${p.price} грн</div><div class="card-actions"><a href="product.html?id=${p.id}" class="btn-action btn-read">Опис</a>${btnHtml}</div></div></div>`;
+            g.innerHTML += `<div class="card">${stickerHtml}<div class="main-p" onclick="openLightbox('${p.id}')"><img src="${imgUrl}" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"></div><div class="card-body"><div class="title">${p.title || 'Без назви'}</div><div class="price">${priceHtml}</div>${scarcityHtml}<div class="card-actions"><a href="product.html?id=${p.id}" class="btn-action btn-read">Опис</a>${btnHtml}</div></div></div>`;
         });
+    }
+
+    // ХІРУРГІЧНЕ ВТРУЧАННЯ: Функція Імітації покупок (Social Proof)
+    function startSocialProof() {
+        const names = ['Олександр', 'Олена', 'Дмитро', 'Анна', 'Максим', 'Марія', 'Андрій', 'Ірина', 'Богдан', 'Юлія', 'Сергій', 'Тетяна'];
+        const cities = ['Київ', 'Львів', 'Одеса', 'Дніпро', 'Харків', 'Вінниця', 'Івано-Франківськ', 'Тернопіль', 'Полтава', 'Житомир'];
+        
+        const toast = document.getElementById('socialProofToast');
+        const textEl = document.getElementById('spText');
+
+        // Показуємо раз на 20-40 секунд
+        spInterval = setInterval(() => {
+            if (items.length === 0) return;
+            
+            let randomName = names[Math.floor(Math.random() * names.length)];
+            let randomCity = cities[Math.floor(Math.random() * cities.length)];
+            let randomProduct = items[Math.floor(Math.random() * items.length)].title;
+            
+            // Скорочуємо назву товару, якщо задовга
+            if(randomProduct.length > 35) randomProduct = randomProduct.substring(0, 35) + '...';
+
+            textEl.innerHTML = `<b>${randomName}</b> (м. ${randomCity}) щойно замовив(ла):<br>${randomProduct}`;
+            
+            toast.classList.add('show');
+            
+            // Ховаємо через 4 секунди
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+
+        }, 25000 + Math.random() * 15000); // Від 25 до 40 секунд
     }
 
     function addToCart(id, btnEl) {
@@ -679,17 +776,15 @@
         const textSpan = document.getElementById(`custom_text_${idSuffix}`);
         
         textSpan.innerHTML = text;
-        textSpan.style.color = ''; // Прибираємо сірий колір плейсхолдера (якщо він був)
+        textSpan.style.color = ''; 
         
         wrapper.querySelectorAll('.custom-select-option').forEach(opt => opt.classList.remove('selected'));
         el.classList.add('selected');
         wrapper.classList.remove('open');
         
-        // Оновлюємо системний прихований select
         const realSelect = document.getElementById(`order_${idSuffix}`);
         realSelect.value = value;
         
-        // Якщо це меню доставки, викликаємо функцію оновлення полів
         if (idSuffix === 'delivery') {
             toggleDelivery();
         }
