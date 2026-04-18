@@ -24,9 +24,10 @@
         h2 { color: #2c3e50; margin-top: 25px; }
         p { margin-bottom: 15px; }
         .highlight { color: #b8860b; font-weight: bold; }
-        footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
-        footer a { color: #777; text-decoration: none; border-bottom: 1px dotted #777; }
+        footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; line-height: 1.8; }
+        footer a { color: #777; text-decoration: none; border-bottom: 1px dotted #777; white-space: nowrap; }
         footer a:hover { color: #b8860b; border-bottom: 1px solid #b8860b; }
+        .footer-divider { margin: 0 8px; color: #aaa; }
     </style>
 </head>
 <body>
@@ -53,9 +54,12 @@
         <p>Використовуючи наш додаток, ви погоджуєтеся з умовами даної політики.</p>
     </div>
     <footer>
-        &copy; 2026 AI-Pilot Store | 
-        <a href="mailto:aipiltservice@gmail.com?subject=Техпідтримка (AI-Pilot Store)">Техпідтримка</a> | 
-        <a href="mailto:aipiltservice@gmail.com?subject=Запит на видалення даних (AI-Pilot Store)&body=Для цілей безпеки та ідентифікації власника, будь ласка, вкажіть:%0D%0A1. Номер телефону, на який зареєстровано магазин:%0D%0A2. Назву магазину:%0D%0A%0D%0AЯ підтверджую, що є власником і хочу безповоротно видалити свої дані.">Запит на видалення даних</a>
+        <div style="margin-bottom: 5px;">&copy; 2026 AI-Pilot Store</div>
+        <div>
+            <a href="mailto:aipilotservice@gmail.com?subject=Техпідтримка (AI-Pilot Store)">Техпідтримка</a> 
+            <span class="footer-divider">|</span> 
+            <a href="mailto:aipilotservice@gmail.com?subject=Запит на видалення даних (AI-Pilot Store)&body=Для цілей безпеки та ідентифікації власника, будь ласка, вкажіть:%0D%0A1. Номер телефону, на який зареєстровано магазин:%0D%0A2. Назву магазину:%0D%0A%0D%0AЯ підтверджую, що є власником і хочу безповоротно видалити свої дані.">Запит на видалення даних</a>
+        </div>
     </footer>
 </body>
 </html>
