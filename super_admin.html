@@ -9,12 +9,12 @@
     <script src="config.js"></script>
     
     <style>
-        /* СПОКІЙНИЙ, ДОРОГИЙ ТЕМНИЙ СТИЛЬ (Збережено без змін) */
+        /* СПОКІЙНИЙ, ДОРОГИЙ ТЕМНИЙ СТИЛЬ */
         :root { 
             --bg: #0d0f12; --panel: #161a20; --olive: #6b873b; 
             --text: #e5e7eb; --text-muted: #8b949e; --border: #232933; 
             --card-bg: #1c2128; --btn-del-top: #4a1c1c; --btn-del-bot: #331313;
-            --accent-blue: #1890ff; /* Додано для Web3 акценту */
+            --accent-blue: #1890ff; 
         }
         
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; font-size: 16px; padding-top: 70px; padding-bottom: 40px; }
@@ -25,14 +25,14 @@
 
         .container { max-width: 900px; margin: 0 auto; padding: 15px; }
 
-        /* НОВИЙ БЛОК: WEB3 CONTROL */
+        /* WEB3 CONTROL */
         .web3-card { background: linear-gradient(145deg, #1c2128 0%, #161a20 100%); border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .web3-title { font-size: 14px; font-weight: 800; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .velvet-input { width: 100%; background: #090b0d; border: 1px solid #232933; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; margin-bottom: 12px; box-sizing: border-box; outline: none; }
         .btn-velvet-blue { background: linear-gradient(180deg, #1890ff 0%, #0050b3 100%); color: #fff; border: 1px solid #003a8c; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 3px 0 #002766; text-transform: uppercase; transition: 0.2s; }
         .btn-velvet-blue:active { transform: translateY(3px); box-shadow: none; }
 
-        /* ДАШБОРД (Збережено без змін) */
+        /* ДАШБОРД */
         .dash-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
         .dash-card { background: var(--panel); border: 1px solid var(--border); padding: 20px 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .dash-card.clickable { cursor: pointer; transition: 0.2s; background: linear-gradient(180deg, #1c2128 0%, #161a20 100%); box-shadow: 0 4px 0 #0d0f12, 0 8px 15px rgba(0,0,0,0.2); border-color: #30363d; position: relative; }
@@ -45,22 +45,35 @@
 
         h2 { font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 10px; margin-bottom: 15px; color: #fff; display: flex; align-items: center; justify-content: space-between;}
 
-        /* МАГАЗИНИ (Збережено без змін) */
+        /* МАГАЗИНИ ТА КАРТКИ */
         #shopsWrapper { display: none; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         .shop-list { display: flex; flex-direction: column; gap: 12px; }
+        
         .shop-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 12px; transition: 0.3s; }
+        .shop-card-touch { cursor: pointer; display: flex; flex-direction: column; gap: 10px; -webkit-tap-highlight-color: transparent; }
+        
         .shop-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .shop-name { font-size: 16px; font-weight: bold; color: #fff; margin-bottom: 4px; }
+        .shop-name { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
         .shop-id { font-size: 12px; color: var(--text-muted); font-family: monospace; }
+        
+        .shop-owner-badge { background: rgba(24, 144, 255, 0.1); border: 1px solid rgba(24, 144, 255, 0.2); color: var(--accent-blue); padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; }
+        
         .shop-stats-row { display: flex; gap: 10px; }
         .stat-badge { background: rgba(107, 135, 59, 0.05); border: 1px solid rgba(107, 135, 59, 0.2); color: var(--text); padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex: 1; justify-content: center; }
         .stat-badge.empty { background: rgba(139, 148, 158, 0.05); border-color: rgba(139, 148, 158, 0.2); color: var(--text-muted); }
 
+        /* РОЗГОРНУТІ ДЕТАЛІ */
+        .shop-details { display: none; background: #111418; border-radius: 8px; padding: 12px; border: 1px inset rgba(255,255,255,0.02); margin-top: 5px; animation: fadeIn 0.2s ease; }
+        .detail-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px dashed #232933; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-muted); }
+        .detail-value { color: #fff; font-family: monospace; }
+
         .btn-nuke { background: linear-gradient(180deg, var(--btn-del-top) 0%, var(--btn-del-bot) 100%); color: #ff9999; border: 1px solid #5c2323; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.1s; box-shadow: 0 4px 0 #1f0b0b; margin-top: 5px; }
         .btn-nuke:active { transform: translateY(4px); box-shadow: none; }
 
-        /* КАСТОМНІ ВІКНА (Збережено без змін) */
+        /* КАСТОМНІ ВІКНА */
         .custom-alert-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; backdrop-filter: blur(5px); }
         .custom-alert-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 340px; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; z-index: 2001; padding: 24px; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center; }
         .btn-action { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; flex: 1; transition: 0.2s; }
@@ -170,10 +183,16 @@
             } else { showAlert('Будь ласка, встановіть MetaMask'); }
         }
 
-        /* ВСІ ОРИГІНАЛЬНІ ФУНКЦІЇ (Збережено без змін) */
         function toggleShopsList() {
             const wrapper = document.getElementById('shopsWrapper');
             wrapper.style.display = (wrapper.style.display === 'none' || wrapper.style.display === '') ? 'block' : 'none';
+        }
+        
+        function toggleDetails(id) {
+            const details = document.getElementById(`details_${id}`);
+            if(details) {
+                details.style.display = (details.style.display === 'none' || details.style.display === '') ? 'block' : 'none';
+            }
         }
 
         function showAlert(msg, callback) {
@@ -242,13 +261,16 @@
                 document.getElementById('statAiCost').innerText = `$${((resProds.data?.length || 0) * 0.0002).toFixed(4)}`;
                 globalShops = resShops.data || [];
                 shopsContainer.innerHTML = '';
+                
                 if (globalShops.length === 0) {
                     shopsContainer.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Магазинів поки немає.</p>';
                     return;
                 }
+                
                 let prodCounts = {}; let orderCounts = {};
                 if (resProds.data) resProds.data.forEach(p => { prodCounts[p.owner_id] = (prodCounts[p.owner_id] || 0) + 1; });
                 if (resOrders.data) resOrders.data.forEach(o => { orderCounts[o.owner_id] = (orderCounts[o.owner_id] || 0) + 1; });
+                
                 globalShops.forEach(shop => {
                     let ownerId = shop.owner_id || 'NO_OWNER';
                     let internalId = shop.id || 'NO_ID';
@@ -256,20 +278,48 @@
                     let oCount = orderCounts[ownerId] || 0;
                     let elementId = internalId !== 'NO_ID' ? internalId : ownerId;
                     let safeShopName = (shop.shop_name || 'Без назви').replace(/['"]/g, '');
+                    
+                    /* Витягуємо телефон та ім'я (адаптуй назви змінних під свою БД, якщо вони інші) */
+                    let phone = shop.phone || shop.owner_phone || shop.seller_phone || 'Не вказано';
+                    let ownerName = shop.owner_name || shop.seller_name || 'Продавець';
+                    let createdAt = shop.created_at ? new Date(shop.created_at).toLocaleString('uk-UA') : 'Невідомо';
+
                     shopsContainer.innerHTML += `
                         <div class="shop-card" id="shopCard_${elementId}">
-                            <div class="shop-header">
-                                <div>
-                                    <div class="shop-name">${shop.shop_name || 'Без назви'}</div>
-                                    <div class="shop-id">Owner ID: ${(ownerId !== 'NO_OWNER' ? ownerId.substring(0, 8) : 'БЕЗ ID')}...</div>
+                            <div class="shop-card-touch" onclick="toggleDetails('${elementId}')">
+                                <div class="shop-header">
+                                    <div>
+                                        <div class="shop-name">🏪 ${shop.shop_name || 'Без назви'}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="shop-owner-badge">
+                                    👤 ${ownerName} | 📱 ${phone}
+                                </div>
+                                
+                                <div class="shop-stats-row">
+                                    <div class="${pCount === 0 ? "stat-badge empty" : "stat-badge"}">📦 Товарів: ${pCount}</div>
+                                    <div class="${oCount === 0 ? "stat-badge empty" : "stat-badge"}">📑 Замовлень: ${oCount}</div>
                                 </div>
                             </div>
-                            <div class="shop-stats-row">
-                                <div class="${pCount === 0 ? "stat-badge empty" : "stat-badge"}">📦 Товарів: ${pCount}</div>
-                                <div class="${oCount === 0 ? "stat-badge empty" : "stat-badge"}">📑 Замовлень: ${oCount}</div>
+                            
+                            <div class="shop-details" id="details_${elementId}">
+                                <div class="detail-row">
+                                    <span class="detail-label">Створено:</span>
+                                    <span class="detail-value">${createdAt}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">ID Магазину:</span>
+                                    <span class="detail-value">${internalId.substring(0, 13)}...</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Owner ID:</span>
+                                    <span class="detail-value">${ownerId.substring(0, 13)}...</span>
+                                </div>
                             </div>
+
                             <button class="btn-nuke" onclick="nukeShop('${internalId}', '${ownerId}', '${safeShopName}')">
-                                🗑️ ВИДАЛИТИ МАГАЗИН
+                                🗑️ ВИДАЛИТИ МАГАЗИН ТА КОРИСТУВАЧА
                             </button>
                         </div>
                     `;
@@ -277,14 +327,15 @@
             } catch (err) { shopsContainer.innerHTML = `<p style="color:#ff9999; text-align:center;">Помилка БД: ${err.message}</p>`; }
         }
 
-        /* ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ" (ОРИГІНАЛЬНА ЛОГІКА ОЧИСТКИ ЗБЕРЕЖЕНА) */
+        /* ПРОТОКОЛ "ВИПАЛЕНА ЗЕМЛЯ v2.0" З ВИДАЛЕННЯМ КОРИСТУВАЧА */
         function nukeShop(internalId, ownerId, shopName) {
-            showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b>.<br><br>Це фізично видалить усі дані. Продовжити?`, async () => {
+            showConfirm(`Ви збираєтесь назавжди видалити магазин <b>"${shopName}"</b> ТА обліковий запис продавця.<br><br>Це фізично очистить усі дані та звільнить номер телефону. Продовжити?`, async () => {
                 let elementId = internalId !== 'NO_ID' ? internalId : ownerId;
                 const btn = document.querySelector(`#shopCard_${elementId} .btn-nuke`);
                 if(btn) { btn.innerHTML = '⏳ ВИДАЛЕННЯ...'; btn.disabled = true; }
                 try {
                     if (ownerId !== 'NO_OWNER') {
+                        // 1. Очищення медіа та товарів
                         const { data: products } = await sb.from('products').select('id, images').eq('owner_id', ownerId);
                         let filesToDelete = []; let productIds = [];
                         if (products && products.length > 0) {
@@ -303,9 +354,23 @@
                         await sb.from('products').delete().eq('owner_id', ownerId);
                         await sb.from('orders').delete().eq('owner_id', ownerId);
                     }
+                    
+                    // 2. Видалення самого магазину
                     if (internalId !== 'NO_ID') { await sb.from('shops').delete().eq('id', internalId); }
                     else if (ownerId !== 'NO_OWNER') { await sb.from('shops').delete().eq('owner_id', ownerId); }
 
+                    // 3. ЗНИЩЕННЯ АКАУНТА (auth.users) ТА ЗВІЛЬНЕННЯ НОМЕРА
+                    if (ownerId !== 'NO_OWNER') {
+                        // Якщо є таблиця sellers/users - видаляємо звідти
+                        await sb.from('users').delete().eq('id', ownerId); 
+                        await sb.from('sellers').delete().eq('id', ownerId);
+                        
+                        // Виклик RPC для видалення з системної таблиці auth.users
+                        const { error: rpcError } = await sb.rpc('delete_auth_user', { target_user_id: ownerId });
+                        if(rpcError) console.warn("RPC delete_auth_user відсутня або помилка:", rpcError);
+                    }
+
+                    // 4. Візуальне зникнення
                     const card = document.getElementById(`shopCard_${elementId}`);
                     if(card) {
                         card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
@@ -318,7 +383,7 @@
                     setTimeout(loadDashboard, 1500);
                 } catch (e) {
                     showAlert('Помилка при видаленні: ' + e.message);
-                    if(btn) { btn.innerHTML = '🗑️ ВИДАЛИТИ МАГАЗИН'; btn.disabled = false; }
+                    if(btn) { btn.innerHTML = '🗑️ ВИДАЛИТИ МАГАЗИН ТА КОРИСТУВАЧА'; btn.disabled = false; }
                 }
             });
         }
